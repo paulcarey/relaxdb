@@ -1,0 +1,186 @@
+module RelaxDB
+    
+  class Document
+    
+    # Define properties and property methods
+    
+    def self.property(prop)
+      # Class instance varibles are not inherited, so the default properties must be explicitly listed 
+      # Perhaps a better solution exists. Revise
+      @properties ||= [:_id, :_rev]
+      @properties << prop
+
+      define_method(prop) do
+        instance_variable_get("@#{prop}".to_sym)
+      end
+
+      define_method("#{prop}=") do |val|
+        instance_variable_set("@#{prop}".to_sym, val)
+      end
+    end
+
+    def self.properties
+      # Don't force clients to check that it's instantiated
+      @properties ||= []
+    end
+
+    def properties
+      self.class.properties
+    end
+    
+    # Specifying these properties here is kinda ugly. Consider a better solution.
+    property :_id 
+    property :_rev    
+    
+    def initialize(hash=nil)
+      # The default _id will be overwritten if loaded from RelaxDB
+      self._id = UuidGenerator.uuid 
+      set_attributes(hash) if hash
+    end
+    
+    def set_attributes(data)
+      data.each do |key, val|
+        # Only set instance variables on creation - object references are resolved on demand
+        instance_variable_set("@#{key}".to_sym, val)
+      end
+    end  
+    
+    def inspect
+      s = "#<#{self.class}:#{self.object_id}"
+      properties.each do |prop|
+        prop_val = instance_variable_get("@#{prop}".to_sym)
+        s << ", #{prop}: #{prop_val}" if prop_val
+      end
+      belongs_to_rels.each do |relationship|
+        id = instance_variable_get("@#{relationship}_id".to_sym)
+        if id
+          s << ", #{relationship}_id: #{id}" if id
+        else 
+          obj = instance_variable_get("@#{relationship}".to_sym)
+          s << ", #{relationship}_id: #{obj._id}" if obj
+        end
+      end
+      s << ">"
+    end
+            
+    def to_json
+      data = {}
+      # Order is important - this codifies the relative importance of a relationship to its _id surrogate
+      # TODO: Revise - loading a parent just so the child can be saved could be considered donkey coding
+      belongs_to_rels.each do |relationship|
+        parent = send(relationship)
+        if parent
+          data["#{relationship}_id"] = parent._id
+        else
+          id = instance_variable_get("@#{relationship}_id".to_sym)
+          data["#{relationship}_id"] = id if id
+        end
+      end
+      properties.each do |prop|
+        prop_val = instance_variable_get("@#{prop}".to_sym)
+        data["#{prop}"] = prop_val if prop_val
+      end
+      data["class"] = self.class.name
+      data.to_json      
+    end
+    
+    def save
+      resp = RelaxDB::Database.std_db.put("#{_id}", to_json)
+      self._rev = JSON.parse(resp.body)["rev"]
+      self
+    end  
+    
+    # has_many methods
+
+    def has_many_proxy(rel_name, opts=nil)
+      proxy_sym = "@proxy_#{rel_name}".to_sym
+      proxy = instance_variable_get(proxy_sym)
+      proxy ||= HasManyProxy.new(self, rel_name, opts)
+      instance_variable_set(proxy_sym, proxy)
+      proxy
+    end
+   
+    def self.has_many(relationship, opts=nil)
+      define_method(relationship) do
+        has_many_proxy(relationship, opts)
+      end
+      
+      define_method("#{relationship}=") do
+        raise "You may not currently assign to a has_many relationship - to be implemented"
+      end      
+    end
+    
+    # has_one methods
+
+    def has_one_proxy(rel_name)
+      proxy_sym = "@proxy_#{rel_name}".to_sym
+      proxy = instance_variable_get(proxy_sym)
+      proxy ||= HasOneProxy.new(self, rel_name)
+      instance_variable_set(proxy_sym, proxy)
+      proxy
+    end
+    
+    def self.has_one(rel_name, opts=nil)
+      define_method(rel_name) do        
+        has_one_proxy(rel_name).target
+      end
+      
+      define_method("#{rel_name}=") do |new_target|
+        has_one_proxy(rel_name).target = new_target
+      end
+    end
+    
+    # belongs_to methods
+    
+    # Creates and returns the proxy for the named relationship
+    def belongs_to_proxy(rel_name)
+      proxy_sym = "@proxy_#{rel_name}".to_sym
+      proxy = instance_variable_get(proxy_sym)
+      proxy ||= BelongsToProxy.new(self, rel_name)
+      instance_variable_set(proxy_sym, proxy)
+      proxy
+    end
+    
+    def self.belongs_to(rel_name)
+      @belongs_to_rels ||= []
+      @belongs_to_rels << rel_name
+
+      define_method(rel_name) do
+        belongs_to_proxy(rel_name).target
+      end
+      
+      define_method("#{rel_name}=") do |new_target|
+        belongs_to_proxy(rel_name).target = new_target
+      end
+    end
+    
+    def self.belongs_to_rels
+      # Don't force clients to check that it's instantiated
+      @belongs_to_rels ||= []
+    end
+    
+    def belongs_to_rels
+      self.class.belongs_to_rels
+    end
+        
+  end
+  
+  def self.load(id)
+    self.load_by_id(id)
+  end
+  
+  def self.load_by_id(id)
+    database = RelaxDB::Database.std_db
+    resp = database.get("#{id}")
+    data = JSON.parse(resp.body)
+    create_from_hash(data)
+  end
+  
+  def self.create_from_hash(data)
+    # revise use of string 'class' - it's a reserved word in JavaScript
+    klass = data.delete("class")
+    k = Module.const_get(klass)
+    k.new(data)    
+  end
+  
+end
