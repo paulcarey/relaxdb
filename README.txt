@@ -12,7 +12,7 @@ RelaxDB provides a simple interface to CouchDB
 
 == SYNOPSIS:
 
-Look at spec/spec_models.rb to see how models are declared, and relaxdb_spec.rb to see how they're used
+Look at spec/spec_models.rb to see how models are declared, and spec/relaxdb_spec.rb to see how they're used
 
 == REQUIREMENTS:
 
