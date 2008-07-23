@@ -37,6 +37,8 @@ end
 
 class Post < RelaxDB::Document
   
+  property :content
   property :created_at
+  property :viewed_at
   
 end

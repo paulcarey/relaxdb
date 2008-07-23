@@ -16,6 +16,29 @@ class ViewCreator
     map_function = @map_template.sub("${target_class}", target_class)
     map_function.sub("${relationship_to_client}", relationship_to_client.to_s)
   end
+  
+  def all_view(target_class, opts)
+    if opts[:sort_by]
+      sort_by = opts[:sort_by].to_s
+      # If the sort attribute ends with an _at, assume it's a Date 
+      if sort_by[/_at$/]
+        sort_key = "Date.parse(doc.#{sort_by})"
+      else
+        sort_key = "doc.#{sort_by}"
+      end
+    else
+      sort_key = "null"
+    end
+    
+    @map_template = <<-QUERY
+    function(doc) {
+      if(doc.class == "${target_class}")
+        emit(${sort_key}, doc);
+    }
+    QUERY
+    @map_template.sub!("${target_class}", target_class.to_s)
+    @map_template.sub!("${sort_key}", sort_key)
+  end
     
 end
 
@@ -32,7 +55,15 @@ class DesignDocument
   def add_view(view_name, target_class=view_name, relationship_to_client=@relationship_to_client)
     view_creator = ViewCreator.new
     map_function = view_creator.create(target_class, relationship_to_client)
-    
+    add_view_to_data(view_name, map_function)
+  end
+  
+  def add_all_view(opts)
+    map_function = ViewCreator.new.all_view(@client_class, opts)
+    add_view_to_data("all", map_function)
+  end
+  
+  def add_view_to_data(view_name, map_function)
     @data["views"] ||= {}
     @data["views"][view_name] ||= {}
     @data["views"][view_name]["map"] = map_function

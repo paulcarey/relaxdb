@@ -171,6 +171,31 @@ module RelaxDB
     def belongs_to_rels
       self.class.belongs_to_rels
     end
+    
+    def self.all(opts={})
+      database = RelaxDB::Database.std_db
+      order = opts[:order]
+      if order.to_s[/desc/]
+        order = "descending=true"
+      else
+        order = ""
+      end  
+        
+      view_path = "_view/#{self}/all?#{order}"
+      begin
+        resp = database.get(view_path)
+      rescue => e
+        DesignDocument.get(self).add_all_view(opts).save
+        resp = database.get(view_path)
+      end
+      
+      @objects = []
+      data = JSON.parse(resp.body)["rows"]
+      data.each do |row|
+        @objects << RelaxDB.create_from_hash(row["value"])
+      end
+      @objects
+    end
         
   end
   

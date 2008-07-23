@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 
 describe RelaxDB do
 
-  before(:all) do
+  before(:each) do
     RelaxDB::Database.std_db = RelaxDB::Database.new("localhost", 5984, "relaxdb_spec_db")
     begin
       RelaxDB::Database.std_db.delete
@@ -56,6 +56,8 @@ describe RelaxDB do
     end
     
     it "created_at attribute is set automatically to creation date" do
+      # Would be nice to test that it isn't updated on every save as that could constitute an obvious programmer error
+      # But... I hate introducing explicit latency into tests
       now = Time.now
       p = Post.new.save
       created_at = RelaxDB.load(p._id).created_at
@@ -274,8 +276,42 @@ describe RelaxDB do
   
   describe "finders" do
     
-    it "find_all should find all" do
-      
+    it "Document.all should return all instances of that class" do
+      Player.new.save
+      Post.new.save
+      Post.new.save
+      Post.all.size.should == 2      
+    end
+    
+    it "Document.all should return an empty array when no instances exist" do
+      Post.all.should be_an_instance_of(Array)
+      Post.all.should be_empty
+    end
+    
+    it "Document.all should sort ascending by default" do
+      Post.new(:content => "a").save
+      Post.new(:content => "b").save
+      # posts = Post.all(:sort_by => :created_at, :order => :desc)
+      posts = Post.all(:sort_by => :content)
+      posts[0].content.should == "a"
+      posts[1].content.should == "b"
+    end
+
+    it "Document.all should sort asc when specified" do
+      Post.new(:content => "a").save
+      Post.new(:content => "b").save
+      posts = Post.all(:sort_by => :content, :order => :desc)
+      posts[0].content.should == "b"
+      posts[1].content.should == "a"
+    end
+    
+    it "when a sort attribute ends in _at it should be treated as a date" do
+      t = Time.new
+      Post.new(:viewed_at => t, :content => "first").save
+      Post.new(:viewed_at => t+1, :content => "second").save
+      posts = Post.all(:sort_by => :viewed_at, :order => :desc)
+      posts[0].content.should == "second"
+      posts[1].content.should == "first"
     end
     
   end
