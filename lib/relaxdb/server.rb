@@ -58,7 +58,7 @@ module RelaxDB
     end
     
     def delete(uri=nil)
-      @server.delete("/#{@db_name}")
+      @server.delete("/#{@db_name}/#{uri}")
     end
     
     def get(uri=nil)

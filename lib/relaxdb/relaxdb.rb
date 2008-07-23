@@ -197,13 +197,29 @@ module RelaxDB
       end
       @objects
     end
-        
+
+    # TODO: Destroy should presumably destroy all children
+    # Destroy semantics in AR are that all callbacks are invoked (as opposed to delete) 
+    # Destroy is also used by DM. To destroy all, DM uses e.g. Post.all.destroy! see below
+    # http://groups.google.com/group/datamapper/browse_thread/thread/866ead34237f0e7b
+    # Returning something other than the http response would be good too
+    def destroy!
+      RelaxDB::Database.std_db.delete("#{_id}?rev=#{_rev}")
+    end
+
+    # TODO: Meh! Use bulk update to do this efficiently
+    def self.destroy_all!
+      self.all.each do |o| 
+        o.destroy!
+      end
+    end
+            
   end
   
   def self.load(id)
     self.load_by_id(id)
   end
-  
+    
   def self.load_by_id(id)
     database = RelaxDB::Database.std_db
     resp = database.get("#{id}")

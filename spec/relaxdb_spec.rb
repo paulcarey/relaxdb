@@ -274,6 +274,25 @@ describe RelaxDB do
 
   # Test database API too
   
+  describe "destroy" do
+    
+    it "a destroyed document should not be retrievable" do
+      p = Player.new.save
+      p.destroy!
+      lambda { RelaxDB.load(p._id) }.should raise_error       
+    end
+    
+    it "destroy_all should delete from CouchDB all documents of the corresponding class" do
+      p0 = Player.new.save
+      p1 = Post.new.save
+      p2 = Post.new.save
+      Post.destroy_all!
+      Post.all.should be_empty
+      Player.all.size.should == 1
+    end
+    
+  end
+  
   describe "finders" do
     
     it "Document.all should return all instances of that class" do
