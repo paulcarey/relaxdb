@@ -81,6 +81,10 @@ module RelaxDB
     def self.std_db=(db)
       @@std_db = db
     end
+    
+    def self.set_std_db(config)
+      @@std_db = RelaxDB::Database.new(config[:host], config[:port], config[:db])  
+    end
 
     # Set to scratch as a convenience for using via the console
     @@std_db = RelaxDB::Database.new("localhost", 5984, "scratch")

@@ -43,6 +43,11 @@ module RelaxDB
         # Only set instance variables on creation - object references are resolved on demand
         instance_variable_set("@#{key}".to_sym, val)
       end
+      
+      if instance_variable_defined? :@created_at 
+        time = ParseDate.parsedate(@created_at)
+        @created_at = Time.local(*time)
+      end
     end  
     
     def inspect
@@ -85,6 +90,10 @@ module RelaxDB
     end
     
     def save
+      if methods.include? "created_at"
+        instance_variable_set(:@created_at, Time.now) if _rev.nil?
+      end
+      
       resp = RelaxDB::Database.std_db.put("#{_id}", to_json)
       self._rev = JSON.parse(resp.body)["rev"]
       self

@@ -34,3 +34,9 @@ class Player < RelaxDB::Document
   has_many :invites_sent, :class => "Invite", :known_as => :sender
   
 end
+
+class Post < RelaxDB::Document
+  
+  property :created_at
+  
+end

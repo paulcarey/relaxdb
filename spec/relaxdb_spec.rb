@@ -54,6 +54,13 @@ describe RelaxDB do
     it "nil attributes should not be output in json" do
       Player.new.to_json.should_not include("rev")
     end
+    
+    it "created_at attribute is set automatically to creation date" do
+      now = Time.now
+      p = Post.new.save
+      created_at = RelaxDB.load(p._id).created_at
+      now.should be_close(created_at, 1)
+    end
         
   end
   
@@ -264,5 +271,13 @@ describe RelaxDB do
   end
 
   # Test database API too
+  
+  describe "finders" do
+    
+    it "find_all should find all" do
+      
+    end
+    
+  end
       
 end
