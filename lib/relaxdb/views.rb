@@ -18,17 +18,7 @@ class ViewCreator
   end
   
   def all_view(target_class, opts)
-    if opts[:sort_by]
-      sort_by = opts[:sort_by].to_s
-      # If the sort attribute ends with an _at, assume it's a Date 
-      if sort_by[/_at$/]
-        sort_key = "Date.parse(doc.#{sort_by})"
-      else
-        sort_key = "doc.#{sort_by}"
-      end
-    else
-      sort_key = "null"
-    end
+    sort_key = opts[:sort_by] ? "doc.#{opts[:sort_by]}" : "null" 
     
     @map_template = <<-QUERY
     function(doc) {

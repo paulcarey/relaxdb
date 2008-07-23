@@ -307,8 +307,8 @@ describe RelaxDB do
     
     it "when a sort attribute ends in _at it should be treated as a date" do
       t = Time.new
-      Post.new(:viewed_at => t, :content => "first").save
-      Post.new(:viewed_at => t+1, :content => "second").save
+      Post.new(:viewed_at => t.strftime("%Y-%m-%d %H:%M:%S"), :content => "first").save
+      Post.new(:viewed_at => (t+86400).strftime("%Y-%m-%d %H:%M:%S"), :content => "second").save
       posts = Post.all(:sort_by => :viewed_at, :order => :desc)
       posts[0].content.should == "second"
       posts[1].content.should == "first"

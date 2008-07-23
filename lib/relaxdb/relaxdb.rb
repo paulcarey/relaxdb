@@ -91,7 +91,8 @@ module RelaxDB
     
     def save
       if methods.include? "created_at"
-        instance_variable_set(:@created_at, Time.now) if _rev.nil?
+        now = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+        instance_variable_set(:@created_at, now) if _rev.nil?
       end
       
       resp = RelaxDB::Database.std_db.put("#{_id}", to_json)
