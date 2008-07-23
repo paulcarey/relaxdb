@@ -9,6 +9,7 @@ RelaxDB provides a simple interface to CouchDB
 == FEATURES/PROBLEMS:
 
 * Very immature
+* A merb plugin is provided via merb_relaxdb (also on github)
 
 == SYNOPSIS:
 
