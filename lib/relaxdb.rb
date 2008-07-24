@@ -13,6 +13,7 @@ require 'relaxdb/belongs_to_proxy'
 require 'relaxdb/uuid_generator'
 require 'relaxdb/views'
 require 'parsedate'
+require 'pp'
 
 module RelaxDB
 end

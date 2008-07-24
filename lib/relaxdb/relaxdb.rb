@@ -6,7 +6,7 @@ module RelaxDB
     
     def self.property(prop)
       # Class instance varibles are not inherited, so the default properties must be explicitly listed 
-      # Perhaps a better solution exists. Revise
+      # Perhaps a better solution exists. Revise. I think Merb extlib contains a solution for this...
       @properties ||= [:_id, :_rev]
       @properties << prop
 
@@ -208,6 +208,7 @@ module RelaxDB
     end
 
     # TODO: Meh! Use bulk update to do this efficiently
+    # Leaves the corresponding DesignDoc for this class intact. Should it? probably...
     def self.destroy_all!
       self.all.each do |o| 
         o.destroy!

@@ -88,7 +88,13 @@ module RelaxDB
 
     # Set to scratch as a convenience for using via the console
     @@std_db = RelaxDB::Database.new("localhost", 5984, "scratch")
-    
   end
   
+  # Yet another convenience - should probably be consolidated with others
+  # Very useful for playing with views and query params from irb
+  def self.get(uri)
+    resp = RelaxDB::Database.std_db.get(uri)
+    pp(JSON.parse(resp.body))
+  end
+    
 end

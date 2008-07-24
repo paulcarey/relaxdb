@@ -324,6 +324,7 @@ describe RelaxDB do
       posts[1].content.should == "a"
     end
     
+    # Delete - dates should be stored as lexicographical strings
     it "when a sort attribute ends in _at it should be treated as a date" do
       t = Time.new
       Post.new(:viewed_at => t.strftime("%Y-%m-%d %H:%M:%S"), :content => "first").save
@@ -331,6 +332,32 @@ describe RelaxDB do
       posts = Post.all(:sort_by => :viewed_at, :order => :desc)
       posts[0].content.should == "second"
       posts[1].content.should == "first"
+    end
+    
+    it "result should be retrievable by exact criteria" do
+      # http://localhost:5984/relaxdb_spec_db/_view/Post/all?key=\"cleantech\"
+      # Criteria is that key contains the subject 
+      Post.new(:subject => "cleantech").save
+      Post.new(:subject => "cleantech").save
+      Post.new(:subject => "bigpharma").save
+      Post.all(:subject => "cleantech").size.should == 2
+    end
+    
+    it "result should be retrievable by relative criteria" do
+      # RelaxDB.get("_view/Rating/all?startkey=125")
+      # Again, needs to be keyed by shards
+      Rating.new(:shards => 101).save
+      Rating.new(:shards => 150).save
+      Rating.all(:shards => "lt 125").size.should == 1
+    end
+    
+    it "result should be retrievable by combined criteria - AND equivalent" do
+      # RelaxDB.get("_view/Player/all?startkey=[\"paul\",0]&endkey=[\"paul\",50]")
+      # Where key is [name, age]
+      Player.new(:name => "paul", :age => 28).save
+      Player.new(:name => "paul", :age => 72).save
+      Player.new(:name => "atlas").save
+      Player.all(:name => "paul", :age => "lt 50").size.should == 1
     end
     
   end
