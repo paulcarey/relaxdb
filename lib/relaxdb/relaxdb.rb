@@ -173,29 +173,43 @@ module RelaxDB
       self.class.belongs_to_rels
     end
     
-    def self.all(opts={})
+    def self.all
       database = RelaxDB::Database.std_db
-      order = opts[:order]
-      if order.to_s[/desc/]
-        order = "descending=true"
-      else
-        order = ""
-      end  
         
-      view_path = "_view/#{self}/all?#{order}"
+      view_path = "_view/#{self}/all"
       begin
         resp = database.get(view_path)
       rescue => e
-        DesignDocument.get(self).add_all_view(opts).save
+        DesignDocument.get(self).add_all_view.save
         resp = database.get(view_path)
       end
       
+      objects_from_view_response(resp.body)
+    end
+    
+    def self.all_by(*atts)
+      database = RelaxDB::Database.std_db      
+
+      q = Query.new(self.name, *atts)
+      yield q if block_given?
+      
+      begin
+        resp = database.get(q.view_path)
+      rescue => e
+        DesignDocument.get(self).add_view_to_data(q.view_name, q.map_function).save
+        resp = database.get(q.view_path)
+      end
+      
+      objects_from_view_response(resp.body)      
+    end
+    
+    def self.objects_from_view_response(resp_body)
       @objects = []
-      data = JSON.parse(resp.body)["rows"]
+      data = JSON.parse(resp_body)["rows"]
       data.each do |row|
         @objects << RelaxDB.create_from_hash(row["value"])
       end
-      @objects
+      @objects      
     end
 
     # TODO: Destroy should presumably destroy all children

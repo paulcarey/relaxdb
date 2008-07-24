@@ -310,54 +310,81 @@ describe RelaxDB do
     it "Document.all should sort ascending by default" do
       Post.new(:content => "a").save
       Post.new(:content => "b").save
-      # posts = Post.all(:sort_by => :created_at, :order => :desc)
-      posts = Post.all(:sort_by => :content)
+      posts = Post.all_by(:content)
       posts[0].content.should == "a"
       posts[1].content.should == "b"
     end
 
-    it "Document.all should sort asc when specified" do
+    it "Document.all should sort desc when specified" do
       Post.new(:content => "a").save
       Post.new(:content => "b").save
-      posts = Post.all(:sort_by => :content, :order => :desc)
+      posts = Post.all_by(:content) { |q| q.desc = true }
       posts[0].content.should == "b"
       posts[1].content.should == "a"
     end
     
-    # Delete - dates should be stored as lexicographical strings
-    it "when a sort attribute ends in _at it should be treated as a date" do
+    it "dates attributes may be sorted by specifying them lexicographically" do
       t = Time.new
       Post.new(:viewed_at => t.strftime("%Y-%m-%d %H:%M:%S"), :content => "first").save
       Post.new(:viewed_at => (t+1).strftime("%Y-%m-%d %H:%M:%S"), :content => "second").save
-      posts = Post.all(:sort_by => :viewed_at, :order => :desc)
+      posts = Post.all_by(:viewed_at) { |q| q.desc = true }
       posts[0].content.should == "second"
       posts[1].content.should == "first"
     end
     
     it "result should be retrievable by exact criteria" do
-      # http://localhost:5984/relaxdb_spec_db/_view/Post/all?key=\"cleantech\"
-      # Criteria is that key contains the subject 
       Post.new(:subject => "cleantech").save
       Post.new(:subject => "cleantech").save
       Post.new(:subject => "bigpharma").save
-      Post.all(:subject => "cleantech").size.should == 2
+      Post.all_by(:subject) { |q| q.key = "cleantech" }.size.should == 2
     end
     
     it "result should be retrievable by relative criteria" do
-      # RelaxDB.get("_view/Rating/all?startkey=125")
-      # Again, needs to be keyed by shards
       Rating.new(:shards => 101).save
       Rating.new(:shards => 150).save
-      Rating.all(:shards => "lt 125").size.should == 1
+      Rating.all_by(:shards) { |q| q.endkey = 125 }.size.should == 1
     end
     
-    it "result should be retrievable by combined criteria - AND equivalent" do
+    it "result should be retrievable by combined criteria" do
       # RelaxDB.get("_view/Player/all?startkey=[\"paul\",0]&endkey=[\"paul\",50]")
       # Where key is [name, age]
       Player.new(:name => "paul", :age => 28).save
       Player.new(:name => "paul", :age => 72).save
-      Player.new(:name => "atlas").save
-      Player.all(:name => "paul", :age => "lt 50").size.should == 1
+      Player.new(:name => "atlas", :age => 999).save
+      Player.all_by(:name, :age) { |q| q.startkey = ["paul",0 ]; q.endkey = ["paul", 50] }.size.should == 1
+    end
+    
+  end
+
+  describe "query api" do
+
+    it "view name should match a single key attribute" do
+      q = Query.new("", :foo)
+      q.view_name.should == "all_by_foo"
+    end
+    
+    it "view name should match key attributes" do
+      q = Query.new("", :foo, :bar)
+      q.view_name.should == "all_by_foo_and_bar"
+    end
+    
+    it "view_path with params should be correct" do
+      q = Query.new("Zenith", :mount)
+      q.view_path.should == "_view/Zenith/all_by_mount"
+    end
+    
+    it "view_path should contain JSON encoded key if the key has been set" do
+      q = Query.new("Zenith", :mount)
+      q.key = "olympus"
+      q.view_path.should == "_view/Zenith/all_by_mount?key=\"olympus\""
+    end
+    
+    it "view_path should represent startkey, endkey and count correctly" do
+      q = Query.new("Zenith", :name, :height)
+      q.startkey = ["olympus"]
+      q.endkey = ["vesuvius", 3600]
+      q.count = 100
+      q.view_path.should == "_view/Zenith/all_by_name_and_height?startkey=[\"olympus\"]&endkey=[\"vesuvius\",3600]&count=100"
     end
     
   end

@@ -15,6 +15,7 @@ lib/relaxdb/has_one_proxy.rb
 lib/relaxdb/belongs_to_proxy.rb
 lib/relaxdb/uuid_generator.rb
 lib/relaxdb/views.rb
+lib/relaxdb/query.rb
 script/console
 script/destroy
 script/generate

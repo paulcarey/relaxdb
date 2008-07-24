@@ -17,17 +17,14 @@ class ViewCreator
     map_function.sub("${relationship_to_client}", relationship_to_client.to_s)
   end
   
-  def all_view(target_class, opts)
-    sort_key = opts[:sort_by] ? "doc.#{opts[:sort_by]}" : "null" 
-    
+  def all_view(target_class)
     @map_template = <<-QUERY
     function(doc) {
       if(doc.class == "${target_class}")
-        emit(${sort_key}, doc);
+        emit(null, doc);
     }
     QUERY
     @map_template.sub!("${target_class}", target_class.to_s)
-    @map_template.sub!("${sort_key}", sort_key)
   end
     
 end
@@ -48,8 +45,8 @@ class DesignDocument
     add_view_to_data(view_name, map_function)
   end
   
-  def add_all_view(opts)
-    map_function = ViewCreator.new.all_view(@client_class, opts)
+  def add_all_view
+    map_function = ViewCreator.new.all_view(@client_class)
     add_view_to_data("all", map_function)
   end
   
