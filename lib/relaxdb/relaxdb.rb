@@ -41,12 +41,13 @@ module RelaxDB
     def set_attributes(data)
       data.each do |key, val|
         # Only set instance variables on creation - object references are resolved on demand
+
+        # If the variable name ends in _at try to convert it to a Time
+        if key =~ /_at$/
+            val = Time.local(*ParseDate.parsedate(val)) rescue val
+        end
+        
         instance_variable_set("@#{key}".to_sym, val)
-      end
-      
-      if instance_variable_defined? :@created_at 
-        time = ParseDate.parsedate(@created_at)
-        @created_at = Time.local(*time)
       end
     end  
     
@@ -90,15 +91,18 @@ module RelaxDB
     end
     
     def save
-      if methods.include? "created_at"
-        now = Time.now.strftime("%Y-%m-%d %H:%M:%S")
-        instance_variable_set(:@created_at, now) if _rev.nil?
-      end
-      
+      set_created_at_if_new
+
       resp = RelaxDB::Database.std_db.put("#{_id}", to_json)
       self._rev = JSON.parse(resp.body)["rev"]
       self
     end  
+    
+    def set_created_at_if_new
+      if methods.include? "created_at" and _rev.nil?
+        instance_variable_set(:@created_at, Time.now)
+      end
+    end
     
     # has_many methods
 

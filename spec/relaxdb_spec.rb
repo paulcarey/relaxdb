@@ -56,13 +56,26 @@ describe RelaxDB do
     end
     
     it "created_at attribute is set automatically to creation date" do
-      # Would be nice to test that it isn't updated on every save as that could constitute an obvious programmer error
-      # But... I hate introducing explicit latency into tests
       now = Time.now
       p = Post.new.save
       created_at = RelaxDB.load(p._id).created_at
       now.should be_close(created_at, 1)
     end
+    
+    it "created_at is not set on update" do
+      back_then = Time.now - 100
+      p = Post.new(:created_at => back_then, :_rev => "")
+      p.set_created_at_if_new
+      p.created_at.should be_close(back_then, 1)
+    end
+    
+    it "attributes that end in _at are converted to dates on object initialisation" do
+      now = Time.now
+      p = Post.new(:viewed_at => now).save
+      p = RelaxDB.load(p._id)
+      p.viewed_at.class.should == Time
+      p.viewed_at.should be_close(now, 1)
+    end  
         
   end
   
@@ -323,7 +336,7 @@ describe RelaxDB do
       posts[1].content.should == "a"
     end
     
-    it "dates attributes may be sorted by specifying them lexicographically" do
+    it "date attributes may be sorted by specifying them lexicographically" do
       t = Time.new
       Post.new(:viewed_at => RelaxDB.time_to_s(t), :content => "first").save
       Post.new(:viewed_at => RelaxDB.time_to_s(t+1), :content => "second").save
@@ -331,7 +344,7 @@ describe RelaxDB do
       posts[0].content.should == "second"
       posts[1].content.should == "first"
     end
-    
+        
     it "result should be retrievable by exact criteria" do
       Post.new(:subject => "cleantech").save
       Post.new(:subject => "cleantech").save
