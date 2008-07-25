@@ -21,7 +21,7 @@ Look at spec/spec_models.rb to see how models are declared, and spec/relaxdb_spe
 
 == INSTALL:
 
-* Not yet available via a repository - downlaod and install via rake local_deploy
+* Not yet available via gem - git clone and install via rake local_deploy
 
 == LICENSE:
 

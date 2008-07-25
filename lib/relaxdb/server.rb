@@ -96,5 +96,9 @@ module RelaxDB
     resp = RelaxDB::Database.std_db.get(uri)
     pp(JSON.parse(resp.body))
   end
+  
+  def self.time_to_s(t)
+    t.strftime("%Y-%m-%d %H:%M:%S")
+  end
     
 end

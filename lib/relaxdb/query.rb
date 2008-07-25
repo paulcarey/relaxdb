@@ -2,7 +2,7 @@
 # View name determined by sort attributes
 # Query not necessarily a great name if the view name is always all_by... e.g. QueryAll?
 # This class performs no error checking 
-# Would be nice to have the writers return self so calls can be chained => q.startkey=(foo).endkey=(bar).count=2
+# Would be nice to have the writers return self so calls can be chained => q.startkey=(foo).endkey=(bar).count=2. Meh
 class Query
   
   attr_writer :key, :startkey, :endkey, :count, :desc 
@@ -36,11 +36,12 @@ class Query
   end
   
   def map_function
-    # To guard against non existing attributes in older documents, an OR check could be inserted
-    # in the emit, e.g. emit([doc.certain, (doc.unsure||null)], doc);
-    
+    # To guard against non existing attributes in older documents, an OR with an object literal 
+    # is inserted for each emitted key
+    # The object literal is the lowest sorting JSON category
+        
     # Create the key to be emitted from the attributes, wrapping it in [] if the key is composite
-    raw = @atts.inject("") { |m,v| m << "doc.#{v}, " }
+    raw = @atts.inject("") { |m,v| m << "(doc.#{v}||{}), " }
     refined = raw[0, raw.size-2]
     pure = @atts.size > 1 ? refined.sub(/^/, "[").sub(/$/, "]") : refined
     

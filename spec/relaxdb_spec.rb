@@ -325,8 +325,8 @@ describe RelaxDB do
     
     it "dates attributes may be sorted by specifying them lexicographically" do
       t = Time.new
-      Post.new(:viewed_at => t.strftime("%Y-%m-%d %H:%M:%S"), :content => "first").save
-      Post.new(:viewed_at => (t+1).strftime("%Y-%m-%d %H:%M:%S"), :content => "second").save
+      Post.new(:viewed_at => RelaxDB.time_to_s(t), :content => "first").save
+      Post.new(:viewed_at => RelaxDB.time_to_s(t+1), :content => "second").save
       posts = Post.all_by(:viewed_at) { |q| q.desc = true }
       posts[0].content.should == "second"
       posts[1].content.should == "first"
@@ -346,11 +346,16 @@ describe RelaxDB do
     end
     
     it "result should be retrievable by combined criteria" do
-      # RelaxDB.get("_view/Player/all?startkey=[\"paul\",0]&endkey=[\"paul\",50]")
-      # Where key is [name, age]
       Player.new(:name => "paul", :age => 28).save
       Player.new(:name => "paul", :age => 72).save
-      Player.new(:name => "atlas", :age => 999).save
+      Player.new(:name => "atlas", :age => 99).save
+      Player.all_by(:name, :age) { |q| q.startkey = ["paul",0 ]; q.endkey = ["paul", 50] }.size.should == 1
+    end
+
+    it "result should be retrievable by combined criteria where not all docs contain all attributes" do
+      Player.new(:name => "paul", :age => 28).save
+      Player.new(:name => "paul", :age => 72).save
+      Player.new(:name => "atlas").save
       Player.all_by(:name, :age) { |q| q.startkey = ["paul",0 ]; q.endkey = ["paul", 50] }.size.should == 1
     end
     

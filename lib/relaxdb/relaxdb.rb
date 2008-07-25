@@ -187,12 +187,14 @@ module RelaxDB
       objects_from_view_response(resp.body)
     end
     
+    # As method names go, I'm not too enamoured with all_by - Post.all.sort_by might be nice
     def self.all_by(*atts)
       database = RelaxDB::Database.std_db      
 
       q = Query.new(self.name, *atts)
       yield q if block_given?
       
+      puts "RelaxDB submitting query to #{q.view_path}"
       begin
         resp = database.get(q.view_path)
       rescue => e
