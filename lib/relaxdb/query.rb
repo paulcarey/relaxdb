@@ -5,6 +5,9 @@
 # Would be nice to have the writers return self so calls can be chained => q.startkey=(foo).endkey=(bar).count=2. Meh
 class Query
   
+  # Simple attr_writer might not produce the correct behaviour. For example
+  # Player.all_by(:username) { |q| q.key = params[:username] } 
+  # would return a all players if params[:username] is nil - almost certainly not wanted/expected behaviour
   attr_writer :key, :startkey, :endkey, :count, :desc 
   
   def initialize(class_name, *atts)
@@ -25,6 +28,7 @@ class Query
     uri = "_view/#{@class_name}/#{view_name}"
 
     # Scope for factoring this into a loop, but maybe it's as clear like this
+    # TODO: CGI escape all key values?
     query = ""
     query << "&key=#{@key.to_json}" if @key
     query << "&startkey=#{@startkey.to_json}" if @startkey
@@ -40,7 +44,7 @@ class Query
     # is inserted for each emitted key
     # The object literal is the lowest sorting JSON category
         
-    # Create the key to be emitted from the attributes, wrapping it in [] if the key is composite
+    # Create the key from the attributes, wrapping it in [] if the key is composite
     raw = @atts.inject("") { |m,v| m << "(doc.#{v}||{}), " }
     refined = raw[0, raw.size-2]
     pure = @atts.size > 1 ? refined.sub(/^/, "[").sub(/$/, "]") : refined

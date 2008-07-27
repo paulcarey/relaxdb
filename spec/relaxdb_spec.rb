@@ -15,6 +15,8 @@ describe RelaxDB do
     
   describe "Primitive Attributes" do
     
+    it "should throw a warning if a hash passed to the constructor contains an invalid key"
+    
     it "object can be saved and resaved" do
       p = Player.new :name => "paul"
       p.save

@@ -209,6 +209,12 @@ module RelaxDB
       objects_from_view_response(resp.body)      
     end
     
+    # Should be able to take a query object too
+    def self.view(view_name)
+      resp = RelaxDB::Database.std_db.get("_view/#{self}/#{view_name}")
+      objects_from_view_response(resp.body)
+    end
+    
     def self.objects_from_view_response(resp_body)
       @objects = []
       data = JSON.parse(resp_body)["rows"]
