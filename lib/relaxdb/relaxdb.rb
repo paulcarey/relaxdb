@@ -243,6 +243,11 @@ module RelaxDB
             
   end
   
+  def self.bulk_save(*objs)
+    database = RelaxDB::Database.std_db
+    database.post("_bulk_docs", { "docs" => objs }.to_json )
+  end
+  
   def self.load(id)
     self.load_by_id(id)
   end
