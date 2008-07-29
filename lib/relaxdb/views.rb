@@ -18,13 +18,27 @@ class ViewCreator
   end
   
   def all_view(target_class)
-    @map_template = <<-QUERY
+    map_template = <<-QUERY
     function(doc) {
       if(doc.class == "${target_class}")
         emit(null, doc);
     }
     QUERY
-    @map_template.sub!("${target_class}", target_class.to_s)
+    map_template.sub!("${target_class}", target_class.to_s)
+  end
+  
+  def has_many_through_view(target_class, peers)
+    map_template = <<-MAP_FUNC
+      function(doc) {
+        if(doc.class == "${target_class}" && doc.${peers}) {
+          var i;
+          for(i = 0; i < doc.${peers}.length; i++) {
+            emit(doc.${peers}[i], doc);
+          }
+        }
+      }
+    MAP_FUNC
+    map_template.sub!("${target_class}", target_class).gsub!("${peers}", peers)
   end
     
 end
@@ -45,6 +59,12 @@ class DesignDocument
     add_view_to_data(view_name, map_function)
   end
   
+  def add_has_many_through_view(view_name, target_class, relationship_to_client)
+    view_creator = ViewCreator.new
+    map_function = view_creator.has_many_through_view(target_class, relationship_to_client.to_s) # TODO: .to_s - ugh
+    add_view_to_data(view_name, map_function)    
+  end
+
   def add_all_view
     map_function = ViewCreator.new.all_view(@client_class)
     add_view_to_data("all", map_function)

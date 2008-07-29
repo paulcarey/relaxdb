@@ -16,7 +16,7 @@ class HasManyProxy
   def <<(obj)
     obj.instance_variable_set("@#{@relationship_to_client}".to_sym, @client)
     obj.save
-    @children << obj
+    @children << obj # TODO: should probably return self - test
   end
   
   def clear

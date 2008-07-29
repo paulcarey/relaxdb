@@ -383,6 +383,23 @@ describe RelaxDB do
     end
     
   end
+  
+  describe "bulk save" do
+    
+    it "should set the revision of each object saved" do
+      t1 = Tag.new(:name => "t1")
+      t2 = Tag.new(:name => "t2")
+      RelaxDB.bulk_save(t1, t2)
+      RelaxDB.bulk_save(t1, t2)
+    end
+    
+    it "a bulk_save of zero documents should succeed" do
+      # Simply documenting current behaviour - I don't really care too much if this fails
+      # at some point in future
+      RelaxDB.bulk_save
+    end
+    
+  end
 
   describe "query api" do
 
@@ -420,17 +437,17 @@ describe RelaxDB do
   end
   
   describe "has many through" do
-    
+        
     it "relationship should be set on both sides" do
-      p = Photo.new
-      t = Tag.new
+      p = Photo.new(:name => "photo")
+      t = Tag.new(:name => "tag")
       p.tags << t
       
       p.tags.size.should == 1
-      p.tags[0].should == t._id
+      p.tags[0].name.should == "tag"
       
       t.photos.size.should == 1
-      t.photos[0].should == p._id
+      t.photos[0].name.should == "photo"
     end
 
 
@@ -438,16 +455,43 @@ describe RelaxDB do
       p = Photo.new
       t = Tag.new
       t.photos << p
-      RelaxDB.bulk_save(p, t)
       
       p = RelaxDB.load p._id
       p.tags.size.should == 1
-      p.tags[0].should == t._id
+      p.tags[0]._id.should == t._id
 
       t = RelaxDB.load t._id
       t.photos.size.should == 1
-      t.photos[0].should == p._id
+      t.photos[0]._id.should == p._id
     end
+    
+    it "resolution should happen transparently" do
+      p = Photo.new(:name => "photo")
+      t = Tag.new(:name => "tag")
+      t.photos << p
+      
+      p = RelaxDB.load p._id
+      p.tags[0].name.should == "tag"
+    end
+
+    it "should be transparent"
+    
+    it "deletion applied to both sides" do
+      p = Photo.new
+      t = Tag.new
+      p.tags << t
+
+      p.tags.delete(t)
+      p.tags.size.should == 0
+      t.photos.size.should == 0
+    end
+
+    it "test orphans" # aka thing about the children!!!
+    
+    # Both of these are important - fundamental even to the operation of this library
+    # but I've no idea how to *easily* test them
+    it "ensure that the entire object graph isn't loaded"
+    it "should only issue a single GET"
     
     # it "user should have followers" do
     #   p = Photo.new.save

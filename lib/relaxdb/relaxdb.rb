@@ -265,8 +265,18 @@ module RelaxDB
   end
   
   def self.bulk_save(*objs)
+    docs = {}
+    objs.each { |o| docs[o._id] = o }
+    
     database = RelaxDB::Database.std_db
-    database.post("_bulk_docs", { "docs" => objs }.to_json )
+    resp = database.post("_bulk_docs", { "docs" => objs }.to_json )
+    data = JSON.parse(resp.body)
+    
+    data["new_revs"].each do |new_rev|
+      docs[ new_rev["id"] ]._rev = new_rev["rev"]
+    end
+    
+    data["ok"]
   end
   
   def self.load(id)
