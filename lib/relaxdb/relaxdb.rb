@@ -20,8 +20,8 @@ module RelaxDB
     end
 
     def self.properties
-      # Don't force clients to check that it's instantiated
-      @properties ||= []
+      # Ensure that classes that don't define properties still function as CouchDB objects
+      @properties ||= [:_id, :_rev]
     end
 
     def properties
@@ -55,7 +55,7 @@ module RelaxDB
       s = "#<#{self.class}:#{self.object_id}"
       properties.each do |prop|
         prop_val = instance_variable_get("@#{prop}".to_sym)
-        s << ", #{prop}: #{prop_val}" if prop_val
+        s << ", #{prop}: #{prop_val.inspect}" if prop_val
       end
       belongs_to_rels.each do |relationship|
         id = instance_variable_get("@#{relationship}_id".to_sym)
@@ -72,7 +72,7 @@ module RelaxDB
     def to_json
       data = {}
       # Order is important - this codifies the relative importance of a relationship to its _id surrogate
-      # TODO: Revise - loading a parent just so the child can be saved could be considered donkey coding
+      # TODO: Revise - loading a parent just so the child can be saved is as bright as muck
       belongs_to_rels.each do |relationship|
         parent = send(relationship)
         if parent
@@ -114,9 +114,29 @@ module RelaxDB
       proxy
     end
    
-    def self.has_many(relationship, opts=nil)
-      define_method(relationship) do
-        has_many_proxy(relationship, opts)
+   def has_many_through_proxy(rel_name, opts=nil)
+     array_sym = "@#{rel_name}".to_sym
+     instance_variable_set(array_sym, []) unless instance_variable_defined? array_sym
+     
+     proxy_sym = "@proxy_#{rel_name}".to_sym
+     proxy = instance_variable_get(proxy_sym)
+     proxy ||= HasManyThroughProxy.new(self, rel_name, opts)
+     instance_variable_set(proxy_sym, proxy)
+     proxy
+   end
+   
+    def self.has_many(relationship, opts={})
+      if opts[:through]
+        # Treat the representation as a standard property 
+        properties << relationship
+        
+        define_method(relationship) do
+          has_many_through_proxy(relationship, opts)
+        end
+      else      
+        define_method(relationship) do
+          has_many_proxy(relationship, opts)
+        end
       end
       
       define_method("#{relationship}=") do
@@ -235,6 +255,7 @@ module RelaxDB
 
     # TODO: Meh! Use bulk update to do this efficiently
     # Leaves the corresponding DesignDoc for this class intact. Should it? probably...
+    # Will someone please think of the children???
     def self.destroy_all!
       self.all.each do |o| 
         o.destroy!

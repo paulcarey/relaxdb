@@ -17,10 +17,18 @@ describe RelaxDB do
     
     it "should throw a warning if a hash passed to the constructor contains an invalid key"
     
+    it "should throw warnings if a class defines methods like has_many, properties etc. perhaps also if it redfines an existing method. maybe not. have to assume some intelligence somewhere."
+        
     it "object can be saved and resaved" do
       p = Player.new :name => "paul"
       p.save
       p.save
+    end
+
+    it "should be a proper CouchDB document even it it specifies no properties" do
+      d = Dullard.new
+      d.save
+      d.save
     end
     
     it "loaded object contains the attributes and values it was saved with" do
@@ -340,8 +348,8 @@ describe RelaxDB do
     
     it "date attributes may be sorted by specifying them lexicographically" do
       t = Time.new
-      Post.new(:viewed_at => RelaxDB.time_to_s(t), :content => "first").save
-      Post.new(:viewed_at => RelaxDB.time_to_s(t+1), :content => "second").save
+      Post.new(:viewed_at => t, :content => "first").save
+      Post.new(:viewed_at => t+1, :content => "second").save
       posts = Post.all_by(:viewed_at) { |q| q.desc = true }
       posts[0].content.should == "second"
       posts[1].content.should == "first"
@@ -406,6 +414,49 @@ describe RelaxDB do
       q.count = 100
       q.view_path.should == "_view/Zenith/all_by_name_and_height?startkey=[\"olympus\"]&endkey=[\"vesuvius\",3600]&count=100"
     end
+    
+    it "if key set to nil - it should work as nil - i.e. be used and not return anything"
+    
+  end
+  
+  describe "has many through" do
+    
+    it "relationship should be set on both sides" do
+      p = Photo.new
+      t = Tag.new
+      p.tags << t
+      
+      p.tags.size.should == 1
+      p.tags[0].should == t._id
+      
+      t.photos.size.should == 1
+      t.photos[0].should == p._id
+    end
+
+
+    it "relationship preserved when saved and loaded" do
+      p = Photo.new
+      t = Tag.new
+      t.photos << p
+      RelaxDB.bulk_save(p, t)
+      
+      p = RelaxDB.load p._id
+      p.tags.size.should == 1
+      p.tags[0].should == t._id
+
+      t = RelaxDB.load t._id
+      t.photos.size.should == 1
+      t.photos[0].should == p._id
+    end
+    
+    # it "user should have followers" do
+    #   p = Photo.new.save
+    #   t = Tag.new.save
+    #   p.tags << t
+    #   p = RelaxDB.load p._id
+    #   p.tags.size.should == 1
+    #   p.tags[0].id.should == t._id
+    # end
     
   end
       

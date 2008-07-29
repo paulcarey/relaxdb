@@ -50,11 +50,13 @@ module RelaxDB
   # Neither database name nor resource may start with a / character
   class Database
             
-    def initialize(host, port, db_name)
+    def initialize(host, port, db_name, log_dev=Tempfile.new('couchdb.log'), log_level=Logger::INFO)
       @host = host
       @port = port
       @db_name = db_name
       @server = RelaxDB::Server.new(host, port)
+      @logger = Logger.new(log_dev)
+      @logger.level = log_level
     end
     
     def delete(uri=nil)
@@ -66,6 +68,7 @@ module RelaxDB
     end
     
     def put(uri=nil, json=nil)
+      @logger.info("PUT /#{@db_name}/#{uri} #{json}")
       @server.put("/#{@db_name}/#{uri}", json)
     end
     
@@ -73,7 +76,7 @@ module RelaxDB
       @server.post("/#{@db_name}/#{uri}", json)
     end
     
-    # Consider replacing with cattr_accessor if offered by web app framework of choice
+    # Consider replacing with cattr_accessor via extlib once stable
     def self.std_db
       @@std_db
     end
@@ -82,12 +85,16 @@ module RelaxDB
       @@std_db = db
     end
     
+    # Not convinced about setting log levels here - alternatives probably required - wait and see
     def self.set_std_db(config)
-      @@std_db = RelaxDB::Database.new(config[:host], config[:port], config[:db])  
+      @@std_db = RelaxDB::Database.new(config[:host], config[:port], config[:db], config[:log_dev], config[:log_level])  
     end
 
-    # Set to scratch as a convenience for using via the console
-    @@std_db = RelaxDB::Database.new("localhost", 5984, "scratch")
+  end
+  
+  def self.use_scratch
+    RelaxDB::Database.set_std_db(:host => "localhost", :port => 5984, :db => "scratch", 
+      :log_dev => STDOUT, :log_level => Logger::INFO) 
   end
   
   # Yet another convenience - should probably be consolidated with others
@@ -96,9 +103,5 @@ module RelaxDB
     resp = RelaxDB::Database.std_db.get(uri)
     pp(JSON.parse(resp.body))
   end
-  
-  def self.time_to_s(t)
-    t.strftime("%Y-%m-%d %H:%M:%S")
-  end
-    
+      
 end

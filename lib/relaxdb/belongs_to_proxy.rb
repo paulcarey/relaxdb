@@ -20,7 +20,6 @@ class BelongsToProxy
     id = @client.instance_variable_get("@#{@relationship}_id")
     # target may already be loaded => save semantics are not perfect
     @target = RelaxDB.load_by_id(id) if id
-    @target
   end
   
   # Not convinced by the semantics of this method. Revise.

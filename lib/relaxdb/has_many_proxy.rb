@@ -5,7 +5,7 @@ class HasManyProxy
   def initialize(client, relationship, opts)
     @client = client 
     @relationship = relationship
-    @opts = opts # need to resolve target class here
+    @opts = opts
 
     @target_class = opts[:class] || relationship
     @relationship_to_client = opts[:known_as] || client.class.name.downcase # implicitly - as viewed by target
