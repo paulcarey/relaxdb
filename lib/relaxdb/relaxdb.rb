@@ -129,11 +129,17 @@ module RelaxDB
       if opts[:through]
         # Treat the representation as a standard property 
         properties << relationship
+        # Keep track of the relationship so peers can be disassociated on destroy
+        @has_many_through_rels ||= []
+        @has_many_through_rels << relationship
         
         define_method(relationship) do
           has_many_through_proxy(relationship, opts)
         end
       else      
+        @has_many_rels ||= []
+        @has_many_rels << relationship
+        
         define_method(relationship) do
           has_many_proxy(relationship, opts)
         end
@@ -142,6 +148,25 @@ module RelaxDB
       define_method("#{relationship}=") do
         raise "You may not currently assign to a has_many relationship - to be implemented"
       end      
+    end
+
+    def self.has_many_rels
+      # Don't force clients to check its instantiated
+      @has_many_rels ||= []
+    end
+    
+    # necessary?
+    def has_many_rels
+      self.class.has_many_rels
+    end
+    
+    def self.has_many_through_rels
+      # Don't force clients to check its instantiated
+      @has_many_through_rels ||= []
+    end
+    
+    def has_many_through_rels
+      self.class.has_many_through_rels
     end
     
     # has_one methods
@@ -154,14 +179,21 @@ module RelaxDB
       proxy
     end
     
-    def self.has_one(rel_name, opts=nil)
-      define_method(rel_name) do        
-        has_one_proxy(rel_name).target
+    def self.has_one(relationship, opts=nil)
+      @has_one_rels ||= []
+      @has_one_rels << relationship
+      
+      define_method(relationship) do        
+        has_one_proxy(relationship).target
       end
       
-      define_method("#{rel_name}=") do |new_target|
-        has_one_proxy(rel_name).target = new_target
+      define_method("#{relationship}=") do |new_target|
+        has_one_proxy(relationship).target = new_target
       end
+    end
+    
+    def self.has_one_rels
+      @has_one_rels ||= []      
     end
     
     # belongs_to methods
@@ -244,18 +276,27 @@ module RelaxDB
       @objects      
     end
 
-    # TODO: Destroy should presumably destroy all children
-    # Destroy semantics in AR are that all callbacks are invoked (as opposed to delete) 
-    # Destroy is also used by DM. To destroy all, DM uses e.g. Post.all.destroy! see below
-    # http://groups.google.com/group/datamapper/browse_thread/thread/866ead34237f0e7b
-    # Returning something other than the http response would be good too
+    # destroy! nullifies all relationships with peers and children before deleting 
+    # itself in CouchDB
+    # The nullification and deletion are not performed in a transaction
     def destroy!
+      has_many_through_rels.each do |rel|
+        send(rel).clear
+      end
+      
+      has_many_rels.each do |rel|
+        send(rel).clear
+      end
+      
+      self.class.has_one_rels.each do |rel|
+        send("#{rel}=".to_sym, nil)
+      end
+      
+      # Implicitly prevent the object from being resaved by failing to update its revision
       RelaxDB::Database.std_db.delete("#{_id}?rev=#{_rev}")
     end
 
-    # TODO: Meh! Use bulk update to do this efficiently
-    # Leaves the corresponding DesignDoc for this class intact. Should it? probably...
-    # Will someone please think of the children???
+    # Leaves the corresponding DesignDoc for this class intact. Should it? No it shouldn't!
     def self.destroy_all!
       self.all.each do |o| 
         o.destroy!

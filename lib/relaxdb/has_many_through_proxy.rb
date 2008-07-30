@@ -24,8 +24,34 @@ class HasManyThroughProxy
     self
   end
   
-  # TODO: Should this be called destory
-  def delete(obj, reciprocal_invocation=false)
+  def clear
+    resolve
+    @peers.each do |peer|
+      peer.send(@relationship_to_client).send(:delete_from_self, @client)
+    end
+    
+    # Resolve in the database
+    RelaxDB.bulk_save(@client, *@peers)
+    # Resolve in memory
+    peer_ids.clear
+    @peers.clear
+  end
+    
+  def delete(obj)
+    deleted = obj.send(@relationship_to_client).send(:delete_from_self, @client)
+    if deleted
+      delete_from_self(obj)
+      RelaxDB.bulk_save(@client, obj)
+    end
+    deleted
+  end
+  
+  def delete_from_self(obj)
+    @peers.delete(obj) if @peers
+    peer_ids.delete(obj._id)
+  end
+    
+  def delete_old(obj, reciprocal_invocation=false)
     @peers.delete(obj) if @peers
     deleted = peer_ids.delete(obj._id)
     
@@ -38,14 +64,14 @@ class HasManyThroughProxy
     end
     
     deleted ? obj : nil
-  end
-  
-  def size
-    peer_ids.size
-  end
-  
+  end  
+    
   def empty?
     peer_ids.empty?
+  end
+
+  def size
+    peer_ids.size
   end
   
   def [](*args)
@@ -59,7 +85,8 @@ class HasManyThroughProxy
   end
   
   # Resolves the actual ids into real objects via a single GET to CouchDB
-  # Called internally by each, and may also be called by clients
+  # Called internally by each, and may also be called by clients. Bad idea, invariant between 
+  # peers and peer_ids could easily be violated
   def resolve    
     db = RelaxDB::Database.std_db
     view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
@@ -87,5 +114,5 @@ class HasManyThroughProxy
   def peer_ids
     @client.instance_variable_get("@#{@relationship}".to_sym)
   end
-  
+    
 end

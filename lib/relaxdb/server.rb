@@ -73,6 +73,7 @@ module RelaxDB
     end
     
     def post(uri=nil, json=nil)
+      @logger.info("POST /#{@db_name}/#{uri} #{json}")
       @server.post("/#{@db_name}/#{uri}", json)
     end
     

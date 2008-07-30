@@ -86,6 +86,20 @@ describe RelaxDB do
       p.viewed_at.class.should == Time
       p.viewed_at.should be_close(now, 1)
     end  
+    
+    it "a destroyed object cannot be resaved" do
+      p = Photo.new.save
+      p.destroy!
+      lambda { p.save }.should raise_error
+    end
+    
+    it "invoking destroy on an unsaved object results in undefined behaviour" do
+      p = Photo.new
+      p.destroy!
+      
+      d = Dullard.new
+      lambda { d.destroy! }.should raise_error
+    end
         
   end
   
@@ -134,6 +148,24 @@ describe RelaxDB do
         p.rating = r
         p.rating = nil
         r.player.should be_nil
+        RelaxDB.load(r._id).player.should be_nil
+      end
+      
+      it "assigning to a has_one relationship will not nullify any unknown in memory object" do
+        p = Player.new.save
+        r = Rating.new.save
+        p.rating = r
+        r_copy = RelaxDB.load(r._id)
+        p.rating = nil
+        r_copy.player.should_not be_nil
+      end
+      
+      it "destroy! should nullify a has_one relationship" do
+        p = Player.new.save
+        r = Rating.new
+        p.rating = r
+        p.destroy!
+        
         RelaxDB.load(r._id).player.should be_nil
       end
       
@@ -298,6 +330,15 @@ describe RelaxDB do
   # Test database API too
   
   describe "destroy" do
+    
+    it "should nullify its child relationships in has_many" do
+      p = Player.new.save
+      p.items << Item.new
+      p.items << Item.new
+      
+      p.destroy!
+      Item.all_by(:player_id) { |q| q.key = p._id }.should be_empty
+    end
     
     it "a destroyed document should not be retrievable" do
       p = Player.new.save
@@ -473,8 +514,6 @@ describe RelaxDB do
       p = RelaxDB.load p._id
       p.tags[0].name.should == "tag"
     end
-
-    it "should be transparent"
     
     it "deletion applied to both sides" do
       p = Photo.new
@@ -485,8 +524,25 @@ describe RelaxDB do
       p.tags.size.should == 0
       t.photos.size.should == 0
     end
+    
+    it "a destroyed object does not remove its membership from its peers in memory" do
+      # Documentating behaviour, not stating that this behaviour is desired
+      p = Photo.new
+      t = Tag.new
+      p.tags << t
+      
+      p.destroy!
+      t.photos.size.should == 1
+    end
 
-    it "test orphans" # aka thing about the children!!!
+    it "an deleted object should remove its membership from its peers in CouchDB" do
+      p = Photo.new
+      t = Tag.new
+      p.tags << t
+      
+      p.destroy!
+      RelaxDB.load(t._id).photos.should be_empty
+    end
     
     # Both of these are important - fundamental even to the operation of this library
     # but I've no idea how to *easily* test them
