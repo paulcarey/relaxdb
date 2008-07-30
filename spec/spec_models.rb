@@ -52,6 +52,8 @@ class Photo < RelaxDB::Document
   property :name
   references_many :tags, :class => "Tag", :known_as => :photos
   
+  has_many :taggings, :class => "Tagging"
+
 end
 
 class Tag < RelaxDB::Document
@@ -59,5 +61,13 @@ class Tag < RelaxDB::Document
   property :name
   references_many :photos, :class => "Photo", :known_as => :tags
   
+  has_many :taggings, :class => "Tagging"
+  
 end
 
+class Tagging < RelaxDB::Document
+
+  belongs_to :photo
+  belongs_to :tag
+
+end

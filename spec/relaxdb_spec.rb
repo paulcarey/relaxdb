@@ -477,7 +477,7 @@ describe RelaxDB do
     
   end
   
-  describe "has many through" do
+  describe "references many" do
         
     it "relationship should be set on both sides" do
       p = Photo.new(:name => "photo")
@@ -548,15 +548,49 @@ describe RelaxDB do
     # but I've no idea how to *easily* test them
     it "ensure that the entire object graph isn't loaded"
     it "should only issue a single GET"
+        
+  end
+  
+  describe "a poor man's has many through" do
     
-    # it "user should have followers" do
-    #   p = Photo.new.save
-    #   t = Tag.new.save
-    #   p.tags << t
-    #   p = RelaxDB.load p._id
-    #   p.tags.size.should == 1
-    #   p.tags[0].id.should == t._id
+    # The join relationship I proprose for RelaxDB is like an inverted version of ARs has_many :through
+    # In RelaxDB the has_many would refer to the join, and the through to the target of the join
+    # This is done so that data can be retrieved with as few GETs as possible - just 3 for a photo, all its tags
+    # and all the tag metadata (taggings).
+    #
+    # For example
+    #
+    # class Photo < RelaxDB::Document
+    #   property :name
+    #   references_many :tags, :class => "Tag", :known_as => :photos
+    #   has_many :taggings, :through => :tags
     # end
+    # class Tag < RelaxDB::Document
+    #   property :name
+    #   references_many :photos, :class => "Photo", :known_as => :tags
+    #   has_many :taggings, :through => :photos
+    # end
+    #
+    # This could be used like the following
+    # 
+    # mg = Photo.new(:name => "migration").save
+    # wb = Tag.new(:name => "wildebeest").save
+    # tagging = mg.tags << wb 
+    # tagging.foo = bar
+    # 
+    # However, this is a lot of work and code complexity for relatively little gain so I propose creating the join
+    # relationship manually and reevaluating the benefit of automating the tagging later
+    
+    it "join metadata should be available" do
+      mg = Photo.new(:name => "migration").save
+      wb = Tag.new(:name => "wildebeest").save
+      
+      t = Tagging.new(:photo => mg, :tag => wb).save
+      
+      mg.taggings[0].tag.name.should == "wildebeest"      
+    end
+    
+    it "should retrieve all data with just 3 GETs - keep your eye on the log sunshine :)"
     
   end
       
