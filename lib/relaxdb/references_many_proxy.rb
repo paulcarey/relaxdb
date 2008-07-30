@@ -1,5 +1,5 @@
 # Methods must take care not to accidentally retrieve the entire object graph
-class HasManyThroughProxy
+class ReferencesManyProxy
   
   def initialize(client, relationship, opts)
     @client = client

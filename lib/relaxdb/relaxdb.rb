@@ -114,39 +114,43 @@ module RelaxDB
       proxy
     end
    
-   def has_many_through_proxy(rel_name, opts=nil)
+   def references_many_proxy(rel_name, opts=nil)
      array_sym = "@#{rel_name}".to_sym
      instance_variable_set(array_sym, []) unless instance_variable_defined? array_sym
      
      proxy_sym = "@proxy_#{rel_name}".to_sym
      proxy = instance_variable_get(proxy_sym)
-     proxy ||= HasManyThroughProxy.new(self, rel_name, opts)
+     proxy ||= ReferencesManyProxy.new(self, rel_name, opts)
      instance_variable_set(proxy_sym, proxy)
      proxy
    end
    
+   def self.references_many(relationship, opts={})
+     # Treat the representation as a standard property 
+     properties << relationship
+     # Keep track of the relationship so peers can be disassociated on destroy
+     @references_many_rels ||= []
+     @references_many_rels << relationship
+     
+     define_method(relationship) do
+       references_many_proxy(relationship, opts)
+     end
+    
+     define_method("#{relationship}=") do
+       raise "You may not currently assign to a has_many relationship - may be implemented"
+     end           
+   end
+   
     def self.has_many(relationship, opts={})
-      if opts[:through]
-        # Treat the representation as a standard property 
-        properties << relationship
-        # Keep track of the relationship so peers can be disassociated on destroy
-        @has_many_through_rels ||= []
-        @has_many_through_rels << relationship
-        
-        define_method(relationship) do
-          has_many_through_proxy(relationship, opts)
-        end
-      else      
-        @has_many_rels ||= []
-        @has_many_rels << relationship
-        
-        define_method(relationship) do
-          has_many_proxy(relationship, opts)
-        end
+      @has_many_rels ||= []
+      @has_many_rels << relationship
+      
+      define_method(relationship) do
+        has_many_proxy(relationship, opts)
       end
       
       define_method("#{relationship}=") do
-        raise "You may not currently assign to a has_many relationship - to be implemented"
+        raise "You may not currently assign to a has_many relationship - may be implemented"
       end      
     end
 
@@ -154,21 +158,12 @@ module RelaxDB
       # Don't force clients to check its instantiated
       @has_many_rels ||= []
     end
-    
-    # necessary?
-    def has_many_rels
-      self.class.has_many_rels
-    end
-    
-    def self.has_many_through_rels
+        
+    def self.references_many_rels
       # Don't force clients to check its instantiated
-      @has_many_through_rels ||= []
+      @references_many_rels ||= []
     end
-    
-    def has_many_through_rels
-      self.class.has_many_through_rels
-    end
-    
+        
     # has_one methods
 
     def has_one_proxy(rel_name)
@@ -280,11 +275,11 @@ module RelaxDB
     # itself in CouchDB
     # The nullification and deletion are not performed in a transaction
     def destroy!
-      has_many_through_rels.each do |rel|
+      self.class.references_many_rels.each do |rel|
         send(rel).clear
       end
       
-      has_many_rels.each do |rel|
+      self.class.has_many_rels.each do |rel|
         send(rel).clear
       end
       

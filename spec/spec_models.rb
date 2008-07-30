@@ -50,16 +50,14 @@ end
 class Photo < RelaxDB::Document
   
   property :name
-  has_many :tags, :class => "Tag", :through => :itself, :known_as => :photos
+  references_many :tags, :class => "Tag", :known_as => :photos
   
 end
 
 class Tag < RelaxDB::Document
   
   property :name
-  has_many :photos, :class => "Photo", :through => :itself, :known_as => :tags
+  references_many :photos, :class => "Photo", :known_as => :tags
   
 end
-
-# Later, HDR Photo and HDR Tag
 

@@ -11,6 +11,7 @@ lib/relaxdb/version.rb
 lib/relaxdb/server.rb
 lib/relaxdb/relaxdb.rb
 lib/relaxdb/has_many_proxy.rb
+lib/relaxdb/references_many_proxy.rb
 lib/relaxdb/has_one_proxy.rb
 lib/relaxdb/belongs_to_proxy.rb
 lib/relaxdb/uuid_generator.rb

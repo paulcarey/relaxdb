@@ -13,7 +13,7 @@ $:.unshift(File.dirname(__FILE__)) unless
 require 'relaxdb/server'
 require 'relaxdb/relaxdb'
 require 'relaxdb/has_many_proxy'
-require 'relaxdb/has_many_through_proxy'
+require 'relaxdb/references_many_proxy'
 require 'relaxdb/has_one_proxy'
 require 'relaxdb/belongs_to_proxy'
 require 'relaxdb/uuid_generator'
