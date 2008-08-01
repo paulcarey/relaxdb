@@ -6,8 +6,10 @@ module RelaxDB
     def initialize(client, relationship)
       @client = client
       @relationship = relationship
-      @target = nil
+      @target_class = @relationship.to_s.capitalize      
       @relationship_as_viewed_by_target = client.class.to_s.downcase
+      
+      @target = nil
     end
     
     def target
@@ -16,7 +18,7 @@ module RelaxDB
       @target = @client.instance_variable_get("@#{@relationship}")
       return @target if @target
     
-      @target = load_target_from_database
+      @target = load_target
     end
   
     # All database changes performed by this method would ideally be done in a transaction
@@ -38,19 +40,14 @@ module RelaxDB
       end
     end
   
-    def load_target_from_database
-      database = RelaxDB.db
-      view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
-      begin
-        resp = database.get(view_path)
-      rescue => e
-        DesignDocument.get(@client.class).add_view(@relationship).save
-        resp = database.get(view_path)
-      end
-      data = JSON.parse(resp.body)["rows"][0]
-      data ? RelaxDB.create_object(data["value"]) : nil
+    def load_target
+      design_doc = @client.class
+      view_name = @relationship
+      view_path = "_view/#{design_doc}/#{view_name}?key=\"#{@client._id}\""
+      map_function = ViewCreator.has_n(@target_class, @relationship_as_viewed_by_target)
+      RelaxDB.retrieve(view_path, design_doc, view_name, map_function)[0]
     end
-      
+        
   end
 
 end

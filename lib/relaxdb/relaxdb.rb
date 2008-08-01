@@ -32,7 +32,7 @@ module RelaxDB
       begin
         resp = db.get(view_path)
       rescue => e
-        DesignDocument.get(design_doc).add_view_to_data(view_name, map_function).save
+        DesignDocument.get(design_doc).add_view(view_name, map_function).save
         resp = db.get(view_path)
       end
       

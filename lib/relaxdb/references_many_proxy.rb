@@ -7,8 +7,8 @@ module RelaxDB
       @client = client
       @relationship = relationship
     
-      @target_class = opts[:class] || relationship
-      @relationship_to_client = opts[:known_as] # more completely, relationship_of_target_to_client
+      @target_class = opts[:class]
+      @relationship_to_client = opts[:known_as].to_s # more completely, relationship_of_target_to_client
     end
   
     def <<(obj, reciprocal_invocation=false)
@@ -89,19 +89,14 @@ module RelaxDB
     # Resolves the actual ids into real objects via a single GET to CouchDB
     # Called internally by each, and may also be called by clients. Bad idea, invariant between 
     # peers and peer_ids could easily be violated
-    def resolve    
-      db = RelaxDB.db
-      view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
-      begin
-        resp = db.get(view_path)
-      rescue => e
-        DesignDocument.get(@client.class).add_has_many_through_view(@relationship, @target_class, @relationship_to_client).save
-        resp = db.get(view_path)
-      end
-    
-      @peers = RelaxDB.create_from_view(resp.body)
+    def resolve
+      design_doc = @client.class
+      view_name = @relationship
+      view_path = "_view/#{design_doc}/#{view_name}?key=\"#{@client._id}\""
+      map_function = ViewCreator.has_many_through(@target_class, @relationship_to_client)
+      @peers = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)
     end
-  
+    
     def inspect
       @client.instance_variable_get("@#{@relationship}".to_sym).inspect
     end
