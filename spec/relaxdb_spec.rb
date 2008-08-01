@@ -34,7 +34,7 @@ describe RelaxDB do
     it "loaded object contains the attributes and values it was saved with" do
       p = Player.new :name => "paul", :age => 1812
       p.save
-      p = RelaxDB.load_by_id(p._id)
+      p = RelaxDB.load(p._id)
       p.name.should == "paul"
       p.age.should == 1812
     end
@@ -42,7 +42,7 @@ describe RelaxDB do
     it "loaded object can be resaved" do
       p = Player.new :name => "paul", :shards => 101
       p.save
-      p = RelaxDB.load_by_id(p._id)
+      p = RelaxDB.load(p._id)
       p.save
     end    
 
@@ -115,7 +115,7 @@ describe RelaxDB do
         p = Player.new.save
         id = p._id
         r = Rating.new(:player => p).save
-        p = RelaxDB.load_by_id(id)
+        p = RelaxDB.load(id)
         p.rating.player._id.should == id
       end
       
@@ -187,14 +187,14 @@ describe RelaxDB do
       it "repeated invocations of a has_one relationship should return the same object" do
         p = Player.new.save
         r = Rating.new(:player => p).save
-        p = RelaxDB.load_by_id(p._id)
+        p = RelaxDB.load(p._id)
         p.rating.object_id.should == p.rating.object_id
       end
       
       it "repeated invocations of a belongs_to relationship should return the same object" do
         p = Player.new.save
         r = Rating.new(:player => p).save
-        r = RelaxDB.load_by_id(r._id)
+        r = RelaxDB.load(r._id)
         r.player.object_id.should == r.player.object_id
       end
       
@@ -220,7 +220,7 @@ describe RelaxDB do
       it "should be able to load the child and access the parent" do
         p = Player.new.save
         r = Rating.new(:player => p).save
-        r = RelaxDB.load_by_id r._id
+        r = RelaxDB.load r._id
         r.player._id.should == p._id
         
       end

@@ -37,8 +37,8 @@ module RelaxDB
       if obj
         # Revise this logic - could it be simplified?
         obj.send("#{@relationship_as_viewed_by_target}=".to_sym, nil)
-        obj.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, nil)
-        obj.instance_variable_set("@#{@relationship_as_viewed_by_target}_id".to_sym, nil)
+        # obj.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, nil)
+        # obj.instance_variable_set("@#{@relationship_as_viewed_by_target}_id".to_sym, nil)
         obj.save
       end
     end

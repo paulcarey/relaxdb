@@ -18,10 +18,6 @@ module RelaxDB
     end
   
     def load(id)
-      load_by_id(id)
-    end
-    
-    def load_by_id(id)
       database = RelaxDB.db
       resp = database.get("#{id}")
       data = JSON.parse(resp.body)
