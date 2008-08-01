@@ -10,14 +10,13 @@ module RelaxDB
       @opts = opts
 
       @target_class = opts[:class] 
-      # Implicitly - relationship to client as viewed by target
-      @relationship_to_client = (opts[:known_as] || client.class.name.downcase).to_s
+      @relationship_as_viewed_by_target = (opts[:known_as] || client.class.name.downcase).to_s
 
       @children = load_children
     end
 
     def <<(obj)
-      obj.instance_variable_set("@#{@relationship_to_client}".to_sym, @client)
+      obj.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, @client)
       obj.save
       @children << obj
     end
@@ -37,9 +36,9 @@ module RelaxDB
     def break_back_link(obj)
       if obj
         # Revise this logic - could it be simplified?
-        obj.send("#{@relationship_to_client}=".to_sym, nil)
-        obj.instance_variable_set("@#{@relationship_to_client}".to_sym, nil)
-        obj.instance_variable_set("@#{@relationship_to_client}_id".to_sym, nil)
+        obj.send("#{@relationship_as_viewed_by_target}=".to_sym, nil)
+        obj.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, nil)
+        obj.instance_variable_set("@#{@relationship_as_viewed_by_target}_id".to_sym, nil)
         obj.save
       end
     end
@@ -68,7 +67,7 @@ module RelaxDB
       view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
       design_doc = @client.class
       view_name = @relationship
-      map_function = ViewCreator.has_n(@target_class, @relationship_to_client)
+      map_function = ViewCreator.has_n(@target_class, @relationship_as_viewed_by_target)
       @children = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)
     end
   

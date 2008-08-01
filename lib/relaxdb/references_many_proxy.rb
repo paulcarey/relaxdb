@@ -8,7 +8,7 @@ module RelaxDB
       @relationship = relationship
     
       @target_class = opts[:class]
-      @relationship_to_client = opts[:known_as].to_s # more completely, relationship_of_target_to_client
+      @relationship_as_viewed_by_target = opts[:known_as].to_s # more completely, relationship_of_target_to_client
     end
   
     def <<(obj, reciprocal_invocation=false)
@@ -17,7 +17,7 @@ module RelaxDB
     
       unless reciprocal_invocation
         # Set the other side of the relationship, ensuring this method isn't called again
-        obj.send(@relationship_to_client).send(:<<, @client, true) 
+        obj.send(@relationship_as_viewed_by_target).send(:<<, @client, true) 
     
         # Bulk save to ensure relationship is persisted on both sides
         RelaxDB.bulk_save(@client, obj)
@@ -29,7 +29,7 @@ module RelaxDB
     def clear
       resolve
       @peers.each do |peer|
-        peer.send(@relationship_to_client).send(:delete_from_self, @client)
+        peer.send(@relationship_as_viewed_by_target).send(:delete_from_self, @client)
       end
     
       # Resolve in the database
@@ -40,7 +40,7 @@ module RelaxDB
     end
     
     def delete(obj)
-      deleted = obj.send(@relationship_to_client).send(:delete_from_self, @client)
+      deleted = obj.send(@relationship_as_viewed_by_target).send(:delete_from_self, @client)
       if deleted
         delete_from_self(obj)
         RelaxDB.bulk_save(@client, obj)
@@ -59,7 +59,7 @@ module RelaxDB
     
       unless reciprocal_invocation
         # Delete on the other side of the relationship, ensuring this method isn't called again
-        obj.send(@relationship_to_client).send(:delete, @client, true) 
+        obj.send(@relationship_as_viewed_by_target).send(:delete, @client, true) 
 
         # Bulk save to ensure relationship is persisted on both sides
         RelaxDB.bulk_save(@client, obj)
@@ -93,7 +93,7 @@ module RelaxDB
       design_doc = @client.class
       view_name = @relationship
       view_path = "_view/#{design_doc}/#{view_name}?key=\"#{@client._id}\""
-      map_function = ViewCreator.has_many_through(@target_class, @relationship_to_client)
+      map_function = ViewCreator.has_many_through(@target_class, @relationship_as_viewed_by_target)
       @peers = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)
     end
     
