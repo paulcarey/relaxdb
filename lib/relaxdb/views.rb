@@ -1,23 +1,18 @@
 class ViewCreator
-
-  # I think Merb contains code for dealing smartly with case changing, camel case, donkey case etc.
   
-  def initialize
+  def create(target_class, relationship_to_client)
     @map_template = <<-QUERY
     function(doc) {
       if(doc.class == "${target_class}")
         emit(doc.${relationship_to_client}_id, doc);
     }
     QUERY
-  end
-  
-  def create(target_class, relationship_to_client)
     target_class = target_class.to_s.capitalize
     map_function = @map_template.sub("${target_class}", target_class)
     map_function.sub("${relationship_to_client}", relationship_to_client.to_s)
   end
   
-  def all_view(target_class)
+  def self.all(target_class)
     map_template = <<-QUERY
     function(doc) {
       if(doc.class == "${target_class}")
@@ -66,7 +61,7 @@ class DesignDocument
   end
 
   def add_all_view
-    map_function = ViewCreator.new.all_view(@client_class)
+    map_function = ViewCreator.all(@client_class)
     add_view_to_data("all", map_function)
   end
   
