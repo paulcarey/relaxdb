@@ -46,7 +46,11 @@ module RelaxDB
         if key =~ /_at$/
             val = Time.local(*ParseDate.parsedate(val)) rescue val
         end
-        
+
+        if self.class.belongs_to_rels.include? key
+          send("#{key}=".to_sym, val)
+        end
+                  
         instance_variable_set("@#{key}".to_sym, val)
       end
     end  
@@ -59,28 +63,16 @@ module RelaxDB
       end
       self.class.belongs_to_rels.each do |relationship|
         id = instance_variable_get("@#{relationship}_id".to_sym)
-        if id
-          s << ", #{relationship}_id: #{id}" if id
-        else 
-          obj = instance_variable_get("@#{relationship}".to_sym)
-          s << ", #{relationship}_id: #{obj._id}" if obj
-        end
+        s << ", #{relationship}_id: #{id}" if id
       end
       s << ">"
     end
             
     def to_json
       data = {}
-      # Order is important - this codifies the relative importance of a relationship to its _id surrogate
-      # TODO: Revise - loading a parent just so the child can be saved is as bright as muck
       self.class.belongs_to_rels.each do |relationship|
-        parent = send(relationship)
-        if parent
-          data["#{relationship}_id"] = parent._id
-        else
-          id = instance_variable_get("@#{relationship}_id".to_sym)
-          data["#{relationship}_id"] = id if id
-        end
+        id = instance_variable_get("@#{relationship}_id".to_sym)
+        data["#{relationship}_id"] = id if id
       end
       properties.each do |prop|
         prop_val = instance_variable_get("@#{prop}".to_sym)

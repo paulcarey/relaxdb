@@ -29,14 +29,12 @@ module RelaxDB
       old_target = target
       if old_target
         old_target.send("#{@relationship_as_viewed_by_target}=".to_sym, nil)
-        # old_target.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, nil)
-        # old_target.instance_variable_set("@#{@relationship_as_viewed_by_target}_id".to_sym, nil)
         old_target.save
       end
     
       @target = new_target
       if not @target.nil?
-        @target.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, @client)
+        @target.send("#{@relationship_as_viewed_by_target}=".to_sym, @client)
         @target.save
       end
     end

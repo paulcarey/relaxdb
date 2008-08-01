@@ -16,7 +16,7 @@ module RelaxDB
     end
 
     def <<(obj)
-      obj.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, @client)
+      obj.send("#{@relationship_as_viewed_by_target}=".to_sym, @client)
       obj.save
       @children << obj
     end
@@ -35,10 +35,7 @@ module RelaxDB
   
     def break_back_link(obj)
       if obj
-        # Revise this logic - could it be simplified?
         obj.send("#{@relationship_as_viewed_by_target}=".to_sym, nil)
-        # obj.instance_variable_set("@#{@relationship_as_viewed_by_target}".to_sym, nil)
-        # obj.instance_variable_set("@#{@relationship_as_viewed_by_target}_id".to_sym, nil)
         obj.save
       end
     end
