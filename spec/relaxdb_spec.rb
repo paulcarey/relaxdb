@@ -253,6 +253,10 @@ describe RelaxDB do
         p.items[0].player._id.should == p._id
       end
       
+      it "creating a object with a has_many relationshps set in the constructor is right out" do
+        lambda { Player.new(:items => []) }.should raise_error
+      end
+      
       it "should resolve a saved collection on access" do
         p = Player.new.save
         p.items << Item.new
@@ -478,6 +482,10 @@ describe RelaxDB do
   end
   
   describe "references many" do
+    
+    it "creating an object with a references_many relationshps set in the constructor is right out" do
+      lambda { Photo.new(:tags => []) }.should raise_error
+    end
         
     it "relationship should be set on both sides" do
       p = Photo.new(:name => "photo")

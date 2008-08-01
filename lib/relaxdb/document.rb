@@ -47,7 +47,7 @@ module RelaxDB
             val = Time.local(*ParseDate.parsedate(val)) rescue val
         end
 
-        if self.class.belongs_to_rels.include? key
+        if self.class.all_relationships.include? key
           send("#{key}=".to_sym, val)
         end
                   
@@ -181,6 +181,10 @@ module RelaxDB
     def self.belongs_to_rels
       # Don't force clients to check that it's instantiated
       @belongs_to_rels ||= []
+    end
+    
+    def self.all_relationships
+      belongs_to_rels + has_one_rels + has_many_rels + references_many_rels
     end
         
     def self.all

@@ -13,12 +13,7 @@ module RelaxDB
     end
     
     def target
-      return @target if @target
-
-      # TODO: instance_variable_set here, non?
-      @target = @client.instance_variable_get("@#{@relationship}")
-      return @target if @target
-    
+      return @target if @target    
       @target = load_target
     end
   
