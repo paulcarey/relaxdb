@@ -52,12 +52,15 @@ module RelaxDB
     attr_accessor :get_count
     attr_reader :cache
     
-    def initialize(config, log_dev=Tempfile.new('couchdb.log'), log_level=Logger::INFO)
+    def initialize(config)
       @server = RelaxDB::Server.new(config[:host], config[:port])
       @db = config[:name]
 
+      log_dev = config[:log_dev] || Tempfile.new('couchdb.log')
+      log_level = config[:log_level] || Logger::INFO
       @logger = Logger.new(log_dev)
       @logger.level = log_level
+      
       @get_count = 0
       
       @cache = Cache.new
@@ -87,7 +90,7 @@ module RelaxDB
   end
   
   def self.configure(config)
-    @@db = CouchDB.new(config, config[:log_dev], config[:log_level])
+    @@db = CouchDB.new(config)
   end
   
   def self.db
@@ -97,7 +100,7 @@ module RelaxDB
   # Convenience methods - should potentially be in a diffent module
   
   def self.use_scratch
-    configure(:host => "localhost", :port => 5984, :db => "scratch")
+    configure(:host => "localhost", :port => 5984, :name => "scratch", :log_dev => STDOUT)
   end
   
   def self.get(uri)
