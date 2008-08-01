@@ -8,8 +8,11 @@ RelaxDB provides a simple interface to CouchDB
 
 == FEATURES/PROBLEMS:
 
-* Very immature
+* Removes impedance to persisting Ruby objects
+* Immature
 * A merb plugin is provided via merb_relaxdb (also on github)
+* Uses ruby-cache to cache everything loaded and saved - this obviates n+1 query problems, but clearly doesn't work well if multiple CouchDB instances are replicating to one another. Proposed (but untested) solution is to set cache object expiration time to match CouchDB replication perdiod. Also note that ruby-cache needs to be modified so expiration occurs based not on last access, but on insertion time.
+* Destroy results in non transactional nullification of child/peer references
 
 == SYNOPSIS:
 

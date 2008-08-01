@@ -4,13 +4,13 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB do
 
   before(:each) do
-    RelaxDB::Database.std_db = RelaxDB::Database.new("localhost", 5984, "relaxdb_spec_db")
+    RelaxDB.configure(:host => "localhost", :port => 5984, :name => "relaxdb_spec_db")
     begin
-      RelaxDB::Database.std_db.delete
+      RelaxDB.db.delete
     rescue => e
       puts e
     end
-    RelaxDB::Database.std_db.put
+    RelaxDB.db.put
   end
     
   describe "Primitive Attributes" do

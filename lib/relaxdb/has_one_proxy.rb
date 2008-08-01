@@ -37,7 +37,7 @@ class HasOneProxy
   end
   
   def load_target_from_database
-    database = RelaxDB::Database.std_db
+    database = RelaxDB.db
     view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
     begin
       resp = database.get(view_path)

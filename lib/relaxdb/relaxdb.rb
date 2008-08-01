@@ -93,7 +93,7 @@ module RelaxDB
     def save
       set_created_at_if_new
 
-      resp = RelaxDB::Database.std_db.put("#{_id}", to_json)
+      resp = RelaxDB.db.put("#{_id}", to_json)
       self._rev = JSON.parse(resp.body)["rev"]
       self
     end  
@@ -103,26 +103,15 @@ module RelaxDB
         instance_variable_set(:@created_at, Time.now)
       end
     end
-    
-    # has_many methods
-
-    def has_many_proxy(rel_name, opts=nil)
-      proxy_sym = "@proxy_#{rel_name}".to_sym
-      proxy = instance_variable_get(proxy_sym)
-      proxy ||= HasManyProxy.new(self, rel_name, opts)
-      instance_variable_set(proxy_sym, proxy)
-      proxy
-    end
-   
-   def references_many_proxy(rel_name, opts=nil)
-     array_sym = "@#{rel_name}".to_sym
-     instance_variable_set(array_sym, []) unless instance_variable_defined? array_sym
-     
-     proxy_sym = "@proxy_#{rel_name}".to_sym
+       
+   def create_or_get_proxy(klass, relationship, opts=nil)
+     proxy_sym = "@proxy_#{relationship}".to_sym
      proxy = instance_variable_get(proxy_sym)
-     proxy ||= ReferencesManyProxy.new(self, rel_name, opts)
+     unless proxy
+       proxy = opts ? klass.new(self, relationship, opts) : klass.new(self, relationship)
+     end
      instance_variable_set(proxy_sym, proxy)
-     proxy
+     proxy     
    end
    
    def self.references_many(relationship, opts={})
@@ -133,7 +122,10 @@ module RelaxDB
      @references_many_rels << relationship
      
      define_method(relationship) do
-       references_many_proxy(relationship, opts)
+       array_sym = "@#{relationship}".to_sym
+       instance_variable_set(array_sym, []) unless instance_variable_defined? array_sym
+
+       create_or_get_proxy(ReferencesManyProxy, relationship, opts)
      end
     
      define_method("#{relationship}=") do
@@ -146,7 +138,7 @@ module RelaxDB
       @has_many_rels << relationship
       
       define_method(relationship) do
-        has_many_proxy(relationship, opts)
+        create_or_get_proxy(HasManyProxy, relationship, opts)
       end
       
       define_method("#{relationship}=") do
@@ -165,25 +157,17 @@ module RelaxDB
     end
         
     # has_one methods
-
-    def has_one_proxy(rel_name)
-      proxy_sym = "@proxy_#{rel_name}".to_sym
-      proxy = instance_variable_get(proxy_sym)
-      proxy ||= HasOneProxy.new(self, rel_name)
-      instance_variable_set(proxy_sym, proxy)
-      proxy
-    end
     
-    def self.has_one(relationship, opts=nil)
+    def self.has_one(relationship)
       @has_one_rels ||= []
       @has_one_rels << relationship
       
-      define_method(relationship) do        
-        has_one_proxy(relationship).target
+      define_method(relationship) do      
+        create_or_get_proxy(HasOneProxy, relationship).target
       end
       
       define_method("#{relationship}=") do |new_target|
-        has_one_proxy(relationship).target = new_target
+        create_or_get_proxy(HasOneProxy, relationship).target = new_target
       end
     end
     
@@ -192,26 +176,17 @@ module RelaxDB
     end
     
     # belongs_to methods
-    
-    # Creates and returns the proxy for the named relationship
-    def belongs_to_proxy(rel_name)
-      proxy_sym = "@proxy_#{rel_name}".to_sym
-      proxy = instance_variable_get(proxy_sym)
-      proxy ||= BelongsToProxy.new(self, rel_name)
-      instance_variable_set(proxy_sym, proxy)
-      proxy
-    end
-    
-    def self.belongs_to(rel_name)
+        
+    def self.belongs_to(relationship)
       @belongs_to_rels ||= []
-      @belongs_to_rels << rel_name
+      @belongs_to_rels << relationship
 
-      define_method(rel_name) do
-        belongs_to_proxy(rel_name).target
+      define_method(relationship) do
+        create_or_get_proxy(BelongsToProxy, relationship).target
       end
       
-      define_method("#{rel_name}=") do |new_target|
-        belongs_to_proxy(rel_name).target = new_target
+      define_method("#{relationship}=") do |new_target|
+        create_or_get_proxy(BelongsToProxy, relationship).target = new_target
       end
     end
     
@@ -225,7 +200,7 @@ module RelaxDB
     end
     
     def self.all
-      database = RelaxDB::Database.std_db
+      database = RelaxDB.db
         
       view_path = "_view/#{self}/all"
       begin
@@ -240,7 +215,7 @@ module RelaxDB
     
     # As method names go, I'm not too enamoured with all_by - Post.all.sort_by might be nice
     def self.all_by(*atts)
-      database = RelaxDB::Database.std_db      
+      database = RelaxDB.db      
 
       q = Query.new(self.name, *atts)
       yield q if block_given?
@@ -258,7 +233,7 @@ module RelaxDB
     
     # Should be able to take a query object too
     def self.view(view_name)
-      resp = RelaxDB::Database.std_db.get("_view/#{self}/#{view_name}")
+      resp = RelaxDB.db.get("_view/#{self}/#{view_name}")
       objects_from_view_response(resp.body)
     end
     
@@ -288,7 +263,7 @@ module RelaxDB
       end
       
       # Implicitly prevent the object from being resaved by failing to update its revision
-      RelaxDB::Database.std_db.delete("#{_id}?rev=#{_rev}")
+      RelaxDB.db.delete("#{_id}?rev=#{_rev}")
     end
 
     # Leaves the corresponding DesignDoc for this class intact. Should it? No it shouldn't!
@@ -304,7 +279,7 @@ module RelaxDB
     docs = {}
     objs.each { |o| docs[o._id] = o }
     
-    database = RelaxDB::Database.std_db
+    database = RelaxDB.db
     resp = database.post("_bulk_docs", { "docs" => objs }.to_json )
     data = JSON.parse(resp.body)
     
@@ -320,7 +295,7 @@ module RelaxDB
   end
     
   def self.load_by_id(id)
-    database = RelaxDB::Database.std_db
+    database = RelaxDB.db
     resp = database.get("#{id}")
     data = JSON.parse(resp.body)
     create_from_hash(data)

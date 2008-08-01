@@ -16,7 +16,7 @@ class HasManyProxy
   def <<(obj)
     obj.instance_variable_set("@#{@relationship_to_client}".to_sym, @client)
     obj.save
-    @children << obj # TODO: should probably return self - test
+    @children << obj
   end
   
   def clear
@@ -62,7 +62,7 @@ class HasManyProxy
   end
   
   def load_children
-    database = RelaxDB::Database.std_db
+    database = RelaxDB.db
     view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
     begin
       resp = database.get(view_path)

@@ -78,7 +78,7 @@ class DesignDocument
   end
   
   def save
-    database = RelaxDB::Database.std_db    
+    database = RelaxDB.db    
     resp = database.put("#{@data['_id']}", @data.to_json)
     @data["_rev"] = JSON.parse(resp.body)["rev"]
     self
@@ -86,7 +86,7 @@ class DesignDocument
   
   def self.get(client_class)
     begin
-      database = RelaxDB::Database.std_db
+      database = RelaxDB.db
       resp = database.get("_design/#{client_class}")
       DesignDocument.new(client_class, JSON.parse(resp.body))
     rescue => e

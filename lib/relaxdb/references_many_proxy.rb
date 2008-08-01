@@ -88,7 +88,7 @@ class ReferencesManyProxy
   # Called internally by each, and may also be called by clients. Bad idea, invariant between 
   # peers and peer_ids could easily be violated
   def resolve    
-    db = RelaxDB::Database.std_db
+    db = RelaxDB.db
     view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
     begin
       resp = db.get(view_path)

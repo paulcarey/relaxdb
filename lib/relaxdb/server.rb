@@ -46,62 +46,62 @@ module RelaxDB
       raise e
     end
   end
-  
-  # Neither database name nor resource may start with a / character
-  class Database
-            
-    def initialize(host, port, db_name, log_dev=Tempfile.new('couchdb.log'), log_level=Logger::INFO)
-      @host = host
-      @port = port
-      @db_name = db_name
-      @server = RelaxDB::Server.new(host, port)
+    
+  class CouchDB
+    
+    attr_accessor :get_count
+    attr_reader :cache
+    
+    def initialize(config, log_dev=Tempfile.new('couchdb.log'), log_level=Logger::INFO)
+      @server = RelaxDB::Server.new(config[:host], config[:port])
+      @db = config[:name]
+
       @logger = Logger.new(log_dev)
       @logger.level = log_level
+      @get_count = 0
+      
+      @cache = Cache.new
     end
     
     def delete(uri=nil)
-      @server.delete("/#{@db_name}/#{uri}")
+      @logger.info("DELETE /#{@db}/#{uri}")
+      @server.delete("/#{@db}/#{uri}")
     end
     
     def get(uri=nil)
-      @server.get("/#{@db_name}/#{uri}")
+      @get_count +=1 
+      @logger.debug("GET /#{@db}/#{uri}")
+      @server.get("/#{@db}/#{uri}")
     end
     
     def put(uri=nil, json=nil)
-      @logger.info("PUT /#{@db_name}/#{uri} #{json}")
-      @server.put("/#{@db_name}/#{uri}", json)
+      @logger.info("PUT /#{@db}/#{uri} #{json}")
+      @server.put("/#{@db}/#{uri}", json)
     end
     
     def post(uri=nil, json=nil)
-      @logger.info("POST /#{@db_name}/#{uri} #{json}")
-      @server.post("/#{@db_name}/#{uri}", json)
-    end
-    
-    # Consider replacing with cattr_accessor via extlib once stable
-    def self.std_db
-      @@std_db
-    end
-    
-    def self.std_db=(db)
-      @@std_db = db
-    end
-    
-    # Not convinced about setting log levels here - alternatives probably required - wait and see
-    def self.set_std_db(config)
-      @@std_db = RelaxDB::Database.new(config[:host], config[:port], config[:db], config[:log_dev], config[:log_level])  
+      @logger.info("POST /#{@db}/#{uri} #{json}")
+      @server.post("/#{@db}/#{uri}", json)
     end
 
   end
   
-  def self.use_scratch
-    RelaxDB::Database.set_std_db(:host => "localhost", :port => 5984, :db => "scratch", 
-      :log_dev => STDOUT, :log_level => Logger::INFO) 
+  def self.configure(config)
+    @@db = CouchDB.new(config, config[:log_dev], config[:log_level])
   end
   
-  # Yet another convenience - should probably be consolidated with others
-  # Very useful for playing with views and query params from irb
+  def self.db
+    @@db
+  end
+  
+  # Convenience methods - should potentially be in a diffent module
+  
+  def self.use_scratch
+    configure(:host => "localhost", :port => 5984, :db => "scratch")
+  end
+  
   def self.get(uri)
-    resp = RelaxDB::Database.std_db.get(uri)
+    resp = session.get(uri)
     pp(JSON.parse(resp.body))
   end
       
