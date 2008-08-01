@@ -48,7 +48,7 @@ module RelaxDB
         resp = database.get(view_path)
       end
       data = JSON.parse(resp.body)["rows"][0]
-      data ? RelaxDB.create_from_hash(data["value"]) : nil
+      data ? RelaxDB.create_object(data["value"]) : nil
     end
       
   end

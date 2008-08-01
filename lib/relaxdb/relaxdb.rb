@@ -25,10 +25,30 @@ module RelaxDB
       database = RelaxDB.db
       resp = database.get("#{id}")
       data = JSON.parse(resp.body)
-      create_from_hash(data)
+      create_object(data)
+    end
+    
+    def retrieve(view_path, design_doc, view_name, map_function)
+      begin
+        resp = db.get(view_path)
+      rescue => e
+        DesignDocument.get(design_doc).add_view_to_data(view_name, map_function).save
+        resp = db.get(view_path)
+      end
+      
+      create_from_view(resp.body)      
     end
   
-    def create_from_hash(data)
+    def create_from_view(resp_body)
+      @objects = []
+      data = JSON.parse(resp_body)["rows"]
+      data.each do |row|
+        @objects << create_object(row["value"])
+      end
+      @objects      
+    end
+  
+    def create_object(data)
       # revise use of string 'class' - it's a reserved word in JavaScript
       klass = data.delete("class")
       k = Module.const_get(klass)

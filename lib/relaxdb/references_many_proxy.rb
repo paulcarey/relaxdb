@@ -99,12 +99,7 @@ module RelaxDB
         resp = db.get(view_path)
       end
     
-      @peers = []
-      data = JSON.parse(resp.body)["rows"]
-      data.each do |row|
-        @peers << RelaxDB.create_from_hash(row["value"])
-      end
-      @peers
+      @peers = RelaxDB.create_from_view(resp.body)
     end
   
     def inspect

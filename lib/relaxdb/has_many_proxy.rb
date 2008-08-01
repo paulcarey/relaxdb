@@ -9,8 +9,9 @@ module RelaxDB
       @relationship = relationship
       @opts = opts
 
-      @target_class = opts[:class] || relationship
-      @relationship_to_client = opts[:known_as] || client.class.name.downcase # implicitly - as viewed by target
+      @target_class = opts[:class] 
+      # Implicitly - relationship to client as viewed by target
+      @relationship_to_client = (opts[:known_as] || client.class.name.downcase).to_s
 
       @children = load_children
     end
@@ -64,21 +65,11 @@ module RelaxDB
     end
   
     def load_children
-      database = RelaxDB.db
       view_path = "_view/#{@client.class}/#{@relationship}?key=\"#{@client._id}\""
-      begin
-        resp = database.get(view_path)
-      rescue => e
-        DesignDocument.get(@client.class).add_view(@relationship, @target_class, @relationship_to_client).save
-        resp = database.get(view_path)
-      end
-    
-      @children = []
-      data = JSON.parse(resp.body)["rows"]
-      data.each do |row|
-        @children << RelaxDB.create_from_hash(row["value"])
-      end
-      @children
+      design_doc = @client.class
+      view_name = @relationship
+      map_function = ViewCreator.has_n(@target_class, @relationship_to_client)
+      @children = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)
     end
   
     def inspect

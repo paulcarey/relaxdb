@@ -195,7 +195,7 @@ module RelaxDB
       view_path = "_view/#{self}/all"
       map_function = ViewCreator.all(self)
       
-      retrieve(view_path, self, "all", map_function)      
+      RelaxDB::retrieve(view_path, self, "all", map_function)      
     end
     
     # As method names go, I'm not too enamoured with all_by - Post.all.sort_by might be nice
@@ -203,36 +203,15 @@ module RelaxDB
       q = Query.new(self.name, *atts)
       yield q if block_given?
       
-      retrieve(q.view_path, self, q.view_name, q.map_function)      
+      RelaxDB::retrieve(q.view_path, self, q.view_name, q.map_function)      
     end
-    
-    def self.retrieve(view_path, design_doc, view_name, map_function)
-      database = RelaxDB.db
-      begin
-        resp = database.get(view_path)
-      rescue => e
-        DesignDocument.get(design_doc).add_view_to_data(view_name, map_function).save
-        resp = database.get(view_path)
-      end
-      
-      objects_from_view_response(resp.body)      
-    end
-    
+        
     # Should be able to take a query object too
     def self.view(view_name)
       resp = RelaxDB.db.get("_view/#{self}/#{view_name}")
-      objects_from_view_response(resp.body)
+      RelaxDB.create_from_view(resp.body)
     end
     
-    def self.objects_from_view_response(resp_body)
-      @objects = []
-      data = JSON.parse(resp_body)["rows"]
-      data.each do |row|
-        @objects << RelaxDB.create_from_hash(row["value"])
-      end
-      @objects      
-    end
-
     # destroy! nullifies all relationships with peers and children before deleting 
     # itself in CouchDB
     # The nullification and deletion are not performed in a transaction

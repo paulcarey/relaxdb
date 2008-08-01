@@ -14,6 +14,17 @@ module RelaxDB
       map_function.sub("${relationship_to_client}", relationship_to_client.to_s)
     end
   
+    def self.has_n(target_class, relationship_to_client)
+      template = <<-MAP_FUNC
+      function(doc) {
+        if(doc.class == "${target_class}")
+          emit(doc.${relationship_to_client}_id, doc);
+      }
+      MAP_FUNC
+      template.sub!("${target_class}", target_class)
+      template.sub("${relationship_to_client}", relationship_to_client)
+    end
+  
     def self.all(target_class)
       map_template = <<-QUERY
       function(doc) {
@@ -24,7 +35,7 @@ module RelaxDB
       map_template.sub!("${target_class}", target_class.to_s)
     end
   
-    def has_many_through_view(target_class, peers)
+    def self.has_many_through(target_class, peers)
       map_template = <<-MAP_FUNC
         function(doc) {
           if(doc.class == "${target_class}" && doc.${peers}) {
@@ -57,8 +68,7 @@ module RelaxDB
     end
   
     def add_has_many_through_view(view_name, target_class, relationship_to_client)
-      view_creator = ViewCreator.new
-      map_function = view_creator.has_many_through_view(target_class, relationship_to_client.to_s) # TODO: .to_s - ugh
+      map_function = ViewCreator.has_many_through(target_class, relationship_to_client.to_s) # TODO: .to_s - ugh
       add_view_to_data(view_name, map_function)    
     end
 
