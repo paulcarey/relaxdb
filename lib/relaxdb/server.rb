@@ -88,24 +88,5 @@ module RelaxDB
     end
 
   end
-  
-  def self.configure(config)
-    @@db = CouchDB.new(config)
-  end
-  
-  def self.db
-    @@db
-  end
-  
-  # Convenience methods - should potentially be in a diffent module
-  
-  def self.use_scratch
-    configure(:host => "localhost", :port => 5984, :name => "scratch", :log_dev => STDOUT)
-  end
-  
-  def self.get(uri)
-    resp = session.get(uri)
-    pp(JSON.parse(resp.body))
-  end
-      
+        
 end

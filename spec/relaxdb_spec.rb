@@ -445,28 +445,28 @@ describe RelaxDB do
   describe "query api" do
 
     it "view name should match a single key attribute" do
-      q = Query.new("", :foo)
+      q = RelaxDB::Query.new("", :foo)
       q.view_name.should == "all_by_foo"
     end
     
     it "view name should match key attributes" do
-      q = Query.new("", :foo, :bar)
+      q = RelaxDB::Query.new("", :foo, :bar)
       q.view_name.should == "all_by_foo_and_bar"
     end
     
     it "view_path with params should be correct" do
-      q = Query.new("Zenith", :mount)
+      q = RelaxDB::Query.new("Zenith", :mount)
       q.view_path.should == "_view/Zenith/all_by_mount"
     end
     
     it "view_path should contain JSON encoded key if the key has been set" do
-      q = Query.new("Zenith", :mount)
+      q = RelaxDB::Query.new("Zenith", :mount)
       q.key = "olympus"
       q.view_path.should == "_view/Zenith/all_by_mount?key=\"olympus\""
     end
     
     it "view_path should represent startkey, endkey and count correctly" do
-      q = Query.new("Zenith", :name, :height)
+      q = RelaxDB::Query.new("Zenith", :name, :height)
       q.startkey = ["olympus"]
       q.endkey = ["vesuvius", 3600]
       q.count = 100

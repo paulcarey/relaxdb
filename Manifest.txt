@@ -8,6 +8,7 @@ config/hoe.rb
 config/requirements.rb
 lib/relaxdb.rb
 lib/relaxdb/version.rb
+lib/relaxdb/document.rb
 lib/relaxdb/server.rb
 lib/relaxdb/relaxdb.rb
 lib/relaxdb/has_many_proxy.rb

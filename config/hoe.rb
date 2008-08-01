@@ -34,7 +34,7 @@ end
 REV = nil
 # UNCOMMENT IF REQUIRED:
 # REV = YAML.load(`svn info`)['Revision']
-VERS = Relaxdb::VERSION::STRING + (REV ? ".#{REV}" : "")
+VERS = RelaxDB::VERSION::STRING + (REV ? ".#{REV}" : "")
 RDOC_OPTS = ['--quiet', '--title', 'relaxdb documentation',
     "--opname", "index.html",
     "--line-numbers",
