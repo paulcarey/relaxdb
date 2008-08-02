@@ -51,10 +51,12 @@ module RelaxDB
     
     attr_accessor :get_count
     attr_reader :cache
+    attr_reader :url
     
     def initialize(config)
       @server = RelaxDB::Server.new(config[:host], config[:port])
-      @db = config[:name]
+      @db = config[:db]
+      @url = "http://#{config[:host]}:#{config[:port]}/#{config[:db]}"
 
       log_dev = config[:log_dev] || Tempfile.new('couchdb.log')
       log_level = config[:log_level] || Logger::INFO

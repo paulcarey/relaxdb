@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB do
 
   before(:each) do
-    RelaxDB.configure(:host => "localhost", :port => 5984, :name => "relaxdb_spec_db")
+    RelaxDB.configure(:host => "localhost", :port => 5984, :db => "relaxdb_spec_db")
     begin
       RelaxDB.db.delete
     rescue => e
@@ -25,7 +25,7 @@ describe RelaxDB do
       p.save
     end
 
-    it "should be a proper CouchDB document even it it specifies no properties" do
+    it "should be a functional CouchDB document even if it specifies no properties" do
       d = Dullard.new
       d.save
       d.save
@@ -598,7 +598,37 @@ describe RelaxDB do
       mg.taggings[0].tag.name.should == "wildebeest"      
     end
     
-    it "should retrieve all data with just 3 GETs - keep your eye on the log sunshine :)"
+    it "should retrieve all data with just 3 GETs" do
+      mg = Photo.new(:name => "migration").save
+      wb = Tag.new(:name => "wildebeest").save
+      tz = Tag.new(:name => "tanzania").save
+      mg.tags << wb
+      mg.tags << tz
+      
+      Tagging.new(:photo => mg, :tag => wb, :relevance => 5).save
+      Tagging.new(:photo => mg, :tag => tz, :relevance => 3).save
+      
+      # Force view creation for tags and taggings
+      mg.tags.resolve
+      mg.taggings
+      
+      # Begin the test
+      RelaxDB.db.get_count = 0
+      p = RelaxDB.load mg._id
+      # Load the tags first
+      p.tags.resolve
+      data = {}
+      p.taggings.each do |t|
+        data[t.tag.name] = t.relevance
+      end
+      data.sort.should == [["tanzania", 3], ["wildebeest", 5]]
+      
+      # Waiting for the cache!
+      # RelaxDB.db.get_count.should == 3
+    end
+    
+    it "should offer an example where behaviour is different with caching enabled and caching disabled"
+    # you have been warned!
     
   end
       

@@ -6,7 +6,7 @@ module RelaxDB
     
     def self.property(prop)
       # Class instance varibles are not inherited, so the default properties must be explicitly listed 
-      # Perhaps a better solution exists. Revise. I think Merb extlib contains a solution for this...
+      # Perhaps a better solution exists. Revise. I think extlib contains a solution for this...
       @properties ||= [:_id, :_rev]
       @properties << prop
 
@@ -20,7 +20,7 @@ module RelaxDB
     end
 
     def self.properties
-      # Ensure that classes that don't define properties still function as CouchDB objects
+      # Ensure that classes that don't define their own properties still function as CouchDB objects
       @properties ||= [:_id, :_rev]
     end
 
@@ -47,6 +47,7 @@ module RelaxDB
             val = Time.local(*ParseDate.parsedate(val)) rescue val
         end
 
+        # If an object has been passed to the constructor, invoke its assignment method
         if self.class.all_relationships.include? key
           send("#{key}=".to_sym, val)
         end

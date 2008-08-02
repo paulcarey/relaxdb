@@ -18,8 +18,7 @@ module RelaxDB
     end
   
     def load(id)
-      database = RelaxDB.db
-      resp = database.get("#{id}")
+      resp = db.get("#{id}")
       data = JSON.parse(resp.body)
       create_object(data)
     end
@@ -48,7 +47,7 @@ module RelaxDB
       # revise use of string 'class' - it's a reserved word in JavaScript
       klass = data.delete("class")
       k = Module.const_get(klass)
-      k.new(data)    
+      k.new(data)
     end
   
     def configure(config)
@@ -62,11 +61,11 @@ module RelaxDB
     # Convenience methods - should potentially be in a diffent module
   
     def use_scratch
-      configure(:host => "localhost", :port => 5984, :name => "scratch", :log_dev => STDOUT)
+      configure(:host => "localhost", :port => 5984, :db => "scratch", :log_dev => STDOUT)
     end
   
-    def get(uri)
-      resp = session.get(uri)
+    def get(uri=nil)
+      resp = db.get(uri)
       pp(JSON.parse(resp.body))
     end
   
