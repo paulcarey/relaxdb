@@ -87,6 +87,14 @@ describe RelaxDB do
       p.viewed_at.should be_close(now, 1)
     end  
     
+    it "a unsaved object is considered unsaved" do
+      Player.new.unsaved.should be_true
+    end
+    
+    it "a saved object should not be considered unsaved" do
+      Player.new.save.unsaved.should be_false
+    end
+    
     it "a destroyed object cannot be resaved" do
       p = Photo.new.save
       p.destroy!
@@ -100,6 +108,30 @@ describe RelaxDB do
       d = Dullard.new
       lambda { d.destroy! }.should raise_error
     end
+    
+    it "properties can be supplied a default" do
+      r = Rating.new
+      r.shards.should == 50
+    end
+    
+    it "default property values should be saved" do
+      r = Rating.new.save
+      RelaxDB.load(r._id).shards.should == 50
+    end
+    
+    it "if the prop val of a property with default is nullified after being saved it should not revert to default val" do
+      r = Rating.new.save
+      r.shards = nil
+      r.save
+      RelaxDB.load(r._id).shards.should be_nil
+    end
+        
+    it "if the prop val of a property with default is nullified prior to being saved, it should not be saved with the default" do
+      r = Rating.new
+      r.shards = nil
+      r.save
+      RelaxDB.load(r._id).shards.should be_nil
+    end    
         
   end
   

@@ -19,7 +19,7 @@ end
 
 class Rating < RelaxDB::Document
   
-  property :shards
+  property :shards, :default => 50
   belongs_to :player
   
 end

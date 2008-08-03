@@ -4,18 +4,26 @@ module RelaxDB
     
     # Define properties and property methods
     
-    def self.property(prop)
+    def self.property(prop, opts={})
       # Class instance varibles are not inherited, so the default properties must be explicitly listed 
       # Perhaps a better solution exists. Revise. I think extlib contains a solution for this...
       @properties ||= [:_id, :_rev]
       @properties << prop
 
       define_method(prop) do
-        instance_variable_get("@#{prop}".to_sym)
+        instance_variable_get("@#{prop}".to_sym)        
       end
 
       define_method("#{prop}=") do |val|
         instance_variable_set("@#{prop}".to_sym, val)
+      end
+      
+      if opts[:default]
+        define_method("set_default_#{prop}") do
+          default = opts[:default]
+          default = default.is_a?(Proc) ? default.call : default
+          instance_variable_set("@#{prop}".to_sym, default)
+        end
       end
     end
 
@@ -32,10 +40,20 @@ module RelaxDB
     property :_id 
     property :_rev    
     
-    def initialize(hash=nil)
-      # The default _id will be overwritten if loaded from RelaxDB
+    def initialize(hash={})
+      # The default _id will be overwritten if loaded from CouchDB
       self._id = UuidGenerator.uuid 
-      set_attributes(hash) if hash
+
+      # Set default properties if this object has not known CouchDB
+      unless hash["_rev"]
+        properties.each do |prop|
+         if self.class.instance_methods.include?("set_default_#{prop}")
+           send("set_default_#{prop}")
+         end
+        end
+      end
+      
+      set_attributes(hash)
     end
     
     def set_attributes(data)
@@ -91,8 +109,12 @@ module RelaxDB
       self
     end  
     
+    def unsaved
+      instance_variable_get(:@_rev).nil?
+    end
+    
     def set_created_at_if_new
-      if methods.include? "created_at" and _rev.nil?
+      if unsaved and methods.include? "created_at"
         instance_variable_set(:@created_at, Time.now)
       end
     end
@@ -110,6 +132,7 @@ module RelaxDB
     def self.references_many(relationship, opts={})
       # Treat the representation as a standard property 
       properties << relationship
+      
       # Keep track of the relationship so peers can be disassociated on destroy
       @references_many_rels ||= []
       @references_many_rels << relationship
