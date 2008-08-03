@@ -391,6 +391,42 @@ describe RelaxDB do
       Player.all.size.should == 1
     end
     
+    it "destroy_all should play nice with references_many" do
+      p = Photo.new
+      t = Tag.new
+      p.tags << t
+      
+      Photo.destroy_all!
+      Tag.destroy_all!
+    end
+    
+    # This test way more complex than it needs to be to prove the point
+    it "destroy_all should play nice with self referential references_many" do
+      u1 = User.new(:name => "u1")
+      u2 = User.new(:name => "u2")
+      u3 = User.new(:name => "u3")
+      
+      u1.followers << u2
+      u1.followers << u3
+      u3.leaders << u2
+      
+      u1f = u1.followers.map { |u| u.name }
+      u1f.sort.should == ["u2", "u3"]
+      u1.leaders.should be_empty
+      
+      u2.leaders.size.should == 1
+      u2.leaders[0].name.should == "u1"
+      u2.followers.size.should == 1
+      u2.followers[0].name.should == "u3"
+      
+      u3l = u3.leaders.map { |u| u.name }
+      u3l.sort.should == ["u1", "u2"]
+      u3.followers.should be_empty
+      
+      User.destroy_all!
+      User.all.should be_empty
+    end
+    
   end
   
   describe "finders" do

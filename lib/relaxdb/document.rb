@@ -255,7 +255,11 @@ module RelaxDB
     # Leaves the corresponding DesignDoc for this class intact. Should it? No it shouldn't!
     def self.destroy_all!
       self.all.each do |o| 
-        o.destroy!
+        # As far as I'm aware, a reload is only required for deleting objects with self referential relationships
+        obj = RelaxDB.load(o._id)
+        obj.destroy!
+        
+        # o.destroy!
       end
     end
             

@@ -72,3 +72,11 @@ class Tagging < RelaxDB::Document
   property :relevance  
 
 end
+
+class User < RelaxDB::Document
+  
+  property :name
+  references_many :followers, :class => "User", :known_as => :leaders
+  references_many :leaders, :class => "User", :known_as => :followers
+  
+end

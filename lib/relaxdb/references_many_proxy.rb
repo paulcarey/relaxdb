@@ -2,6 +2,8 @@ module RelaxDB
 
   # Note - methods must take care not to accidentally retrieve the entire object graph
   class ReferencesManyProxy
+    
+    include Enumerable
   
     def initialize(client, relationship, opts)
       @client = client
@@ -32,9 +34,10 @@ module RelaxDB
         peer.send(@relationship_as_viewed_by_target).send(:delete_from_self, @client)
       end
     
-      # Resolve in the database
+      # Important to resolve in the database before in memory, although an examination of the
+      # contents of the bulk_save will look wrong as this object will still list all its peers
       RelaxDB.bulk_save(@client, *@peers)
-      # Resolve in memory
+      
       peer_ids.clear
       @peers.clear
     end
@@ -52,22 +55,7 @@ module RelaxDB
       @peers.delete(obj) if @peers
       peer_ids.delete(obj._id)
     end
-    
-    def delete_old(obj, reciprocal_invocation=false)
-      @peers.delete(obj) if @peers
-      deleted = peer_ids.delete(obj._id)
-    
-      unless reciprocal_invocation
-        # Delete on the other side of the relationship, ensuring this method isn't called again
-        obj.send(@relationship_as_viewed_by_target).send(:delete, @client, true) 
-
-        # Bulk save to ensure relationship is persisted on both sides
-        RelaxDB.bulk_save(@client, obj)
-      end
-    
-      deleted ? obj : nil
-    end  
-    
+        
     def empty?
       peer_ids.empty?
     end
