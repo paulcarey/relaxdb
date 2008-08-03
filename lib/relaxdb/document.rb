@@ -115,7 +115,10 @@ module RelaxDB
     
     def set_created_at_if_new
       if unsaved and methods.include? "created_at"
-        instance_variable_set(:@created_at, Time.now)
+        # Don't override it if it's already been set
+        unless instance_variable_get(:@created_at)
+          instance_variable_set(:@created_at, Time.now)
+        end
       end
     end
        

@@ -79,6 +79,14 @@ describe RelaxDB do
       p.created_at.should be_close(back_then, 1)
     end
     
+    it "if supplied to new object, created_at is not overridden" do
+      back_then = Time.now - 100
+      p = Post.new(:created_at => back_then)
+      p.save
+      p.created_at.should be_close(back_then, 1)
+    end
+    
+    
     it "attributes that end in _at are converted to dates on object initialisation" do
       now = Time.now
       p = Post.new(:viewed_at => now).save
