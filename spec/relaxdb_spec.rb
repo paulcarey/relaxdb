@@ -356,6 +356,14 @@ describe RelaxDB do
         RelaxDB.load(i._id).recipient.should be_nil
       end
       
+      it "adding the same object to a has_many twice should not create duplicates" do
+        p = Player.new.save
+        i = Invite.new
+        p.invites_received << i
+        p.invites_received << i
+        p.invites_received.size.should == 1
+      end
+      
     end
     
     describe "parent created, child loaded" do
@@ -408,7 +416,8 @@ describe RelaxDB do
       Tag.destroy_all!
     end
     
-    # This test way more complex than it needs to be to prove the point
+    # This test more complex than it needs to be to prove the point
+    # It also serves as a proof of a self referential references_many, but there are better places for that
     it "destroy_all should play nice with self referential references_many" do
       u1 = User.new(:name => "u1")
       u2 = User.new(:name => "u2")
@@ -628,6 +637,14 @@ describe RelaxDB do
       RelaxDB.load(t._id).photos.should be_empty
     end
     
+    it "adding the same relationship to a references_many multiple times does not create duplicates" do
+      p = Photo.new
+      t = Tag.new
+      p.tags << t
+      p.tags << t
+      p.tags.size.should == 1
+    end
+      
     # Both of these are important - fundamental even to the operation of this library
     # but I've no idea how to *easily* test them
     it "ensure that the entire object graph isn't loaded"

@@ -14,6 +14,8 @@ module RelaxDB
     end
   
     def <<(obj, reciprocal_invocation=false)
+      return false if peer_ids.include? obj._id
+      
       @peers << obj if @peers
       peer_ids << obj._id
     

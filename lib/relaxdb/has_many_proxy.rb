@@ -16,6 +16,9 @@ module RelaxDB
     end
 
     def <<(obj)
+      child_ids = @children.map { |c| c._id }
+      return false if child_ids.include?(obj._id)
+      
       obj.send("#{@relationship_as_viewed_by_target}=".to_sym, @client)
       obj.save
       @children << obj
