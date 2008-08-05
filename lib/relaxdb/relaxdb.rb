@@ -63,7 +63,7 @@ module RelaxDB
       yield q if block_given?
       
       resp = db.get(q.view_path)
-      data = JSON.parse(resp_body)
+      data = JSON.parse(resp.body)
 
       # presence of total_rows tells us a map function was invoked
       # otherwise a map reduce invocation occured
@@ -71,7 +71,7 @@ module RelaxDB
         create_from_view(data)
       else
         obj = data["rows"][0] && data["rows"][0]["value"]
-        obj ? create_object(data) : nil
+        obj ? create_object(obj) : nil
       end
     end
       

@@ -58,10 +58,15 @@ module RelaxDB
       @db = config[:db]
       @url = "http://#{config[:host]}:#{config[:port]}/#{config[:db]}"
 
-      log_dev = config[:log_dev] || Tempfile.new('couchdb.log')
-      log_level = config[:log_level] || Logger::INFO
-      @logger = Logger.new(log_dev)
-      @logger.level = log_level
+      if config[:logger]
+        @logger = config[:logger]
+      else
+        # Revise the Tempfile idea - it's not great
+        log_dev = config[:log_dev] || Tempfile.new('couchdb.log')
+        log_level = config[:log_level] || Logger::INFO
+        @logger = Logger.new(log_dev)
+        @logger.level = log_level
+      end
       
       @get_count = 0
       
