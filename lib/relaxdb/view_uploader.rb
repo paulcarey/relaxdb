@@ -19,7 +19,7 @@ module RelaxDB
       end
       
       def extract(lines)
-        # Index of line matches
+        # Index of function declaration matches
         m = []
 
         0.upto(lines.size-1) do |p|
@@ -29,14 +29,11 @@ module RelaxDB
         # Add one beyond the last line number as the final terminator
         m << lines.size
 
-        puts m.join(", ")
-
         0.upto(m.size-2) do |i|
           declr = lines[m[i]]
           declr =~ /(\w)+-(\w)+-(\w)+/
           declr.sub!($&, '')
           design_doc, view_name, type = $&.split('-')
-          # require 'rubygems'; require 'ruby-debug/debugger';
           func = lines[m[i]...m[i+1]].join
           yield design_doc, view_name, type, func
         end
