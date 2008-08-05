@@ -48,17 +48,17 @@ describe RelaxDB do
 
     it "a new object should be assigned an id" do
       p = Player.new
-      p._id.should_not == nil
+      p._id.should_not be_nil
     end
     
     it "an unsaved object's revision should be nil" do
       p = Player.new
-      p._rev.should == nil
+      p._rev.should be_nil
     end    
     
     it "a saved object's revision should not be nil" do
       p = Player.new.save
-      p._rev.should_not == nil
+      p._rev.should_not be_nil
     end
     
     it "nil attributes should not be output in json" do
@@ -534,28 +534,28 @@ describe RelaxDB do
   describe "query api" do
 
     it "view name should match a single key attribute" do
-      q = RelaxDB::Query.new("", :foo)
+      q = RelaxDB::SortedByView.new("", :foo)
       q.view_name.should == "all_by_foo"
     end
     
     it "view name should match key attributes" do
-      q = RelaxDB::Query.new("", :foo, :bar)
+      q = RelaxDB::SortedByView.new("", :foo, :bar)
       q.view_name.should == "all_by_foo_and_bar"
     end
     
     it "view_path with params should be correct" do
-      q = RelaxDB::Query.new("Zenith", :mount)
-      q.view_path.should == "_view/Zenith/all_by_mount"
+      q = RelaxDB::Query.new("Zenith", "mount")
+      q.view_path.should == "_view/Zenith/mount"
     end
     
     it "view_path should contain JSON encoded key if the key has been set" do
-      q = RelaxDB::Query.new("Zenith", :mount)
+      q = RelaxDB::Query.new("Zenith", "mount")
       q.key = "olympus"
-      q.view_path.should == "_view/Zenith/all_by_mount?key=\"olympus\""
+      q.view_path.should == "_view/Zenith/mount?key=\"olympus\""
     end
     
     it "view_path should represent startkey, endkey and count correctly" do
-      q = RelaxDB::Query.new("Zenith", :name, :height)
+      q = RelaxDB::Query.new("Zenith", "all_by_name_and_height")
       q.startkey = ["olympus"]
       q.endkey = ["vesuvius", 3600]
       q.count = 100
@@ -614,8 +614,8 @@ describe RelaxDB do
       p.tags << t
 
       p.tags.delete(t)
-      p.tags.size.should == 0
-      t.photos.size.should == 0
+      p.tags.should be_empty
+      t.photos.should be_empty
     end
     
     it "a destroyed object does not remove its membership from its peers in memory" do
@@ -644,6 +644,16 @@ describe RelaxDB do
       p.tags << t
       p.tags.size.should == 1
     end
+    
+    it "adding the same relationship to a references_many multiple times from different sides does not create duplicates" do
+      p = Photo.new
+      t = Tag.new
+      p.tags << t
+      t.photos << p
+      p.tags.size.should == 1
+      t.photos.size.should == 1
+    end
+    
       
     # Both of these are important - fundamental even to the operation of this library
     # but I've no idea how to *easily* test them
@@ -722,6 +732,31 @@ describe RelaxDB do
     
     it "should offer an example where behaviour is different with caching enabled and caching disabled"
     # you have been warned!
+    
+  end
+  
+  describe "relaxdb" do
+    
+    it "create_object should return an instance of a known object if passed a hash with a class key" do
+      data = { "class" => "Item" }
+      obj = RelaxDB.create_object(data)
+      obj.should be_instance_of(Item)
+    end
+    
+    it "create_object should return an instance of a dynamically created object if no class key is provided" do
+      data = { "name" => "tesla coil", "strength" => 5000 }
+      obj = RelaxDB.create_object(data)
+      obj.name.should == "tesla coil"
+      obj.strength.should == 5000
+    end
+    
+  end
+  
+  describe "view" do
+    
+    it "map func " do
+      
+    end
     
   end
       

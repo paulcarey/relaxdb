@@ -221,20 +221,17 @@ module RelaxDB
       RelaxDB::retrieve(view_path, self, "all", map_function)      
     end
     
-    # As method names go, I'm not too enamoured with all_by - Post.all.sort_by might be nice
+    # As method names go, I'm not too enamoured with all_by...
+    # Post.all.sort_by would be nice, as would Post.all.destroy! etc.
     def self.all_by(*atts)
-      q = Query.new(self.name, *atts)
+      v = SortedByView.new(self.name, *atts)
+
+      q = Query.new(self.name, v.view_name)
       yield q if block_given?
       
-      RelaxDB::retrieve(q.view_path, self, q.view_name, q.map_function)      
+      RelaxDB::retrieve(q.view_path, self, v.view_name, v.map_function)      
     end
-        
-    # Should be able to take a query object too
-    def self.view(view_name)
-      resp = RelaxDB.db.get("_view/#{self}/#{view_name}")
-      RelaxDB.create_from_view(resp.body)
-    end
-    
+            
     # destroy! nullifies all relationships with peers and children before deleting 
     # itself in CouchDB
     # The nullification and deletion are not performed in a transaction
