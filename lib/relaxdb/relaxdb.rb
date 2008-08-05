@@ -27,7 +27,7 @@ module RelaxDB
       begin
         resp = db.get(view_path)
       rescue => e
-        DesignDocument.get(design_doc).add_view(view_name, map_function).save
+        DesignDocument.get(design_doc).add_map_view(view_name, map_function).save
         resp = db.get(view_path)
       end
       
@@ -86,7 +86,7 @@ module RelaxDB
     # Convenience methods - should potentially be in a diffent module
   
     def use_scratch
-      configure(:host => "localhost", :port => 5984, :db => "scratch", :log_dev => STDOUT)
+      configure(:host => "localhost", :port => 5984, :db => "scratch", :log_dev => STDOUT, :log_level => Logger::DEBUG)
     end
   
     def get(uri=nil)

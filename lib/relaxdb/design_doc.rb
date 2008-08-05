@@ -7,11 +7,19 @@ module RelaxDB
       @data = data
     end
       
-    def add_view(view_name, map_function)
+    def add_map_view(view_name, function)
+      add_view(view_name, "map", function)
+    end
+    
+    def add_reduce_view(view_name, function)
+      add_view(view_name, "reduce", function)
+    end
+    
+    def add_view(view_name, type, function)
       @data["views"] ||= {}
       @data["views"][view_name] ||= {}
-      @data["views"][view_name]["map"] = map_function
-      self
+      @data["views"][view_name][type] = function
+      self            
     end
   
     def save
