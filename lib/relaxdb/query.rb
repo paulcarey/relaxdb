@@ -6,7 +6,7 @@ module RelaxDB
   # All parameter calls return self so calls may be chained => q.startkey("foo").endkey("bar").count(2)
   class Query
     
-    @@params = %w(key startkey endkey count desc)
+    @@params = %w(key startkey endkey count descending)
     
     @@params.each do |param|
       define_method(param.to_sym) do |val|

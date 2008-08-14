@@ -404,7 +404,7 @@ describe RelaxDB do
       p.items << Item.new
       
       p.destroy!
-      Item.all_by(:player_id) { |q| q.key = p._id }.should be_empty
+      Item.all_by(:player_id) { |q| q.key(p._id) }.should be_empty
     end
     
     it "a destroyed document should not be retrievable" do
@@ -486,7 +486,7 @@ describe RelaxDB do
     it "Document.all should sort desc when specified" do
       Post.new(:content => "a").save
       Post.new(:content => "b").save
-      posts = Post.all_by(:content) { |q| q.desc = true }
+      posts = Post.all_by(:content) { |q| q.descending(true) }
       posts[0].content.should == "b"
       posts[1].content.should == "a"
     end
@@ -495,7 +495,7 @@ describe RelaxDB do
       t = Time.new
       Post.new(:viewed_at => t, :content => "first").save
       Post.new(:viewed_at => t+1, :content => "second").save
-      posts = Post.all_by(:viewed_at) { |q| q.desc = true }
+      posts = Post.all_by(:viewed_at) { |q| q.descending(true) }
       posts[0].content.should == "second"
       posts[1].content.should == "first"
     end
@@ -504,27 +504,27 @@ describe RelaxDB do
       Post.new(:subject => "cleantech").save
       Post.new(:subject => "cleantech").save
       Post.new(:subject => "bigpharma").save
-      Post.all_by(:subject) { |q| q.key = "cleantech" }.size.should == 2
+      Post.all_by(:subject) { |q| q.key("cleantech") }.size.should == 2
     end
     
     it "result should be retrievable by relative criteria" do
       Rating.new(:shards => 101).save
       Rating.new(:shards => 150).save
-      Rating.all_by(:shards) { |q| q.endkey = 125 }.size.should == 1
+      Rating.all_by(:shards) { |q| q.endkey(125) }.size.should == 1
     end
     
     it "result should be retrievable by combined criteria" do
       Player.new(:name => "paul", :age => 28).save
       Player.new(:name => "paul", :age => 72).save
       Player.new(:name => "atlas", :age => 99).save
-      Player.all_by(:name, :age) { |q| q.startkey = ["paul",0 ]; q.endkey = ["paul", 50] }.size.should == 1
+      Player.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
     end
 
     it "result should be retrievable by combined criteria where not all docs contain all attributes" do
       Player.new(:name => "paul", :age => 28).save
       Player.new(:name => "paul", :age => 72).save
       Player.new(:name => "atlas").save
-      Player.all_by(:name, :age) { |q| q.startkey = ["paul",0 ]; q.endkey = ["paul", 50] }.size.should == 1
+      Player.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
     end
     
   end
