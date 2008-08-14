@@ -64,14 +64,14 @@ module RelaxDB
         if key =~ /_at$/
             val = Time.local(*ParseDate.parsedate(val)) rescue val
         end
-
-        # If an object has been passed to the constructor, invoke its assignment method
-        if self.class.all_relationships.include? key
-          send("#{key}=".to_sym, val)
-        else  
-          instance_variable_set("@#{key}".to_sym, val)
-        end
         
+        # Ignore param keys that don't have a corresponding writer
+        # This allows us to comfortably accept a hash containing superflous data 
+        # such as a params hash in a controller 
+        if methods.include? "#{key}="
+          send("#{key}=".to_sym, val)
+        end
+                
       end
     end  
     
@@ -148,8 +148,9 @@ module RelaxDB
         create_or_get_proxy(RelaxDB::ReferencesManyProxy, relationship, opts)
       end
     
-      define_method("#{relationship}=") do
-        raise "You may not currently assign to a has_many relationship - may be implemented"
+      define_method("#{relationship}=") do |val|
+        # Sharp edge - do not invoke this method
+        instance_variable_set("@#{relationship}".to_sym, val)
       end           
     end
    
@@ -204,6 +205,12 @@ module RelaxDB
       define_method("#{relationship}=") do |new_target|
         create_or_get_proxy(BelongsToProxy, relationship).target = new_target
       end
+      
+      # Allows all writers to be invoked from the hash passed to initialize 
+      define_method("#{relationship}_id=") do |id|
+        instance_variable_set("@#{relationship}_id".to_sym, id)
+      end
+      
     end
     
     def self.belongs_to_rels
