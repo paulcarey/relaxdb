@@ -68,9 +68,10 @@ module RelaxDB
         # If an object has been passed to the constructor, invoke its assignment method
         if self.class.all_relationships.include? key
           send("#{key}=".to_sym, val)
+        else  
+          instance_variable_set("@#{key}".to_sym, val)
         end
-                  
-        instance_variable_set("@#{key}".to_sym, val)
+        
       end
     end  
     
