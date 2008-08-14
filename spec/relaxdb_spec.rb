@@ -283,6 +283,12 @@ describe RelaxDB do
         p.rating.should == r
       end
       
+      it "a belongs to relationship should be establishable merely by setting the id" do
+        p = Player.new.save
+        r = Rating.new(:player_id => p._id).save
+        p.rating._id.should == r._id
+      end
+      
     end
     
     describe "has_many" do
@@ -363,6 +369,15 @@ describe RelaxDB do
         p.invites_received << i
         p.invites_received.size.should == 1
       end
+      
+      it "a belongs to relationship should be establishable merely by setting the id" do
+        p = Player.new.save
+        i1 = Item.new(:player_id => p._id).save
+        i2 = Item.new(:player_id => p._id).save
+        RelaxDB.load(i1._id).player._id.should == p._id
+        RelaxDB.load(i2._id).player._id.should == p._id
+        RelaxDB.load(p._id).items.size.should == 2
+      end      
       
     end
     
