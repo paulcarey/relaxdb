@@ -379,6 +379,13 @@ describe RelaxDB do
         RelaxDB.load(p._id).items.size.should == 2
       end      
       
+      it "<< operator should return has_many proxy" do
+        p = Player.new.save
+        p.items << Item.new << Item.new
+        p.items[0].player._id.should == p._id
+        p.items[1].player._id.should == p._id
+      end
+      
     end
     
     describe "parent created, child loaded" do

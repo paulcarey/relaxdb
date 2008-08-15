@@ -22,6 +22,7 @@ module RelaxDB
       obj.send("#{@relationship_as_viewed_by_target}=".to_sym, @client)
       obj.save
       @children << obj
+      self
     end
   
     def clear
