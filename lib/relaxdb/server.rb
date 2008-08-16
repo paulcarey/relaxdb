@@ -74,22 +74,26 @@ module RelaxDB
     end
     
     def delete(uri=nil)
+      uri = uri ? ::CGI::unescape(uri) : ""
       @logger.info("DELETE /#{@db}/#{uri}")
       @server.delete("/#{@db}/#{uri}")
     end
     
     def get(uri=nil)
       @get_count +=1 
+      uri = uri ? ::CGI::unescape(uri) : ""
       @logger.debug("GET /#{@db}/#{uri}")
       @server.get("/#{@db}/#{uri}")
     end
     
     def put(uri=nil, json=nil)
+      uri = uri ? ::CGI::unescape(uri) : ""
       @logger.info("PUT /#{@db}/#{uri} #{json}")
       @server.put("/#{@db}/#{uri}", json)
     end
     
     def post(uri=nil, json=nil)
+      uri = uri ? ::CGI::unescape(uri) : ""
       @logger.info("POST /#{@db}/#{uri} #{json}")
       @server.post("/#{@db}/#{uri}", json)
     end
