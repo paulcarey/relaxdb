@@ -5,7 +5,7 @@ require 'parsedate'
 require 'pp'
 require 'logger'
 require 'tempfile'
-require 'merb-extlib'
+require 'extlib'
 require 'cache'
 require 'cgi'
 
