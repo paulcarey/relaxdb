@@ -69,8 +69,6 @@ module RelaxDB
       end
       
       @get_count = 0
-      
-      @cache = Cache.new
     end
     
     def delete(uri=nil)
