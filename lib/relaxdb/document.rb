@@ -132,6 +132,10 @@ module RelaxDB
       instance_variable_set(proxy_sym, proxy)
       proxy     
     end
+    
+    def ==(other)
+      other && _id == other._id
+    end
    
     def self.references_many(relationship, opts={})
       # Treat the representation as a standard property 

@@ -24,6 +24,9 @@ class Rating < RelaxDB::Document
   
 end
 
+class User < RelaxDB::Document
+end
+
 class Player < RelaxDB::Document
   
   property :name 

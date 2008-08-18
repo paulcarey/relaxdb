@@ -19,12 +19,6 @@ describe RelaxDB do
     
     it "should throw warnings if a class defines methods like has_many, properties etc. perhaps also if it redfines an existing method. maybe not. have to assume some intelligence somewhere."
         
-    it "object can be saved and resaved" do
-      p = Player.new :name => "paul"
-      p.save
-      p.save
-    end
-
     it "should be a functional CouchDB document even if it specifies no properties" do
       d = Dullard.new
       d.save
@@ -44,48 +38,7 @@ describe RelaxDB do
       p.save
       p = RelaxDB.load(p._id)
       p.save
-    end    
-
-    it "a new object should be assigned an id" do
-      p = Player.new
-      p._id.should_not be_nil
-    end
-    
-    it "an unsaved object's revision should be nil" do
-      p = Player.new
-      p._rev.should be_nil
-    end    
-    
-    it "a saved object's revision should not be nil" do
-      p = Player.new.save
-      p._rev.should_not be_nil
-    end
-    
-    it "nil attributes should not be output in json" do
-      Player.new.to_json.should_not include("rev")
-    end
-    
-    it "created_at attribute is set automatically to creation date" do
-      now = Time.now
-      p = Post.new.save
-      created_at = RelaxDB.load(p._id).created_at
-      now.should be_close(created_at, 1)
-    end
-    
-    it "created_at is not set on update" do
-      back_then = Time.now - 100
-      p = Post.new(:created_at => back_then, :_rev => "")
-      p.set_created_at_if_new
-      p.created_at.should be_close(back_then, 1)
-    end
-    
-    it "if supplied to new object, created_at is not overridden" do
-      back_then = Time.now - 100
-      p = Post.new(:created_at => back_then)
-      p.save
-      p.created_at.should be_close(back_then, 1)
-    end
-    
+    end        
     
     it "attributes that end in _at are converted to dates on object initialisation" do
       now = Time.now
@@ -93,53 +46,7 @@ describe RelaxDB do
       p = RelaxDB.load(p._id)
       p.viewed_at.class.should == Time
       p.viewed_at.should be_close(now, 1)
-    end  
-    
-    it "a unsaved object is considered unsaved" do
-      Player.new.unsaved.should be_true
-    end
-    
-    it "a saved object should not be considered unsaved" do
-      Player.new.save.unsaved.should be_false
-    end
-    
-    it "a destroyed object cannot be resaved" do
-      p = Photo.new.save
-      p.destroy!
-      lambda { p.save }.should raise_error
-    end
-    
-    it "invoking destroy on an unsaved object results in undefined behaviour" do
-      p = Photo.new
-      p.destroy!
-      
-      d = Dullard.new
-      lambda { d.destroy! }.should raise_error
-    end
-    
-    it "properties can be supplied a default" do
-      r = Rating.new
-      r.shards.should == 50
-    end
-    
-    it "default property values should be saved" do
-      r = Rating.new.save
-      RelaxDB.load(r._id).shards.should == 50
-    end
-    
-    it "if the prop val of a property with default is nullified after being saved it should not revert to default val" do
-      r = Rating.new.save
-      r.shards = nil
-      r.save
-      RelaxDB.load(r._id).shards.should be_nil
-    end
-        
-    it "if the prop val of a property with default is nullified prior to being saved, it should not be saved with the default" do
-      r = Rating.new
-      r.shards = nil
-      r.save
-      RelaxDB.load(r._id).shards.should be_nil
-    end    
+    end      
         
   end
   
