@@ -58,7 +58,7 @@ module RelaxDB
     
     # Should be able to take a query object too
     # Allow Documents to call views transparently so underlying invocations don't change
-    def view(design_doc, view_name)
+    def view(design_doc, view_name, default_ret_val=[])
       q = Query.new(design_doc, view_name)
       yield q if block_given?
       
@@ -71,7 +71,7 @@ module RelaxDB
         create_from_view(data)
       else
         obj = data["rows"][0] && data["rows"][0]["value"]
-        obj ? create_object(obj) : nil
+        obj ? create_object(obj) : default_ret_val
       end
     end
       
