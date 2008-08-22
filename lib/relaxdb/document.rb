@@ -2,6 +2,7 @@ module RelaxDB
     
   class Document
     
+    # Used to store validation messages
     attr_accessor :errors
     
     # Define properties and property methods
