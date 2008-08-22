@@ -1,6 +1,5 @@
 module RelaxDB
 
-  # Potential exists for optimsing when the target is explicitly set to nil
   class HasOneProxy
   
     def initialize(client, relationship)
@@ -18,7 +17,6 @@ module RelaxDB
     end
   
     # All database changes performed by this method would ideally be done in a transaction
-    # Consider bulk update
     def target=(new_target)
       # Nullify any existing relationship on assignment
       old_target = target
@@ -28,7 +26,7 @@ module RelaxDB
       end
     
       @target = new_target
-      if not @target.nil?
+      unless @target.nil?
         @target.send("#{@relationship_as_viewed_by_target}=".to_sym, @client)
         @target.save
       end

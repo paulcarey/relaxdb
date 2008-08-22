@@ -1,6 +1,5 @@
 module RelaxDB
 
-  # Note - methods must take care not to accidentally retrieve the entire object graph
   class ReferencesManyProxy
     
     include Enumerable
@@ -10,7 +9,7 @@ module RelaxDB
       @relationship = relationship
     
       @target_class = opts[:class]
-      @relationship_as_viewed_by_target = opts[:known_as].to_s # more completely, relationship_of_target_to_client
+      @relationship_as_viewed_by_target = opts[:known_as].to_s
     end
   
     def <<(obj, reciprocal_invocation=false)
@@ -75,18 +74,7 @@ module RelaxDB
       resolve
       @peers.each(&blk)    
     end
-  
-    # Resolves the actual ids into real objects via a single GET to CouchDB
-    # Called internally by each, and may also be called by clients. Bad idea, invariant between 
-    # peers and peer_ids could easily be violated
-    def resolve
-      design_doc = @client.class
-      view_name = @relationship
-      view_path = "_view/#{design_doc}/#{view_name}?key=\"#{@client._id}\""
-      map_function = ViewCreator.has_many_through(@target_class, @relationship_as_viewed_by_target)
-      @peers = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)
-    end
-    
+      
     def inspect
       @client.instance_variable_get("@#{@relationship}".to_sym).inspect
     end
@@ -95,6 +83,15 @@ module RelaxDB
   
     def peer_ids
       @client.instance_variable_get("@#{@relationship}".to_sym)
+    end
+    
+    # Resolves the actual ids into real objects via a single GET to CouchDB. Called internally by each
+    def resolve
+      design_doc = @client.class
+      view_name = @relationship
+      view_path = "_view/#{design_doc}/#{view_name}?key=\"#{@client._id}\""
+      map_function = ViewCreator.has_many_through(@target_class, @relationship_as_viewed_by_target)
+      @peers = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)
     end
     
   end

@@ -38,6 +38,12 @@ module RelaxDB
         DesignDocument.new(client_class, {"_id" => "_design/#{client_class}"} )
       end
     end  
+    
+    def destroy!
+      # Implicitly prevent the object from being resaved by failing to update its revision
+      RelaxDB.db.delete("#{@data["_id"]}?rev=#{@data["_rev"]}")
+      self      
+    end
   
   end
   

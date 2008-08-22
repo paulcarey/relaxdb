@@ -49,7 +49,6 @@ module RelaxDB
     
   class CouchDB
     
-    attr_accessor :get_count
     attr_reader :cache
     attr_reader :url
     
@@ -67,32 +66,29 @@ module RelaxDB
         @logger = Logger.new(log_dev)
         @logger.level = log_level
       end
-      
-      @get_count = 0
     end
     
     def delete(uri=nil)
-      puri = uri ? ::CGI::unescape(uri) : ""
-      @logger.info("DELETE /#{@db}/#{puri}")
+      pp_uri = uri ? ::CGI::unescape(uri) : ""
+      @logger.info("DELETE /#{@db}/#{pp_uri}")
       @server.delete("/#{@db}/#{uri}")
     end
     
     def get(uri=nil)
-      @get_count +=1 
-      puri = uri ? ::CGI::unescape(uri) : ""
-      @logger.debug("GET /#{@db}/#{puri}")
+      pp_uri = uri ? ::CGI::unescape(uri) : ""
+      @logger.debug("GET /#{@db}/#{pp_uri}")
       @server.get("/#{@db}/#{uri}")
     end
     
     def put(uri=nil, json=nil)
-      puri = uri ? ::CGI::unescape(uri) : ""
-      @logger.info("PUT /#{@db}/#{puri} #{json}")
+      pp_uri = uri ? ::CGI::unescape(uri) : ""
+      @logger.info("PUT /#{@db}/#{pp_uri} #{json}")
       @server.put("/#{@db}/#{uri}", json)
     end
     
     def post(uri=nil, json=nil)
-      puri = uri ? ::CGI::unescape(uri) : ""
-      @logger.info("POST /#{@db}/#{puri} #{json}")
+      pp_uri = uri ? ::CGI::unescape(uri) : ""
+      @logger.info("POST /#{@db}/#{pp_uri} #{json}")
       @server.post("/#{@db}/#{uri}", json)
     end
 

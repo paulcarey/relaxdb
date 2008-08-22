@@ -1,7 +1,7 @@
 module RelaxDB
 
-  # Represents a sorted by view, where a composite key is emitted
-  # View name determined by sort attributes  
+  # Represents a CouchDB view, which is implicitly sorted by key
+  # The view name is determined by sort attributes  
   class SortedByView
 
     def initialize(class_name, *atts)

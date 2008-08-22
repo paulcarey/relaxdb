@@ -5,6 +5,7 @@ module RelaxDB
     class << self
       
       # Methods must start and finish on different lines
+      # The function declaration must start at the beginning of a line
       # As '-' is used as a delimiter, neither design doc nor view name may contain '-'
       # Exepcted function declaration form is 
       #   function DesignDoc-funcname-functype(doc) {

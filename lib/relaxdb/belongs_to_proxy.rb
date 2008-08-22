@@ -17,7 +17,6 @@ module RelaxDB
       @target = RelaxDB.load(id) if id
     end
   
-    # Not convinced by the semantics of this method. Revise.
     def target=(new_target)
       id = new_target ? new_target._id : nil
       @client.instance_variable_set("@#{@relationship}_id", id) 

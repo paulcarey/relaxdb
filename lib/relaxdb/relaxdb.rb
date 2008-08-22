@@ -32,10 +32,10 @@ module RelaxDB
       end
       
       data = JSON.parse(resp.body)
-      create_from_view(data)      
+      create_from_hash(data)      
     end
   
-    def create_from_view(data)
+    def create_from_hash(data)
       @objects = []
       data = data["rows"]
       data.each do |row|
@@ -66,7 +66,7 @@ module RelaxDB
       # presence of total_rows tells us a map function was invoked
       # otherwise a map reduce invocation occured
       if data["total_rows"]
-        create_from_view(data)
+        create_from_hash(data)
       else
         obj = data["rows"][0] && data["rows"][0]["value"]
         obj ? create_object(obj) : default_ret_val
