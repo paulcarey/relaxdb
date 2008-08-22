@@ -15,46 +15,45 @@ describe RelaxDB::HasManyProxy do
   describe "has_many" do
     
     it "should be considered enumerable" do
-      p = Player.new.save
-      p.items.should be_a_kind_of( Enumerable)
+      u = User.new.save
+      u.items.should be_a_kind_of( Enumerable)
     end
     
     it "should actually be enumerable" do
-      p = Player.new.save
-      p.items << Item.new(:name => "a")
-      p.items << Item.new(:name => "b")
-      names = p.items.inject("") { |memo, i| memo << i.name }
+      u = User.new.save
+      u.items << Item.new(:name => "a")
+      u.items << Item.new(:name => "b")
+      names = u.items.inject("") { |memo, i| memo << i.name }
       names.should == "ab"
     end
     
     it "should preserve the collection across the load / save boundary" do
-      p = Player.new.save
-      p.items << Item.new
-      p = RelaxDB.load p._id
-      p.items.size.should == 1
+      u = User.new.save
+      u.items << Item.new
+      u = RelaxDB.load u._id
+      u.items.size.should == 1
     end    
-    
+        
     describe "#<<" do
 
       it "should link the added item to the parent" do
-        p = Player.new
-        p.items << Item.new
-        p.items[0].player.should == p
+        u = User.new
+        u.items << Item.new
+        u.items[0].user.should == u
       end
     
       it "should return self" do
-        p = Player.new.save
-        p.items << Item.new << Item.new
-        p.items[0].player.should == p
-        p.items[1].player.should == p
+        u = User.new.save
+        u.items << Item.new << Item.new
+        u.items[0].user.should == u
+        u.items[1].user.should == u
       end
       
       it "should not created duplicates when invoked with same object more than once" do
-        p = Player.new.save
-        i = Invite.new
-        p.invites_received << i
-        p.invites_received << i
-        p.invites_received.size.should == 1
+        u = User.new.save
+        i = Item.new
+        u.items << i << i
+        u.items.size.should == 1
       end
               
     end
@@ -63,7 +62,7 @@ describe RelaxDB::HasManyProxy do
 
       it "should fail" do
         # This may be implemented in future
-        lambda { Player.new.items = [] }.should raise_error
+        lambda { User.new.items = [] }.should raise_error
       end
       
     end
@@ -71,12 +70,12 @@ describe RelaxDB::HasManyProxy do
     describe "#delete" do
     
       it "should nullify the belongs_to relationship" do
-        p = Player.new.save
+        u = User.new.save
         i = Item.new
-        p.items << i
-        p.items.delete i
-        i.player.should be_nil 
-        RelaxDB.load(i._id).player.should be_nil
+        u.items << i
+        u.items.delete i
+        i.user.should be_nil 
+        RelaxDB.load(i._id).user.should be_nil
       end
     
     end
@@ -84,38 +83,50 @@ describe RelaxDB::HasManyProxy do
     describe "#clear" do
     
       it "should result in an empty collection" do
-        p = Player.new.save
-        p.items << Item.new << Item.new
-        p.items.clear
-        p.items.should be_empty
+        u = User.new.save
+        u.items << Item.new << Item.new
+        u.items.clear
+        u.items.should be_empty
       end
 
       it "should nullify all child relationships" do
-        p = Player.new.save
+        u = User.new.save
         i1, i2 = Item.new, Item.new
-        p.items << i1
-        p.items << i2
-        p.items.clear
+        u.items << i1
+        u.items << i2
+        u.items.clear
 
-        i1.player.should be_nil
-        i2.player.should be_nil
-        RelaxDB.load(i1._id).player.should be_nil
-        RelaxDB.load(i2._id).player.should be_nil
+        i1.user.should be_nil
+        i2.user.should be_nil
+        RelaxDB.load(i1._id).user.should be_nil
+        RelaxDB.load(i2._id).user.should be_nil
       end
     
     end
-    
-    describe "owner#destroy" do
-
-      it "should nullify its child relationships" do
-        p = Player.new.save
-        p.items << Item.new << Item.new    
-        p.destroy!
-        Item.all_by(:player_id) { |q| q.key(p._id) }.should be_empty
-      end
-
-    end  
         
+    describe "owner" do
+    
+      it "should be able to form multiple relationships with the same class of child" do
+        u1, u2 = User.new.save, User.new.save
+        i = Invite.new(:recipient => u2)
+        u1.invites_sent << Invite.new
+        RelaxDB.load(u1._id).invites_sent[0] == i
+        RelaxDB.load(u2._id).invites_received[0] == i
+      end
+      
+      describe "#destroy" do
+
+        it "should nullify its child relationships" do
+          u = User.new.save
+          u.items << Item.new << Item.new    
+          u.destroy!
+          Item.all_by(:user_id) { |q| q.key(u._id) }.should be_empty
+        end
+
+      end  
+      
+    end
+              
   end
 
 end

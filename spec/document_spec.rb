@@ -201,23 +201,23 @@ describe RelaxDB::Document do
       end
 
       it "should be retrievable by relative criteria" do
-        Rating.new(:shards => 101).save
-        Rating.new(:shards => 150).save
-        Rating.all_by(:shards) { |q| q.endkey(125) }.size.should == 1
+        Rating.new(:stars => 1).save
+        Rating.new(:stars => 5).save
+        Rating.all_by(:stars) { |q| q.endkey(3) }.size.should == 1
       end
 
       it "should be retrievable by combined criteria" do
-        Player.new(:name => "paul", :age => 28).save
-        Player.new(:name => "paul", :age => 72).save
-        Player.new(:name => "atlas", :age => 99).save
-        Player.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+        User.new(:name => "paul", :age => 28).save
+        User.new(:name => "paul", :age => 72).save
+        User.new(:name => "atlas", :age => 99).save
+        User.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
       end
 
       it "should be retrievable by combined criteria where not all docs contain all attributes" do
-        Player.new(:name => "paul", :age => 28).save
-        Player.new(:name => "paul", :age => 72).save
-        Player.new(:name => "atlas").save
-        Player.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+        User.new(:name => "paul", :age => 28).save
+        User.new(:name => "paul", :age => 72).save
+        User.new(:name => "atlas").save
+        User.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
       end
 
     end

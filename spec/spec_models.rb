@@ -24,27 +24,15 @@ end
 class Item < RelaxDB::Document
   
   property :name
-  belongs_to :player
+  belongs_to :user
   
 end
 
-class Rating < RelaxDB::Document
-
-  property :stars, :default => 5
-  belongs_to :photo
-  
-  property :shards, :default => 50
-  belongs_to :player
-  
-end
-
-class Player < RelaxDB::Document
+class User < RelaxDB::Document
   
   property :name 
   property :age
   
-  has_one :rating
-
   has_many :items, :class => "Item"
   
   has_many :invites_received, :class => "Invite", :known_as => :recipient
@@ -59,6 +47,13 @@ class Post < RelaxDB::Document
   property :created_at
   property :viewed_at
   
+end
+
+class Rating < RelaxDB::Document
+
+  property :stars, :default => 5
+  belongs_to :photo
+
 end
 
 class Photo < RelaxDB::Document
@@ -90,7 +85,7 @@ class Tagging < RelaxDB::Document
 
 end
 
-class User < RelaxDB::Document
+class TwitterUser < RelaxDB::Document
   
   property :name
   references_many :followers, :class => "User", :known_as => :leaders
