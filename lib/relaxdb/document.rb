@@ -2,6 +2,8 @@ module RelaxDB
     
   class Document
     
+    attr_accessor :errors
+    
     # Define properties and property methods
     
     def self.property(prop, opts={})
@@ -32,6 +34,12 @@ module RelaxDB
         end
       end
       
+      if opts[:validation_msg]
+        define_method("#{prop}_validation_msg") do
+          opts[:validation_msg]
+        end
+      end
+      
     end
 
     def self.properties
@@ -51,6 +59,8 @@ module RelaxDB
     def initialize(hash={})
       # The default _id will be overwritten if loaded from CouchDB
       self._id = UuidGenerator.uuid 
+      
+      @errors = {}
 
       # Set default properties if this object has not known CouchDB
       unless hash["_rev"]
@@ -123,16 +133,21 @@ module RelaxDB
     end  
     
     def validates
+      success = true
       properties.each do |prop|
         if methods.include? "validate_#{prop}"
           prop_val = instance_variable_get("@#{prop}")
           unless send("validate_#{prop}", prop_val)
-            return false
+            success = false
+            if methods.include? "#{prop}_validation_msg"
+              @errors["#{prop}".to_sym] = send("#{prop}_validation_msg")
+            end
           end
         end
       end
+      success
     end
-    
+        
     def unsaved?
       instance_variable_get(:@_rev).nil?
     end
