@@ -259,4 +259,23 @@ describe RelaxDB::Document do
         
   end
   
+  describe "validator" do
+    
+    it "should prevent an object from being saved if it evaluates to false" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { false }
+      end
+      r.new.save.should be_false
+    end
+
+    it "should pass the property value to the validator" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { |tu| tu >=0 && tu < 3 }
+      end
+      r.new(:thumbs_up => 2).save.should_not be_false
+      r.new(:thumbs_up => 3).save.should be_false
+    end
+    
+  end
+  
 end

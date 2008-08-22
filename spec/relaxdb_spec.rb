@@ -45,6 +45,7 @@ describe RelaxDB do
     
   end
   
-  it "should offer an example where behaviour is different with caching enabled and caching disabled"
+  it "should offer an example where behaviour is different with caching enabled and caching disabled" do
+  end
             
 end

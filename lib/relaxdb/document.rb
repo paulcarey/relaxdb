@@ -25,6 +25,13 @@ module RelaxDB
           instance_variable_set("@#{prop}".to_sym, default)
         end
       end
+      
+      if opts[:validator]
+        define_method("validate_#{prop}") do |prop_val|
+          opts[:validator].call(prop_val)
+        end
+      end
+      
     end
 
     def self.properties
@@ -48,7 +55,7 @@ module RelaxDB
       # Set default properties if this object has not known CouchDB
       unless hash["_rev"]
         properties.each do |prop|
-         if self.class.instance_methods.include?("set_default_#{prop}")
+         if methods.include?("set_default_#{prop}")
            send("set_default_#{prop}")
          end
         end
@@ -105,11 +112,26 @@ module RelaxDB
     
     def save
       set_created_at_if_new
-
-      resp = RelaxDB.db.put("#{_id}", to_json)
-      self._rev = JSON.parse(resp.body)["rev"]
-      self
+      
+      if validates
+        resp = RelaxDB.db.put("#{_id}", to_json)
+        self._rev = JSON.parse(resp.body)["rev"]
+        self
+      else
+        false
+      end
     end  
+    
+    def validates
+      properties.each do |prop|
+        if methods.include? "validate_#{prop}"
+          prop_val = instance_variable_get("@#{prop}")
+          unless send("validate_#{prop}", prop_val)
+            return false
+          end
+        end
+      end
+    end
     
     def unsaved?
       instance_variable_get(:@_rev).nil?
