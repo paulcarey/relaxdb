@@ -31,7 +31,7 @@ describe RelaxDB::Document do
       p.viewed_at.should be_close(now, 1)
     end
     
-    it "silently ignores parameters that don't specify class attributes" do
+    it "will silently ignore parameters that don't specify class attributes" do
       # Consider this a feature or bug. It allows an object containing both request params
       # and superflous data to be passed directly to a constructor.
       Post.new(:foo => "").save
