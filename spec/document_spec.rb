@@ -112,9 +112,22 @@ describe RelaxDB::Document do
       lambda { p.save }.should raise_error
     end
     
-    it "results in undefined behaviour when invoked on unsaved objects" do
+    it "will result in undefined behaviour when invoked on unsaved objects" do
       Photo.new.destroy!      
       lambda { Atom.new.destroy! }.should raise_error
+    end
+  
+  end
+  
+  describe "#destroy_all!" do
+  
+    it "should delete from CouchDB all documents of the corresponding class" do
+      Atom.new.save
+      Post.new.save
+      Post.new.save
+      Post.destroy_all!
+      Post.all.should be_empty
+      Atom.all.size.should == 1
     end
   
   end
@@ -134,6 +147,82 @@ describe RelaxDB::Document do
     end
     
   end
+  
+  describe "#all" do
+  
+    it "should return all instances of that class" do
+      Photo.new.save
+      Rating.new.save
+      Rating.new.save
+      Rating.all.size.should == 2      
+    end
+  
+    it "should return an empty array when no instances exist" do
+      Atom.all.should be_an_instance_of(Array)
+      Atom.all.should be_empty
+    end
+    
+  end
+  
+  describe "#all_by" do
+  
+    it "should sort ascending by default" do
+      Post.new(:content => "b").save
+      Post.new(:content => "a").save
+      posts = Post.all_by(:content)
+      posts[0].content.should == "a"
+      posts[1].content.should == "b"
+    end
+
+    it "should sort desc when specified" do
+      Post.new(:content => "a").save
+      Post.new(:content => "b").save
+      posts = Post.all_by(:content) { |q| q.descending(true) }
+      posts[0].content.should == "b"
+      posts[1].content.should == "a"
+    end
+  
+    it "should sort date attributes lexicographically" do
+      t = Time.new
+      Post.new(:viewed_at => t+1000, :content => "late").save
+      Post.new(:viewed_at => t, :content => "early").save
+      posts = Post.all_by(:viewed_at)
+      posts[0].content.should == "early"
+      posts[1].content.should == "late"
+    end
+    
+    describe "results" do
+
+      it "should be retrievable by exact criteria" do
+        Post.new(:subject => "foo").save
+        Post.new(:subject => "foo").save
+        Post.new(:subject => "bar").save
+        Post.all_by(:subject) { |q| q.key("foo") }.size.should == 2
+      end
+
+      it "should be retrievable by relative criteria" do
+        Rating.new(:shards => 101).save
+        Rating.new(:shards => 150).save
+        Rating.all_by(:shards) { |q| q.endkey(125) }.size.should == 1
+      end
+
+      it "should be retrievable by combined criteria" do
+        Player.new(:name => "paul", :age => 28).save
+        Player.new(:name => "paul", :age => 72).save
+        Player.new(:name => "atlas", :age => 99).save
+        Player.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+      end
+
+      it "should be retrievable by combined criteria where not all docs contain all attributes" do
+        Player.new(:name => "paul", :age => 28).save
+        Player.new(:name => "paul", :age => 72).save
+        Player.new(:name => "atlas").save
+        Player.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+      end
+
+    end
+    
+  end  
   
   describe "defaults" do
     
