@@ -36,7 +36,8 @@ module RelaxDB
       self.class.properties
     end
     
-    # Specifying these properties here is kinda ugly. Consider a better solution.
+    # Specifying these properties here (after property method has been defined) 
+    # is kinda ugly. Consider a better solution.
     property :_id 
     property :_rev    
     
@@ -110,12 +111,12 @@ module RelaxDB
       self
     end  
     
-    def unsaved
+    def unsaved?
       instance_variable_get(:@_rev).nil?
     end
     
     def set_created_at_if_new
-      if unsaved and methods.include? "created_at"
+      if unsaved? and methods.include? "created_at"
         # Don't override it if it's already been set
         unless instance_variable_get(:@created_at)
           instance_variable_set(:@created_at, Time.now)
@@ -133,10 +134,13 @@ module RelaxDB
       proxy     
     end
     
+    # Returns true if CouchDB considers other to be the same as self
     def ==(other)
       other && _id == other._id
     end
    
+    # Deprecated. This method was experimental and will be removed
+    # once multi key GETs are available in CouchDB.
     def self.references_many(relationship, opts={})
       # Treat the representation as a standard property 
       properties << relationship
@@ -262,16 +266,19 @@ module RelaxDB
       
       # Implicitly prevent the object from being resaved by failing to update its revision
       RelaxDB.db.delete("#{_id}?rev=#{_rev}")
+      self
     end
 
-    # Leaves the corresponding DesignDoc for this class intact. Should it? No it shouldn't!
+    # Note that destroy_all! leaves the corresponding DesignDoc for this class intact
     def self.destroy_all!
       self.all.each do |o| 
-        # As far as I'm aware, a reload is only required for deleting objects with self referential relationships
-        obj = RelaxDB.load(o._id)
-        obj.destroy!
+        # A reload is required for deleting objects with a self referential references_many relationship
+        # when a cache is not used. This makes destroy_all! very slow. Given that references_many is
+        # now deprecated and will soon be removed, the required reload is no longer performed.
+        # obj = RelaxDB.load(o._id)
+        # obj.destroy!
         
-        # o.destroy!
+        o.destroy!
       end
     end
             

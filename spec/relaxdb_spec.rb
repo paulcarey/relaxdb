@@ -12,192 +12,14 @@ describe RelaxDB do
     end
     RelaxDB.db.put
   end
-    
-  describe "Primitive Attributes" do
-    
-    it "should throw a warning if a hash passed to the constructor contains an invalid key"
-    
-    it "should throw warnings if a class defines methods like has_many, properties etc. perhaps also if it redfines an existing method. maybe not. have to assume some intelligence somewhere."
-        
-    it "should be a functional CouchDB document even if it specifies no properties" do
-      d = Dullard.new
-      d.save
-      d.save
-    end
-    
-    it "loaded object contains the attributes and values it was saved with" do
-      p = Player.new :name => "paul", :age => 1812
-      p.save
-      p = RelaxDB.load(p._id)
-      p.name.should == "paul"
-      p.age.should == 1812
-    end
-
-    it "loaded object can be resaved" do
-      p = Player.new :name => "paul", :age => 101
-      p.save
-      p = RelaxDB.load(p._id)
-      p.save
-    end        
-    
-    it "attributes that end in _at are converted to dates on object initialisation" do
-      now = Time.now
-      p = Post.new(:viewed_at => now).save
-      p = RelaxDB.load(p._id)
-      p.viewed_at.class.should == Time
-      p.viewed_at.should be_close(now, 1)
-    end      
-        
-  end
-  
+      
   # Test organistion and naming is a mess. Revise.
   # Warnings should be provided when name collisions occur between properties and relationships
   describe "has_one and belongs_to" do
     
     describe "both objects created" do
     end
-        
-    describe "both objects loaded" do
-      it "should be able to load the parent and reference itself via the child" do
-        p = Player.new.save
-        id = p._id
-        r = Rating.new(:player => p).save
-        p = RelaxDB.load(id)
-        p.rating.player._id.should == id
-      end
-      
-    end
-        
-    describe "parent loaded, child created" do
-      it "assigning to a has_one relationship should create a reference from the child to the parent" do
-        p = Player.new.save
-        r = Rating.new
-        p.rating = r
-        r.player._id.should == p._id
-      end
-      
-      it "assigning to a has_one relationship should save the assigned object" do
-        p = Player.new.save
-        r = Rating.new
-        p.rating = r
-        r._rev.should_not == nil
-      end
-      
-      it "assigning nil to a has_one relationship should set the target to nil" do
-        p = Player.new.save
-        p.rating = nil
-        p.rating.should == nil
-      end
-      
-      it "assigning to a has_one relationship should nullify any existing relationship in the database" do
-        p = Player.new.save
-        r = Rating.new
-        p.rating = r
-        p.rating = nil
-        r.player.should be_nil
-        RelaxDB.load(r._id).player.should be_nil
-      end
-      
-      it "assigning to a has_one relationship will not nullify any unknown in memory object" do
-        p = Player.new.save
-        r = Rating.new.save
-        p.rating = r
-        r_copy = RelaxDB.load(r._id)
-        p.rating = nil
-        r_copy.player.should_not be_nil
-      end
-      
-      it "destroy! should nullify a has_one relationship" do
-        p = Player.new.save
-        r = Rating.new
-        p.rating = r
-        p.destroy!
-        
-        RelaxDB.load(r._id).player.should be_nil
-      end
-      
-      
-      it "should provide a warning if constructor hash key name doesn't map to existing property name"
-      
-      it "should provide a warning if property name or assocations clash"
-      
-      it "assigning to the parent should cause the parent to be saved"
-      # or alternatively the child relationship shouldn't be saved
-      # similarly for has_many? yes!
-      # >> p = Player.new :name => "Dexter"
-      # => #<Player:1724330, _id: 76278, name: Dexter>
-      # >> p.rating = Rating.new(:shards => 1001)
-      # => #<Rating:1651080, _id: 06704, _rev: 2339049119, shards: 1001, player_id: 76278>
-      # >> p
-      # => #<Player:1724330, _id: 76278, name: Dexter>      
-      
-      it "repeated invocations of a has_one relationship should return the same object" do
-        p = Player.new.save
-        r = Rating.new(:player => p).save
-        p = RelaxDB.load(p._id)
-        p.rating.object_id.should == p.rating.object_id
-      end
-      
-      it "repeated invocations of a belongs_to relationship should return the same object" do
-        p = Player.new.save
-        r = Rating.new(:player => p).save
-        r = RelaxDB.load(r._id)
-        r.player.object_id.should == r.player.object_id
-      end
-      
-      it "assigning to a belongs_to relationship establishes the relationship once the object is saved" do
-        p = Player.new.save
-        r = Rating.new
-        r.player = p
-        p.rating.should == nil # I'm not saying this is correct - merely codifying how things stand 
-        r.save
-        p.rating._id.should == r._id
-      end
-      
-      it "accessing a has_one relationship that hasn't yet been created should return nil" do
-        p = Player.new
-        p.rating.should == nil
-      end
-      
-      it "accessing a belongs_to relationship that hasn't yet been created should return nil" do
-        r = Rating.new
-        r.player.should == nil
-      end
-
-      it "should be able to load the child and access the parent" do
-        p = Player.new.save
-        r = Rating.new(:player => p).save
-        r = RelaxDB.load r._id
-        r.player._id.should == p._id
-        
-      end
-      
-      it "should be able to establish a belongs_to relationship via constructor attribute" do
-        p = Player.new
-        r = Rating.new :player => p
-        r.player._id.should == p._id
-      end
-      
-      it "should be able to establish a has_one relationship via a constructor attribute for unsaved" do
-        r = Rating.new
-        p = Player.new :rating => r
-        p.rating.should == r
-      end
-
-      it "should be able to establish a has_one relationship via a constructor attribute for saved" do
-        r = Rating.new.save
-        p = Player.new :rating => r
-        p.rating.should == r
-      end
-      
-      it "a belongs to relationship should be establishable merely by setting the id" do
-        p = Player.new.save
-        r = Rating.new(:player_id => p._id).save
-        p.rating._id.should == r._id
-      end
-      
-    end
-    
+            
     describe "has_many" do
       
       it "adding an item should link the added item to the parent" do
@@ -347,31 +169,31 @@ describe RelaxDB do
     
     # This test more complex than it needs to be to prove the point
     # It also serves as a proof of a self referential references_many, but there are better places for that
-    it "destroy_all should play nice with self referential references_many" do
-      u1 = User.new(:name => "u1")
-      u2 = User.new(:name => "u2")
-      u3 = User.new(:name => "u3")
-      
-      u1.followers << u2
-      u1.followers << u3
-      u3.leaders << u2
-      
-      u1f = u1.followers.map { |u| u.name }
-      u1f.sort.should == ["u2", "u3"]
-      u1.leaders.should be_empty
-      
-      u2.leaders.size.should == 1
-      u2.leaders[0].name.should == "u1"
-      u2.followers.size.should == 1
-      u2.followers[0].name.should == "u3"
-      
-      u3l = u3.leaders.map { |u| u.name }
-      u3l.sort.should == ["u1", "u2"]
-      u3.followers.should be_empty
-      
-      User.destroy_all!
-      User.all.should be_empty
-    end
+    # it "destroy_all should play nice with self referential references_many" do
+    #   u1 = User.new(:name => "u1")
+    #   u2 = User.new(:name => "u2")
+    #   u3 = User.new(:name => "u3")
+    #   
+    #   u1.followers << u2
+    #   u1.followers << u3
+    #   u3.leaders << u2
+    #   
+    #   u1f = u1.followers.map { |u| u.name }
+    #   u1f.sort.should == ["u2", "u3"]
+    #   u1.leaders.should be_empty
+    #   
+    #   u2.leaders.size.should == 1
+    #   u2.leaders[0].name.should == "u1"
+    #   u2.followers.size.should == 1
+    #   u2.followers[0].name.should == "u3"
+    #   
+    #   u3l = u3.leaders.map { |u| u.name }
+    #   u3l.sort.should == ["u1", "u2"]
+    #   u3.followers.should be_empty
+    #   
+    #   User.destroy_all!
+    #   User.all.should be_empty
+    # end
     
   end
   

@@ -1,4 +1,15 @@
-class Dullard < RelaxDB::Document
+class Atom < RelaxDB::Document
+end
+
+class Primitives < RelaxDB::Document
+  
+  property :str
+  property :num
+  property :true_bool
+  property :false_bool
+  property :created_at
+  property :empty
+  
 end
 
 class Invite < RelaxDB::Document
@@ -18,13 +29,13 @@ class Item < RelaxDB::Document
 end
 
 class Rating < RelaxDB::Document
+
+  property :stars, :default => 5
+  belongs_to :photo
   
   property :shards, :default => 50
   belongs_to :player
   
-end
-
-class User < RelaxDB::Document
 end
 
 class Player < RelaxDB::Document
@@ -53,6 +64,9 @@ end
 class Photo < RelaxDB::Document
   
   property :name
+  
+  has_one :rating
+  
   references_many :tags, :class => "Tag", :known_as => :photos
   
   has_many :taggings, :class => "Tagging"
