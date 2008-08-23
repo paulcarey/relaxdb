@@ -1,5 +1,12 @@
 module RelaxDB
   
+  #
+  # The AllDelegator allows clients to query CouchDB in a natural way
+  #   FooDoc.all - returns all docs in CouchDB of type FooDoc
+  #   FooDoc.all.sorted_by(:att1, :att2) - returns all docs in CouchDB of type FooDoc sorted by att1, then att2
+  #   FooDoc.all.sorted_by(:att1) { |q| q.key("bar") } - returns all docs of type FooDoc where att1 equals "bar"
+  #   FooDoc.all.destroy! - does what it says on the tin
+  #
   class AllDelegator < Delegator
     
     def initialize(klass)
