@@ -7,6 +7,7 @@ Rakefile
 config/hoe.rb
 config/requirements.rb
 lib/relaxdb.rb
+lib/relaxdb/all_delegator.rb
 lib/relaxdb/belongs_to_proxy.rb
 lib/relaxdb/design_doc.rb
 lib/relaxdb/document.rb

@@ -269,23 +269,9 @@ module RelaxDB
     end
         
     def self.all
-      view_path = "_view/#{self}/all"
-      map_function = ViewCreator.all(self)
-      
-      RelaxDB::retrieve(view_path, self, "all", map_function)      
+      @all_delegator ||= AllDelegator.new(self)      
     end
-    
-    # As method names go, I'm not too enamoured with all_by...
-    # Post.all.sort_by would be nice, as would Post.all.destroy! etc.
-    def self.all_by(*atts)
-      v = SortedByView.new(self.name, *atts)
-
-      q = Query.new(self.name, v.view_name)
-      yield q if block_given?
-      
-      RelaxDB::retrieve(q.view_path, self, v.view_name, v.map_function)      
-    end
-            
+                
     # destroy! nullifies all relationships with peers and children before deleting 
     # itself in CouchDB
     # The nullification and deletion are not performed in a transaction
@@ -305,19 +291,6 @@ module RelaxDB
       # Implicitly prevent the object from being resaved by failing to update its revision
       RelaxDB.db.delete("#{_id}?rev=#{_rev}")
       self
-    end
-
-    # Note that destroy_all! leaves the corresponding DesignDoc for this class intact
-    def self.destroy_all!
-      self.all.each do |o| 
-        # A reload is required for deleting objects with a self referential references_many relationship
-        # when a cache is not used. This makes destroy_all! very slow. Given that references_many is
-        # now deprecated and will soon be removed, the required reload is no longer performed.
-        # obj = RelaxDB.load(o._id)
-        # obj.destroy!
-        
-        o.destroy!
-      end
     end
             
   end
