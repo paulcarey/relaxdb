@@ -1,5 +1,7 @@
 module RelaxDB
   
+  @@db = nil
+  
   class <<self
     
     def bulk_save(*objs)
@@ -86,7 +88,8 @@ module RelaxDB
     def use_scratch
       configure(:host => "localhost", :port => 5984, :db => "scratch", :log_dev => STDOUT, :log_level => Logger::DEBUG)
     end
-  
+    
+    # rename to pp_get ?
     def get(uri=nil)
       resp = db.get(uri)
       pp(JSON.parse(resp.body))
