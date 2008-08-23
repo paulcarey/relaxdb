@@ -1,9 +1,20 @@
-class UuidGenerator
+module RelaxDB
+
+  class UuidGenerator
   
-  def self.uuid
-    # Algorithm with better distribution characteristics suggested :)
-    # Might be nice to switch impl at runtime - relationships easier to examine with 4 digit ids
-    rand.to_s[2,5]
+    def self.uuid
+      unless @length
+        UUID.new 
+      else
+        rand.to_s[2, @length]
+      end
+    end
+  
+    # Convenience that helps relationship debuggging and model exploration
+    def self.id_length=(length)
+      @length = length
+    end
+  
   end
-  
+
 end
