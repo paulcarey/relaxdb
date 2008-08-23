@@ -27,7 +27,7 @@ module RelaxDB
     def destroy!
       each do |o| 
         # A reload is required for deleting objects with a self referential references_many relationship
-        # when a cache is not used. This makes destroy_all! very slow. Given that references_many is
+        # when a cache is not used. This makes all.destroy! very slow. Given that references_many is
         # now deprecated and will soon be removed, the required reload is no longer performed.
         # obj = RelaxDB.load(o._id)
         # obj.destroy!

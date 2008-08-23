@@ -7,12 +7,12 @@ describe RelaxDB::Query do
 
     it "should match a single key attribute" do
       q = RelaxDB::SortedByView.new("", :foo)
-      q.view_name.should == "all_by_foo"
+      q.view_name.should == "all_sorted_by_foo"
     end
     
     it "should match key attributes" do
       q = RelaxDB::SortedByView.new("", :foo, :bar)
-      q.view_name.should == "all_by_foo_and_bar"
+      q.view_name.should == "all_sorted_by_foo_and_bar"
     end
   end
   
@@ -30,9 +30,9 @@ describe RelaxDB::Query do
     end
     
     it "should honour startkey, endkey and count" do
-      q = RelaxDB::Query.new("Zenith", "all_by_name_and_height")
+      q = RelaxDB::Query.new("Zenith", "all_sorted_by_name_and_height")
       q.startkey(["olympus"]).endkey(["vesuvius", 3600]).count(100)
-      q.view_path.should == "_view/Zenith/all_by_name_and_height?startkey=%5B%22olympus%22%5D&endkey=%5B%22vesuvius%22%2C3600%5D&count=100"
+      q.view_path.should == "_view/Zenith/all_sorted_by_name_and_height?startkey=%5B%22olympus%22%5D&endkey=%5B%22vesuvius%22%2C3600%5D&count=100"
     end
         
     it "should specify the key as the empty string if key was set to nil" do

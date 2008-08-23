@@ -120,7 +120,7 @@ describe RelaxDB::HasManyProxy do
           u = User.new.save
           u.items << Item.new << Item.new    
           u.destroy!
-          Item.all_by(:user_id) { |q| q.key(u._id) }.should be_empty
+          Item.all.sorted_by(:user_id) { |q| q.key(u._id) }.should be_empty
         end
 
       end  

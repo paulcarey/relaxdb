@@ -106,12 +106,12 @@ describe RelaxDB::ReferencesManyProxy do
       
     end  
     
-    # Leaving this test as a reminder of problems with destroy_all and a self referential 
+    # Leaving this test as a reminder of problems with all.destroy and a self referential 
     # references_many until references_many is removed
     #
     # This test more complex than it needs to be to prove the point
     # It also serves as a proof of a self referential references_many, but there are better places for that
-    # it "destroy_all should play nice with self referential references_many" do
+    # it "all.destroy should play nice with self referential references_many" do
     #   u1 = TwitterUser.new(:name => "u1")
     #   u2 = TwitterUser.new(:name => "u2")
     #   u3 = TwitterUser.new(:name => "u3")
@@ -133,7 +133,7 @@ describe RelaxDB::ReferencesManyProxy do
     #   u3l.sort.should == ["u1", "u2"]
     #   u3.followers.should be_empty
     #   
-    #   TwitterUser.destroy_all!
+    #   TwitterUser.all.destroy!
     #   TwitterUser.all.should be_empty
     # end
           

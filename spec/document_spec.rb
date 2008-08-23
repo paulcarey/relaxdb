@@ -119,13 +119,13 @@ describe RelaxDB::Document do
   
   end
   
-  describe "#destroy_all!" do
+  describe "#all.destroy!" do
   
     it "should delete from CouchDB all documents of the corresponding class" do
       Atom.new.save
       Post.new.save
       Post.new.save
-      Post.destroy_all!
+      Post.all.destroy!
       Post.all.should be_empty
       Atom.all.size.should == 1
     end
@@ -164,12 +164,12 @@ describe RelaxDB::Document do
     
   end
   
-  describe "#all_by" do
+  describe "#all.sorted_by" do
   
     it "should sort ascending by default" do
       Post.new(:content => "b").save
       Post.new(:content => "a").save
-      posts = Post.all_by(:content)
+      posts = Post.all.sorted_by(:content)
       posts[0].content.should == "a"
       posts[1].content.should == "b"
     end
@@ -177,7 +177,7 @@ describe RelaxDB::Document do
     it "should sort desc when specified" do
       Post.new(:content => "a").save
       Post.new(:content => "b").save
-      posts = Post.all_by(:content) { |q| q.descending(true) }
+      posts = Post.all.sorted_by(:content) { |q| q.descending(true) }
       posts[0].content.should == "b"
       posts[1].content.should == "a"
     end
@@ -186,7 +186,7 @@ describe RelaxDB::Document do
       t = Time.new
       Post.new(:viewed_at => t+1000, :content => "late").save
       Post.new(:viewed_at => t, :content => "early").save
-      posts = Post.all_by(:viewed_at)
+      posts = Post.all.sorted_by(:viewed_at)
       posts[0].content.should == "early"
       posts[1].content.should == "late"
     end
@@ -197,27 +197,27 @@ describe RelaxDB::Document do
         Post.new(:subject => "foo").save
         Post.new(:subject => "foo").save
         Post.new(:subject => "bar").save
-        Post.all_by(:subject) { |q| q.key("foo") }.size.should == 2
+        Post.all.sorted_by(:subject) { |q| q.key("foo") }.size.should == 2
       end
 
       it "should be retrievable by relative criteria" do
         Rating.new(:stars => 1).save
         Rating.new(:stars => 5).save
-        Rating.all_by(:stars) { |q| q.endkey(3) }.size.should == 1
+        Rating.all.sorted_by(:stars) { |q| q.endkey(3) }.size.should == 1
       end
 
       it "should be retrievable by combined criteria" do
         User.new(:name => "paul", :age => 28).save
         User.new(:name => "paul", :age => 72).save
         User.new(:name => "atlas", :age => 99).save
-        User.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+        User.all.sorted_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
       end
 
       it "should be retrievable by combined criteria where not all docs contain all attributes" do
         User.new(:name => "paul", :age => 28).save
         User.new(:name => "paul", :age => 72).save
         User.new(:name => "atlas").save
-        User.all_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+        User.all.sorted_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
       end
 
     end

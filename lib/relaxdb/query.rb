@@ -9,9 +9,9 @@ module RelaxDB
   # The query object is currently inconsistent with the RelaxDB object idiom. Consider
   #   paul = User.new(:name => "paul").save; Event.new(:host=>paul).save
   # but an event query requires
-  #   Event.all_by(:host_id) { |q| q.key(paul._id) } 
+  #   Event.all.sorted_by(:host_id) { |q| q.key(paul._id) } 
   # rather than
-  #   Event.all_by(:host) { |q| q.key(paul) }  
+  #   Event.all.sorted_by(:host) { |q| q.key(paul) }  
   # I feel that both forms should be supported
   #
   class Query

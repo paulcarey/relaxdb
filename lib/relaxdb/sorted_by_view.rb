@@ -10,7 +10,7 @@ module RelaxDB
     end
 
     def view_name
-      name = "all_by"
+      name = "all_sorted_by"
 
       @atts.each do |att|
         name += "_#{att}_and"
