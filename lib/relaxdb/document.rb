@@ -124,7 +124,7 @@ module RelaxDB
     def save
       set_created_at_if_new
       
-      if validates
+      if validates?
         resp = RelaxDB.db.put("#{_id}", to_json)
         self._rev = JSON.parse(resp.body)["rev"]
         self
@@ -133,7 +133,7 @@ module RelaxDB
       end
     end  
     
-    def validates
+    def validates?
       success = true
       properties.each do |prop|
         if methods.include? "validate_#{prop}"

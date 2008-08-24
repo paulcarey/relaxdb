@@ -92,3 +92,13 @@ class TwitterUser < RelaxDB::Document
   references_many :leaders, :class => "User", :known_as => :followers
   
 end
+
+class Dysfunctional < RelaxDB::Document
+  has_one :failure
+  has_many :failures, :class => "Failure"
+end
+
+class Failure < RelaxDB::Document
+  property :pathological, :validator => lambda { false }
+  belongs_to :dysfunctional
+end

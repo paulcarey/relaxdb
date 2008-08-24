@@ -55,6 +55,13 @@ describe RelaxDB::HasManyProxy do
         u.items << i << i
         u.items.size.should == 1
       end
+      
+      it "should return false when the child fails validation" do
+        d = Dysfunctional.new
+        r = (d.failures << Failure.new)
+        r.should be_false
+        d.failures.should be_empty
+      end
               
     end
     

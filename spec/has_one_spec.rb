@@ -106,6 +106,13 @@ describe RelaxDB::HasOneProxy do
         p.rating = nil
         r_copy.photo.should_not be_nil
       end
+      
+      it "will not throw an error when the rhs fails validation" do
+        d = Dysfunctional.new.save
+        f = Failure.new
+        d.failure = f
+        d.failure.should == f
+      end
 
     end  
            

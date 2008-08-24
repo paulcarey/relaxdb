@@ -65,19 +65,18 @@ module RelaxDB
       data = JSON.parse(resp.body)
 
       # presence of total_rows tells us a map function was invoked
-      # otherwise a map reduce invocation occured
+      # if it's absent a map reduce invocation occured
       if data["total_rows"]
         create_from_hash(data)
       else
         obj = data["rows"][0] && data["rows"][0]["value"]
-        obj ? create_object(obj) : default_ret_val
+        obj ? ViewObject.create(obj) : default_ret_val
       end
     end
         
     def create_from_hash(data)
       @objects = []
-      data = data["rows"]
-      data.each do |row|
+      data["rows"].each do |row|
         @objects << create_object(row["value"])
       end
       @objects      
@@ -90,7 +89,7 @@ module RelaxDB
         k = Module.const_get(klass)
         k.new(data)
       else 
-        # data is not of a known class - it may have been created with a reduce function
+        # data is not of a known class
         ViewObject.create(data)
       end
     end
