@@ -3,14 +3,13 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 
 describe RelaxDB::ReferencesManyProxy do
 
+  before(:all) do
+    RelaxDB.configure(:host => "localhost", :port => 5984)  
+  end
+
   before(:each) do
-    RelaxDB.configure(:host => "localhost", :port => 5984, :db => "relaxdb_spec_db")
-    begin
-      RelaxDB.db.delete
-    rescue => e
-      puts e
-    end
-    RelaxDB.db.put
+    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
+    RelaxDB.use_db "relaxdb_spec_db"
   end
 
   describe "references_many" do

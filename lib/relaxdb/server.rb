@@ -39,6 +39,10 @@ module RelaxDB
       res
     end
     
+    def to_s
+      "http://#{@host}:#{@port}/"
+    end
+    
     private
 
     def handle_error(req, res)
@@ -46,52 +50,62 @@ module RelaxDB
       raise e
     end
   end
-    
+      
   class CouchDB
-    
-    attr_reader :cache
-    attr_reader :url
-    
+        
     def initialize(config)
       @server = RelaxDB::Server.new(config[:host], config[:port])
-      @db = config[:db]
-      @url = "http://#{config[:host]}:#{config[:port]}/#{config[:db]}"
-
-      if config[:logger]
-        @logger = config[:logger]
-      else
-        # Revise the Tempfile idea - it's not great
-        log_dev = config[:log_dev] || Tempfile.new('couchdb.log')
-        log_level = config[:log_level] || Logger::INFO
-        @logger = Logger.new(log_dev)
-        @logger.level = log_level
+      @db = config[:db]      
+      
+      @logger = config[:logger] ? config[:logger] : Logger.new(Tempfile.new('couchdb.log'))
+      UUID.config({:logger => @logger})
+    end
+    
+    def use_db(name)
+      begin
+        @server.get("/#{name}")
+      rescue
+        @server.put("/#{name}", "")
       end
+      @db = name
     end
     
-    def delete(uri=nil)
-      pp_uri = uri ? ::CGI::unescape(uri) : ""
-      @logger.info("DELETE /#{@db}/#{pp_uri}")
-      @server.delete("/#{@db}/#{uri}")
+    def delete_db(name)
+      @server.delete("/#{name}")
     end
     
-    def get(uri=nil)
-      pp_uri = uri ? ::CGI::unescape(uri) : ""
-      @logger.debug("GET /#{@db}/#{pp_uri}")
-      @server.get("/#{@db}/#{uri}")
+    def list_dbs
+      JSON.parse(@server.get("/_all_dbs").body)
     end
     
-    def put(uri=nil, json=nil)
-      pp_uri = uri ? ::CGI::unescape(uri) : ""
-      @logger.info("PUT /#{@db}/#{pp_uri} #{json}")
-      @server.put("/#{@db}/#{uri}", json)
+    def delete(path=nil)
+      @logger.info("DELETE /#{@db}/#{unesc(path)}")
+      @server.delete("/#{@db}/#{path}")
     end
     
-    def post(uri=nil, json=nil)
-      pp_uri = uri ? ::CGI::unescape(uri) : ""
-      @logger.info("POST /#{@db}/#{pp_uri} #{json}")
-      @server.post("/#{@db}/#{uri}", json)
+    def get(path=nil)
+      @logger.debug("GET /#{@db}/#{unesc(path)}")
+      @server.get("/#{@db}/#{path}")
     end
-
+        
+    def post(path=nil, json=nil)
+      @logger.info("POST /#{@db}/#{unesc(path)} #{json}")
+      @server.post("/#{@db}/#{path}", json)
+    end
+    
+    def put(path=nil, json=nil)
+      @logger.info("PUT /#{@db}/#{unesc(path)} #{json}")
+      @server.put("/#{@db}/#{path}", json)
+    end
+    
+    def unesc(path)
+       path ? ::CGI::unescape(path) : ""
+    end
+    
+    def uri
+      "#@server" / @db
+    end
+    
   end
         
 end

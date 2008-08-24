@@ -4,12 +4,12 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB::HasOneProxy do
   
   before(:all) do
-    RelaxDB.configure(:host => "localhost", :port => 5984, :db => "relaxdb_spec_db")  
+    RelaxDB.configure(:host => "localhost", :port => 5984)  
   end
 
   before(:each) do
-    RelaxDB.db.delete
-    RelaxDB.db.put
+    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
+    RelaxDB.use_db "relaxdb_spec_db"
   end
         
   describe "has_one" do

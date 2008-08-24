@@ -3,13 +3,33 @@ module RelaxDB
   @@db = nil
   
   class <<self
+
+    def configure(config)
+      @@db = CouchDB.new(config)
+    end
+  
+    def db
+      @@db
+    end
+    
+    # Creates the named database if it doesn't already exist
+    def use_db(name)
+      db.use_db(name)
+    end
+    
+    def delete_db(name)
+      db.delete_db(name)
+    end
+    
+    def list_dbs
+      db.list_dbs
+    end
     
     def bulk_save(*objs)
       docs = {}
       objs.each { |o| docs[o._id] = o }
     
-      database = RelaxDB.db
-      resp = database.post("_bulk_docs", { "docs" => objs }.to_json )
+      resp = db.post("_bulk_docs", { "docs" => objs }.to_json )
       data = JSON.parse(resp.body)
     
       data["new_revs"].each do |new_rev|
@@ -36,7 +56,24 @@ module RelaxDB
       data = JSON.parse(resp.body)
       create_from_hash(data)      
     end
-  
+      
+    def view(design_doc, view_name, default_ret_val=[])
+      q = Query.new(design_doc, view_name)
+      yield q if block_given?
+      
+      resp = db.get(q.view_path)
+      data = JSON.parse(resp.body)
+
+      # presence of total_rows tells us a map function was invoked
+      # otherwise a map reduce invocation occured
+      if data["total_rows"]
+        create_from_hash(data)
+      else
+        obj = data["rows"][0] && data["rows"][0]["value"]
+        obj ? create_object(obj) : default_ret_val
+      end
+    end
+        
     def create_from_hash(data)
       @objects = []
       data = data["rows"]
@@ -57,40 +94,10 @@ module RelaxDB
         ViewObject.create(data)
       end
     end
+        
+    # Convenience methods - should be in a diffent module?
     
-    def view(design_doc, view_name, default_ret_val=[])
-      q = Query.new(design_doc, view_name)
-      yield q if block_given?
-      
-      resp = db.get(q.view_path)
-      data = JSON.parse(resp.body)
-
-      # presence of total_rows tells us a map function was invoked
-      # otherwise a map reduce invocation occured
-      if data["total_rows"]
-        create_from_hash(data)
-      else
-        obj = data["rows"][0] && data["rows"][0]["value"]
-        obj ? create_object(obj) : default_ret_val
-      end
-    end
-      
-    def configure(config)
-      @@db = CouchDB.new(config)
-    end
-  
-    def db
-      @@db
-    end
-  
-    # Convenience methods - should potentially be in a diffent module
-  
-    def use_scratch
-      configure(:host => "localhost", :port => 5984, :db => "scratch", :log_dev => STDOUT, :log_level => Logger::DEBUG)
-    end
-    
-    # rename to pp_get ?
-    def get(uri=nil)
+    def pp_get(uri=nil)
       resp = db.get(uri)
       pp(JSON.parse(resp.body))
     end
