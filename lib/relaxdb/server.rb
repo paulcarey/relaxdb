@@ -55,8 +55,6 @@ module RelaxDB
         
     def initialize(config)
       @server = RelaxDB::Server.new(config[:host], config[:port])
-      @db = config[:db]      
-      
       @logger = config[:logger] ? config[:logger] : Logger.new(Tempfile.new('couchdb.log'))
       UUID.config({:logger => @logger})
     end
@@ -84,7 +82,7 @@ module RelaxDB
     end
     
     def get(path=nil)
-      @logger.debug("GET /#{@db}/#{unesc(path)}")
+      @logger.info("GET /#{@db}/#{unesc(path)}")
       @server.get("/#{@db}/#{path}")
     end
         
@@ -104,6 +102,10 @@ module RelaxDB
     
     def uri
       "#@server" / @db
+    end
+    
+    def name
+      @db
     end
     
   end
