@@ -16,7 +16,7 @@ h3. Getting started
   RelaxDB.use_db "scratch"
 
 h3. Defining models
-
+@code
   class Writer < RelaxDB::Document
     property :name, :default => "anon"
     
@@ -38,7 +38,7 @@ h3. Defining models
     belongs_to :post
     belongs_to :critic
   end
-
+@code
 h3. Exploring models
 
   paul = Writer.new(:name => "paul").save
