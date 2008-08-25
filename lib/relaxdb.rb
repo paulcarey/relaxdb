@@ -1,14 +1,14 @@
 require 'rubygems'
+require 'extlib'
 require 'json'
+require 'uuid'
+
+require 'cgi'
 require 'net/http'
+require 'logger'
 require 'parsedate'
 require 'pp'
-require 'logger'
 require 'tempfile'
-require 'extlib'
-require 'cache'
-require 'cgi'
-require 'uuid'
 
 $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
