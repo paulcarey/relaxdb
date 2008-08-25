@@ -1,3 +1,5 @@
+*Note:* For a correctly formatted version of this page, take a look at the "wiki":http://github.com/paulcarey/relaxdb/wikis
+
 h2. Overview
 
 RelaxDB provides a Ruby interface to CouchDB. It offers a simple idiom for specifying object relationships. The underlying objects are persisted to the mighty CouchDB. Combined with the schema free nature of CouchDB, RelaxDB's current strength lies in quick prototyping of object models.
