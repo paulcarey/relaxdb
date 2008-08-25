@@ -93,6 +93,6 @@ h2. Incomplete list of limitations
 
 * Error handling is not robust
 * Destroying an object results in non transactional nullification of child/peer references
-* Objects can only talk to one database at a time
+* Objects can talk to only one database at a time
 * No caching is used. Although adding an LRU cache would be fairly straightforward, this hasn't been done as it's not yet clear what caching strategies will be most effective. 
 
