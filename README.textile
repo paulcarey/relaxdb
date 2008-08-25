@@ -6,9 +6,9 @@ RelaxDB provides a Ruby interface to CouchDB. It offers a simple idiom for speci
 
 A few facilities are provided including pretty printing of GET requests and uploading of JavaScript views.
 
-A basic merb plugin, merb_relaxdb is also available.
+A basic merb plugin, "merb_relaxdb":http://github.com/paulcarey/merb_relaxdb/tree/master is also available.
 
-For more complete documentation take a look at spec_results.html and the corresponding specs.
+For more complete documentation take a look at docs/spec_results.html and the corresponding specs.
 
 h2. Details 
 
