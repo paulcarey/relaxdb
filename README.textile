@@ -12,11 +12,17 @@ h2. Details
 
 h3. Getting started
 
+<pre>
+<code>
   RelaxDB.configure :host => "localhost", :port => 5984
   RelaxDB.use_db "scratch"
+</code>
+</pre>
 
 h3. Defining models
-@code
+
+<pre>
+<code>
   class Writer < RelaxDB::Document
     property :name, :default => "anon"
     
@@ -38,9 +44,13 @@ h3. Defining models
     belongs_to :post
     belongs_to :critic
   end
-@code
+</code>
+</pre>
+
 h3. Exploring models
 
+<pre>
+<code>
   paul = Writer.new(:name => "paul").save
 
   post = Post.new(:contents => "foo")
@@ -51,9 +61,13 @@ h3. Exploring models
 
   # Simple views are auto created
   Rating.all.sorted_by(:thumbs_up) { |q| q.key(2).count(1) }  # query params map directly to CouchDB
+</code>
+</pre>
 
 h3. Creating views by hand
 
+<pre>
+<code>
   $ cat view.js 
   function Writer-allnames-map(doc) {
     if(doc.class == "Writer")
@@ -70,6 +84,8 @@ h3. Creating views by hand
 
   RelaxDB::ViewUploader.upload("view.js")
   RelaxDB.view("Writer", "allnames")                          # paul
+</code>
+</pre>
 
 h2. Incomplete list of limitations
 
