@@ -1,0 +1,80 @@
+h2. Overview
+
+RelaxDB provides a Ruby interface to CouchDB. It offers a simple idiom for specifying object relationships. The underlying objects are persisted to the mighty CouchDB. Combined with the schema free nature of CouchDB, RelaxDB's current strength lies in quick prototyping of object models.
+
+A few facilities are provided including pretty printing of GET requests and uploading of JavaScript views.
+
+A basic merb plugin, merb_relaxdb is also available.
+
+For more complete documentation take a look at spec_results.html and the corresponding specs.
+
+h2. Details 
+
+h3. Getting started
+
+  RelaxDB.configure :host => "localhost", :port => 5984
+  RelaxDB.use_db "scratch"
+
+h3. Defining models
+
+  class Writer < RelaxDB::Document
+    property :name, :default => "anon"
+    
+    has_many :posts, :class => "Post"
+    has_many :ratings, :class => "Post", :known_as => :critic
+  end
+
+  class Post < RelaxDB::Document
+    property :created_at
+    property :contents
+  
+    belongs_to :writer  
+    has_many :ratings, :class => "Rating"
+  end
+
+  class Rating < RelaxDB::Document
+    property :thumbs_up, :validator => lambda { |tu| tu >= 0 && tu < 3 }, :validation_msg => "No no"
+
+    belongs_to :post
+    belongs_to :critic
+  end
+
+h3. Exploring models
+
+  paul = Writer.new(:name => "paul").save
+
+  post = Post.new(:contents => "foo")
+  paul.posts << post                                          # post writer is set and post is saved
+  post.created_at                                             # right now
+  paul.ratings << Rating.new(:thumbs_up => 3, :post => post)  # returns false as rating fails validation
+  paul.ratings.size                                           # 0
+
+  # Simple views are auto created
+  Rating.all.sorted_by(:thumbs_up) { |q| q.key(2).count(1) }  # query params map directly to CouchDB
+
+h3. Creating views by hand
+
+  $ cat view.js 
+  function Writer-allnames-map(doc) {
+    if(doc.class == "Writer")
+      emit(null, doc.name);
+  }
+
+  function Writer-allnames-reduce(keys, values) {
+    var allnames = "";
+    for(var i = 0; i < values.length; i++)
+      allnames += values[i];
+    return allnames;
+  }
+  $
+
+  RelaxDB::ViewUploader.upload("view.js")
+  RelaxDB.view("Writer", "allnames")                          # paul
+
+h2. Incomplete list of limitations
+
+* Error handling is not robust
+* Destroying an object results in non transactional nullification of child/peer references
+* Objects can only talk to one database at a time
+* No caching is used. Although adding an LRU cache would be fairly straightforward, this hasn't been done as it's not yet clear what caching strategies will be most effective. 
+
