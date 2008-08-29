@@ -4,7 +4,8 @@ module RelaxDB
   
     def self.uuid
       unless @length
-        UUID.new 
+        @uuid ||= UUID.new 
+        @uuid.generate
       else
         rand.to_s[2, @length]
       end

@@ -56,7 +56,6 @@ module RelaxDB
     def initialize(config)
       @server = RelaxDB::Server.new(config[:host], config[:port])
       @logger = config[:logger] ? config[:logger] : Logger.new(Tempfile.new('couchdb.log'))
-      UUID.config({:logger => @logger})
     end
     
     def use_db(name)
