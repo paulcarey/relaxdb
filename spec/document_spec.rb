@@ -267,6 +267,13 @@ describe RelaxDB::Document do
       end
       r.new.save.should be_false
     end
+    
+    it "should prevent an object from being saved if it throws an exception" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { raise "foo" }
+      end
+      r.new.save.should be_false
+    end
 
     it "should pass the property value to the validator" do
       r = Class.new(RelaxDB::Document) do

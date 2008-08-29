@@ -138,8 +138,8 @@ module RelaxDB
       properties.each do |prop|
         if methods.include? "validate_#{prop}"
           prop_val = instance_variable_get("@#{prop}")
-          unless send("validate_#{prop}", prop_val)
-            success = false
+          success = send("validate_#{prop}", prop_val) rescue false
+          unless success
             if methods.include? "#{prop}_validation_msg"
               @errors["#{prop}".to_sym] = send("#{prop}_validation_msg")
             end

@@ -212,14 +212,14 @@ a {
 <div class="example_group">
   <dl>
   <dt id="example_group_4">RelaxDB::DesignDocument#save</dt>
-    <script type="text/javascript">moveProgressBar('10.1');</script>
+    <script type="text/javascript">moveProgressBar('10.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should create a corresponding document in CouchDB</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_5">RelaxDB::DesignDocument#destroy</dt>
-    <script type="text/javascript">moveProgressBar('11.1');</script>
+    <script type="text/javascript">moveProgressBar('11.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should delete the corresponding document from CouchDB</span></dd>
   </dl>
 </div>
@@ -231,132 +231,134 @@ a {
 <div class="example_group">
   <dl>
   <dt id="example_group_7">RelaxDB::Document.new</dt>
-    <script type="text/javascript">moveProgressBar('12.1');</script>
+    <script type="text/javascript">moveProgressBar('12.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should create an object with an id</span></dd>
-    <script type="text/javascript">moveProgressBar('13.1');</script>
+    <script type="text/javascript">moveProgressBar('13.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should create an object with a nil revision</span></dd>
-    <script type="text/javascript">moveProgressBar('14.1');</script>
+    <script type="text/javascript">moveProgressBar('14.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should convert attributes that end in _at to dates</span></dd>
-    <script type="text/javascript">moveProgressBar('15.1');</script>
+    <script type="text/javascript">moveProgressBar('15.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">will silently ignore parameters that don't specify class attributes</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_8">RelaxDB::Document#to_json</dt>
-    <script type="text/javascript">moveProgressBar('16.1');</script>
+    <script type="text/javascript">moveProgressBar('16.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should not output nil attributes</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_9">RelaxDB::Document#save</dt>
-    <script type="text/javascript">moveProgressBar('17.1');</script>
+    <script type="text/javascript">moveProgressBar('17.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should set an object's revision</span></dd>
-    <script type="text/javascript">moveProgressBar('18.1');</script>
+    <script type="text/javascript">moveProgressBar('18.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should result in an object considered saved</span></dd>
-    <script type="text/javascript">moveProgressBar('19.1');</script>
+    <script type="text/javascript">moveProgressBar('19.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be invokable multiple times</span></dd>
-    <script type="text/javascript">moveProgressBar('20.2');</script>
+    <script type="text/javascript">moveProgressBar('20.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should set created_at when first saved</span></dd>
-    <script type="text/javascript">moveProgressBar('21.2');</script>
+    <script type="text/javascript">moveProgressBar('21.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should set created_at when first saved unless supplied to the constructor</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_10">RelaxDB::Document loaded objects</dt>
-    <script type="text/javascript">moveProgressBar('22.2');</script>
+    <script type="text/javascript">moveProgressBar('22.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should contain state as when saved</span></dd>
-    <script type="text/javascript">moveProgressBar('23.2');</script>
+    <script type="text/javascript">moveProgressBar('23.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be saveable</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_11">RelaxDB::Document#destroy</dt>
-    <script type="text/javascript">moveProgressBar('24.2');</script>
+    <script type="text/javascript">moveProgressBar('24.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should delete the corresponding document from CouchDB</span></dd>
-    <script type="text/javascript">moveProgressBar('25.2');</script>
+    <script type="text/javascript">moveProgressBar('25.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should prevent the object from being resaved</span></dd>
-    <script type="text/javascript">moveProgressBar('26.2');</script>
+    <script type="text/javascript">moveProgressBar('26.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">will result in undefined behaviour when invoked on unsaved objects</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_12">RelaxDB::Document#all.destroy!</dt>
-    <script type="text/javascript">moveProgressBar('27.2');</script>
+    <script type="text/javascript">moveProgressBar('27.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should delete from CouchDB all documents of the corresponding class</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_13">RelaxDB::Document ==</dt>
-    <script type="text/javascript">moveProgressBar('28.2');</script>
+    <script type="text/javascript">moveProgressBar('28.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should define equality based on CouchDB id</span></dd>
-    <script type="text/javascript">moveProgressBar('29.2');</script>
+    <script type="text/javascript">moveProgressBar('29.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return false when passed a nil object</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_14">RelaxDB::Document#all</dt>
-    <script type="text/javascript">moveProgressBar('30.3');</script>
+    <script type="text/javascript">moveProgressBar('30.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return all instances of that class</span></dd>
-    <script type="text/javascript">moveProgressBar('31.3');</script>
+    <script type="text/javascript">moveProgressBar('31.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return an empty array when no instances exist</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_15">RelaxDB::Document#all.sorted_by</dt>
-    <script type="text/javascript">moveProgressBar('32.3');</script>
+    <script type="text/javascript">moveProgressBar('32.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should sort ascending by default</span></dd>
-    <script type="text/javascript">moveProgressBar('33.3');</script>
+    <script type="text/javascript">moveProgressBar('33.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should sort desc when specified</span></dd>
-    <script type="text/javascript">moveProgressBar('34.3');</script>
+    <script type="text/javascript">moveProgressBar('34.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should sort date attributes lexicographically</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_16">RelaxDB::Document#all.sorted_by results</dt>
-    <script type="text/javascript">moveProgressBar('35.3');</script>
+    <script type="text/javascript">moveProgressBar('35.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be retrievable by exact criteria</span></dd>
-    <script type="text/javascript">moveProgressBar('36.3');</script>
+    <script type="text/javascript">moveProgressBar('36.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be retrievable by relative criteria</span></dd>
-    <script type="text/javascript">moveProgressBar('37.3');</script>
+    <script type="text/javascript">moveProgressBar('37.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be retrievable by combined criteria</span></dd>
-    <script type="text/javascript">moveProgressBar('38.3');</script>
+    <script type="text/javascript">moveProgressBar('38.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be retrievable by combined criteria where not all docs contain all attributes</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_17">RelaxDB::Document defaults</dt>
-    <script type="text/javascript">moveProgressBar('39.3');</script>
+    <script type="text/javascript">moveProgressBar('39.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be set on initialisation</span></dd>
-    <script type="text/javascript">moveProgressBar('40.4');</script>
+    <script type="text/javascript">moveProgressBar('40.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be saved</span></dd>
-    <script type="text/javascript">moveProgressBar('41.4');</script>
+    <script type="text/javascript">moveProgressBar('41.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be ignored once overwritten</span></dd>
-    <script type="text/javascript">moveProgressBar('42.4');</script>
+    <script type="text/javascript">moveProgressBar('42.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">may be a simple value</span></dd>
-    <script type="text/javascript">moveProgressBar('43.4');</script>
+    <script type="text/javascript">moveProgressBar('43.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">may be a proc</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_18">RelaxDB::Document validator</dt>
-    <script type="text/javascript">moveProgressBar('44.4');</script>
+    <script type="text/javascript">moveProgressBar('44.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should prevent an object from being saved if it evaluates to false</span></dd>
-    <script type="text/javascript">moveProgressBar('45.4');</script>
+    <script type="text/javascript">moveProgressBar('45.0');</script>
+    <dd class="spec passed"><span class="passed_spec_name">should prevent an object from being saved if it throws an exception</span></dd>
+    <script type="text/javascript">moveProgressBar('46.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should pass the property value to the validator</span></dd>
-    <script type="text/javascript">moveProgressBar('46.4');</script>
+    <script type="text/javascript">moveProgressBar('47.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should add the validation error message if supplied, on failure</span></dd>
-    <script type="text/javascript">moveProgressBar('47.4');</script>
+    <script type="text/javascript">moveProgressBar('48.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should perform all validations</span></dd>
   </dl>
 </div>
@@ -368,61 +370,61 @@ a {
 <div class="example_group">
   <dl>
   <dt id="example_group_20">RelaxDB::HasManyProxy has_many</dt>
-    <script type="text/javascript">moveProgressBar('48.4');</script>
+    <script type="text/javascript">moveProgressBar('49.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be considered enumerable</span></dd>
-    <script type="text/javascript">moveProgressBar('49.4');</script>
+    <script type="text/javascript">moveProgressBar('50.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should actually be enumerable</span></dd>
-    <script type="text/javascript">moveProgressBar('50.5');</script>
+    <script type="text/javascript">moveProgressBar('51.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should preserve the collection across the load / save boundary</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_21">RelaxDB::HasManyProxy has_many#&lt;&lt;</dt>
-    <script type="text/javascript">moveProgressBar('51.5');</script>
+    <script type="text/javascript">moveProgressBar('52.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should link the added item to the parent</span></dd>
-    <script type="text/javascript">moveProgressBar('52.5');</script>
+    <script type="text/javascript">moveProgressBar('53.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return self</span></dd>
-    <script type="text/javascript">moveProgressBar('53.5');</script>
+    <script type="text/javascript">moveProgressBar('54.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should not created duplicates when invoked with same object more than once</span></dd>
-    <script type="text/javascript">moveProgressBar('54.5');</script>
+    <script type="text/javascript">moveProgressBar('55.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return false when the child fails validation</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_22">RelaxDB::HasManyProxy has_many#=</dt>
-    <script type="text/javascript">moveProgressBar('55.5');</script>
+    <script type="text/javascript">moveProgressBar('56.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should fail</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_23">RelaxDB::HasManyProxy has_many#delete</dt>
-    <script type="text/javascript">moveProgressBar('56.5');</script>
+    <script type="text/javascript">moveProgressBar('57.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should nullify the belongs_to relationship</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_24">RelaxDB::HasManyProxy has_many#clear</dt>
-    <script type="text/javascript">moveProgressBar('57.5');</script>
+    <script type="text/javascript">moveProgressBar('58.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should result in an empty collection</span></dd>
-    <script type="text/javascript">moveProgressBar('58.5');</script>
+    <script type="text/javascript">moveProgressBar('59.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should nullify all child relationships</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_25">RelaxDB::HasManyProxy has_many owner</dt>
-    <script type="text/javascript">moveProgressBar('59.5');</script>
+    <script type="text/javascript">moveProgressBar('60.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be able to form multiple relationships with the same class of child</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_26">RelaxDB::HasManyProxy has_many owner#destroy</dt>
-    <script type="text/javascript">moveProgressBar('60.6');</script>
+    <script type="text/javascript">moveProgressBar('61.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should nullify its child relationships</span></dd>
   </dl>
 </div>
@@ -434,38 +436,38 @@ a {
 <div class="example_group">
   <dl>
   <dt id="example_group_28">RelaxDB::HasOneProxy has_one</dt>
-    <script type="text/javascript">moveProgressBar('61.6');</script>
+    <script type="text/javascript">moveProgressBar('62.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return nil when accessed before assignment</span></dd>
-    <script type="text/javascript">moveProgressBar('62.6');</script>
+    <script type="text/javascript">moveProgressBar('63.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be establishable via a constructor attribute</span></dd>
-    <script type="text/javascript">moveProgressBar('63.6');</script>
+    <script type="text/javascript">moveProgressBar('64.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be establishable via assignment</span></dd>
-    <script type="text/javascript">moveProgressBar('64.6');</script>
+    <script type="text/javascript">moveProgressBar('65.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return the same object on repeated invocations</span></dd>
-    <script type="text/javascript">moveProgressBar('65.6');</script>
+    <script type="text/javascript">moveProgressBar('66.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be preserved across load / save boundary</span></dd>
-    <script type="text/javascript">moveProgressBar('66.6');</script>
+    <script type="text/javascript">moveProgressBar('67.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be able reference itself via its child</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_29">RelaxDB::HasOneProxy has_one#=</dt>
-    <script type="text/javascript">moveProgressBar('67.6');</script>
+    <script type="text/javascript">moveProgressBar('68.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should create a reference from the child to the parent</span></dd>
-    <script type="text/javascript">moveProgressBar('68.6');</script>
+    <script type="text/javascript">moveProgressBar('69.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should save the assigned object</span></dd>
-    <script type="text/javascript">moveProgressBar('69.6');</script>
+    <script type="text/javascript">moveProgressBar('70.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">will not save the parent</span></dd>
-    <script type="text/javascript">moveProgressBar('70.7');</script>
+    <script type="text/javascript">moveProgressBar('71.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should set the target to nil when nil is assigned</span></dd>
-    <script type="text/javascript">moveProgressBar('71.7');</script>
+    <script type="text/javascript">moveProgressBar('72.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should nullify any existing relationship in the database</span></dd>
-    <script type="text/javascript">moveProgressBar('72.7');</script>
+    <script type="text/javascript">moveProgressBar('73.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should nullify any existing relationship on a known in-memory object</span></dd>
-    <script type="text/javascript">moveProgressBar('73.7');</script>
+    <script type="text/javascript">moveProgressBar('74.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">will not nullify any existing relationship on unknown in-memory objects</span></dd>
-    <script type="text/javascript">moveProgressBar('74.7');</script>
+    <script type="text/javascript">moveProgressBar('75.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">will not throw an error when the rhs fails validation</span></dd>
   </dl>
 </div>
@@ -477,22 +479,22 @@ a {
 <div class="example_group">
   <dl>
   <dt id="example_group_31">RelaxDB::Query#view_name</dt>
-    <script type="text/javascript">moveProgressBar('75.7');</script>
+    <script type="text/javascript">moveProgressBar('76.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should match a single key attribute</span></dd>
-    <script type="text/javascript">moveProgressBar('76.7');</script>
+    <script type="text/javascript">moveProgressBar('77.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should match key attributes</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_32">RelaxDB::Query#view_path</dt>
-    <script type="text/javascript">moveProgressBar('77.7');</script>
+    <script type="text/javascript">moveProgressBar('78.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should list design document and view name</span></dd>
-    <script type="text/javascript">moveProgressBar('78.7');</script>
+    <script type="text/javascript">moveProgressBar('79.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should contain URL and JSON encoded key when the key has been set</span></dd>
-    <script type="text/javascript">moveProgressBar('79.7');</script>
+    <script type="text/javascript">moveProgressBar('80.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should honour startkey, endkey and count</span></dd>
-    <script type="text/javascript">moveProgressBar('80.8');</script>
+    <script type="text/javascript">moveProgressBar('81.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should specify the key as the empty string if key was set to nil</span></dd>
   </dl>
 </div>
@@ -504,68 +506,68 @@ a {
 <div class="example_group">
   <dl>
   <dt id="example_group_34">RelaxDB::ReferencesManyProxy references_many</dt>
-    <script type="text/javascript">moveProgressBar('81.8');</script>
+    <script type="text/javascript">moveProgressBar('82.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">is now deprecated and will be removed in the near future</span></dd>
-    <script type="text/javascript">moveProgressBar('82.8');</script>
+    <script type="text/javascript">moveProgressBar('83.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should preserve the relationships across the save / load boundary</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_35">RelaxDB::ReferencesManyProxy references_many#=</dt>
-    <script type="text/javascript">moveProgressBar('83.8');</script>
+    <script type="text/javascript">moveProgressBar('84.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should not be invoked</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_36">RelaxDB::ReferencesManyProxy references_many#&lt;&lt;</dt>
-    <script type="text/javascript">moveProgressBar('84.8');</script>
+    <script type="text/javascript">moveProgressBar('85.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should set the relationship on both sides</span></dd>
-    <script type="text/javascript">moveProgressBar('85.8');</script>
+    <script type="text/javascript">moveProgressBar('86.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should not create duplicates when the same object is added more than once</span></dd>
-    <script type="text/javascript">moveProgressBar('86.8');</script>
+    <script type="text/javascript">moveProgressBar('87.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should not create duplicates when reciprocal objects are added from opposite sides</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_37">RelaxDB::ReferencesManyProxy references_many#delete</dt>
-    <script type="text/javascript">moveProgressBar('87.8');</script>
+    <script type="text/javascript">moveProgressBar('88.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should nullify relationship on both sides</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_38">RelaxDB::ReferencesManyProxy references_many owner#destroy</dt>
-    <script type="text/javascript">moveProgressBar('88.8');</script>
+    <script type="text/javascript">moveProgressBar('89.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">will not remove its membership from its peers in memory</span></dd>
-    <script type="text/javascript">moveProgressBar('89.8');</script>
+    <script type="text/javascript">moveProgressBar('90.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should remove its membership from its peers in CouchDB</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_39">RelaxDB</dt>
-    <script type="text/javascript">moveProgressBar('90.9');</script>
+    <script type="text/javascript">moveProgressBar('91.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should offer an example where behaviour is different with caching enabled and caching disabled</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_40">RelaxDB.create_object</dt>
-    <script type="text/javascript">moveProgressBar('91.9');</script>
+    <script type="text/javascript">moveProgressBar('92.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return an instance of a known object if passed a hash with a class key</span></dd>
-    <script type="text/javascript">moveProgressBar('92.9');</script>
+    <script type="text/javascript">moveProgressBar('93.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return an instance of a dynamically created object if no class key is provided</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_41">RelaxDB.bulk_save</dt>
-    <script type="text/javascript">moveProgressBar('93.9');</script>
+    <script type="text/javascript">moveProgressBar('94.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should be invokable multiple times</span></dd>
-    <script type="text/javascript">moveProgressBar('94.9');</script>
+    <script type="text/javascript">moveProgressBar('95.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should succeed when passed no args</span></dd>
   </dl>
 </div>
@@ -577,25 +579,25 @@ a {
 <div class="example_group">
   <dl>
   <dt id="example_group_43">RelaxDB::ViewObject.new</dt>
-    <script type="text/javascript">moveProgressBar('95.9');</script>
+    <script type="text/javascript">moveProgressBar('96.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should provide readers for the object passed in the hash</span></dd>
-    <script type="text/javascript">moveProgressBar('96.9');</script>
+    <script type="text/javascript">moveProgressBar('97.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should try to convert objects ending in _at to a time</span></dd>
   </dl>
 </div>
 <div class="example_group">
   <dl>
   <dt id="example_group_44">RelaxDB::ViewObject.create</dt>
-    <script type="text/javascript">moveProgressBar('97.9');</script>
+    <script type="text/javascript">moveProgressBar('98.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return an array of view objects when passed an array</span></dd>
-    <script type="text/javascript">moveProgressBar('98.9');</script>
+    <script type="text/javascript">moveProgressBar('99.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return a view object when passed a hash</span></dd>
     <script type="text/javascript">moveProgressBar('100.0');</script>
     <dd class="spec passed"><span class="passed_spec_name">should return a simple value when passed a primitive</span></dd>
   </dl>
 </div>
-<script type="text/javascript">document.getElementById('duration').innerHTML = "Finished in <strong>10.229154 seconds</strong>";</script>
-<script type="text/javascript">document.getElementById('totals').innerHTML = "99 examples, 0 failures";</script>
+<script type="text/javascript">document.getElementById('duration').innerHTML = "Finished in <strong>11.855995 seconds</strong>";</script>
+<script type="text/javascript">document.getElementById('totals').innerHTML = "100 examples, 0 failures";</script>
 </div>
 </div>
 </body>
