@@ -61,7 +61,7 @@ module RelaxDB
       # The default _id will be overwritten if loaded from CouchDB
       self._id = UuidGenerator.uuid 
       
-      @errors = {}
+      @errors = Errors.new
 
       # Set default properties if this object has not known CouchDB
       unless hash["_rev"]
@@ -152,6 +152,12 @@ module RelaxDB
     def unsaved?
       instance_variable_get(:@_rev).nil?
     end
+    alias_method :new_record?, :unsaved?
+    
+    def to_param
+      self._id
+    end
+    alias_method :id, :to_param
     
     def set_created_at_if_new
       if unsaved? and methods.include? "created_at"
@@ -271,6 +277,12 @@ module RelaxDB
     def self.all
       @all_delegator ||= AllDelegator.new(self)      
     end
+    
+    def self.one(id)
+      if id.is_a? String
+        self.all.sorted_by(:_id) {|q| q.key(id) }.first
+      end
+    end
                 
     # destroy! nullifies all relationships with peers and children before deleting 
     # itself in CouchDB
@@ -293,6 +305,11 @@ module RelaxDB
       self
     end
             
+  end
+  # END - Document 
+  
+  class Errors < Hash
+    alias_method :on, :[]
   end
   
 end
