@@ -5,8 +5,8 @@ module RelaxDB
     def initialize(client, relationship)
       @client = client
       @relationship = relationship
-      @target_class = @relationship.to_s.capitalize      
-      @relationship_as_viewed_by_target = client.class.to_s.downcase
+      @target_class = @relationship.to_s.camel_case      
+      @relationship_as_viewed_by_target = client.class.name.snake_case
       
       @target = nil
     end

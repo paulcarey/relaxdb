@@ -10,7 +10,7 @@ module RelaxDB
       @opts = opts
 
       @target_class = opts[:class] 
-      @relationship_as_viewed_by_target = (opts[:known_as] || client.class.name.downcase).to_s
+      @relationship_as_viewed_by_target = (opts[:known_as] || client.class.name.snake_case).to_s
 
       @children = load_children
     end

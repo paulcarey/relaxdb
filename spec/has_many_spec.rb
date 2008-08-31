@@ -33,6 +33,14 @@ describe RelaxDB::HasManyProxy do
       u = RelaxDB.load u._id
       u.items.size.should == 1
     end    
+    
+    it "should work with MultiWordClassNames" do
+      c = MultiWordChild.new
+      m = MultiWordClass.new.save
+      m.multi_word_children << c
+      m = RelaxDB.load m._id
+      m.multi_word_children[0].should == c
+    end    
         
     describe "#<<" do
 
