@@ -267,7 +267,7 @@ describe RelaxDB::Document do
       end
       r.new.save.should be_false
     end
-    
+        
     it "should prevent an object from being saved if it throws an exception" do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => lambda { raise "foo" }
@@ -301,6 +301,23 @@ describe RelaxDB::Document do
       x.save
       x.errors[:foo].should == "oof"
       x.errors[:bar].should == "rab"
+    end
+    
+    it "may be a proc" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { false }
+      end
+      r.new.save.should be_false      
+    end
+    
+    it "may be a method" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => :count_em
+        def count_em
+          false
+        end
+      end
+      r.new.save.should be_false
     end
     
   end

@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
    "lib/relaxdb/views.rb",
    "lib/relaxdb.rb",
    "spec/belongs_to_spec.rb",
+   "spec/callbacks_spec.rb",
    "spec/design_doc_spec.rb",
    "spec/document_spec.rb",
    "spec/has_many_spec.rb",
