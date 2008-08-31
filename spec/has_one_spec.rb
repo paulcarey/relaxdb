@@ -52,6 +52,13 @@ describe RelaxDB::HasOneProxy do
       p = RelaxDB.load p._id
       p.rating.photo.should == p
     end        
+    
+    it "should work with MultiWordClassNames" do
+      c = MultiWordChild.new
+      m = MultiWordClass.new(:multi_word_child => c).save
+      m = RelaxDB.load m._id
+      m.multi_word_child.should == c
+    end
            
     describe "#=" do
 

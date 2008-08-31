@@ -122,15 +122,17 @@ module RelaxDB
     end
     
     def save
-      set_created_at_if_new
+      return false unless before_save
+      return false unless validates?
+            
+      set_created_at if unsaved? 
       
-      if validates?
-        resp = RelaxDB.db.put("#{_id}", to_json)
-        self._rev = JSON.parse(resp.body)["rev"]
-        self
-      else
-        false
-      end
+      resp = RelaxDB.db.put("#{_id}", to_json)
+      self._rev = JSON.parse(resp.body)["rev"]
+
+      after_save
+
+      self
     end  
     
     def validates?
@@ -149,6 +151,7 @@ module RelaxDB
       success
     end
         
+    # Hmm. Rename... never_saved? newnew?
     def unsaved?
       instance_variable_get(:@_rev).nil?
     end
@@ -159,8 +162,8 @@ module RelaxDB
     end
     alias_method :id, :to_param
     
-    def set_created_at_if_new
-      if unsaved? and methods.include? "created_at"
+    def set_created_at
+      if methods.include? "created_at"
         # Don't override it if it's already been set
         unless instance_variable_get(:@created_at)
           instance_variable_set(:@created_at, Time.now)
@@ -303,6 +306,38 @@ module RelaxDB
       # Implicitly prevent the object from being resaved by failing to update its revision
       RelaxDB.db.delete("#{_id}?rev=#{_rev}")
       self
+    end
+    
+    #
+    # Callbacks - define these in a module and mix'em'in ?
+    #
+    def self.before_save(callback)
+      before_save_callbacks << callback
+    end 
+    
+    def self.before_save_callbacks
+      @before_save ||= []
+    end       
+    
+    def before_save
+      self.class.before_save_callbacks.each do |callback|
+        resp = callback.is_a?(Proc) ? callback.call(self) : send(callback)
+        return false unless resp
+      end
+    end
+    
+    def self.after_save(callback)
+      after_save_callbacks << callback
+    end
+    
+    def self.after_save_callbacks
+      @after_save_callbacks ||= []
+    end
+    
+    def after_save
+      self.class.after_save_callbacks.each do |callback|
+        callback.is_a?(Proc) ? callback.call(self) : send(callback)
+      end
     end
             
   end

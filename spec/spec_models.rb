@@ -85,6 +85,15 @@ class Tagging < RelaxDB::Document
 
 end
 
+class MultiWordClass < RelaxDB::Document
+  has_one :multi_word_child
+  has_many :multi_word_children, :class => "MultiWordChild"
+end
+
+class MultiWordChild < RelaxDB::Document
+  belongs_to :multi_word_class
+end
+
 class TwitterUser < RelaxDB::Document
   
   property :name
