@@ -278,11 +278,7 @@ module RelaxDB
     def self.all
       @all_delegator ||= AllDelegator.new(self)      
     end
-    
-    def self.one(id)
-      RelaxDB.load(id) if id.is_a? String
-    end
-                
+                    
     # destroy! nullifies all relationships with peers and children before deleting 
     # itself in CouchDB
     # The nullification and deletion are not performed in a transaction
