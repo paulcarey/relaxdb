@@ -153,7 +153,7 @@ module RelaxDB
         
     # Hmm. Rename... never_saved? newnew?
     def unsaved?
-      instance_variable_get(:@_rev).nil?
+      @_rev.nil?
     end
     alias_method :new_record?, :unsaved?
     
@@ -165,9 +165,7 @@ module RelaxDB
     def set_created_at
       if methods.include? "created_at"
         # Don't override it if it's already been set
-        unless instance_variable_get(:@created_at)
-          instance_variable_set(:@created_at, Time.now)
-        end
+        @created_at = Time.now if @created_at.nil?
       end
     end
        

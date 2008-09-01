@@ -148,7 +148,7 @@ describe RelaxDB::Document do
     
   end
   
-  describe "#all" do
+  describe ".all" do
   
     it "should return all instances of that class" do
       Photo.new.save
@@ -164,7 +164,7 @@ describe RelaxDB::Document do
     
   end
   
-  describe "#all.sorted_by" do
+  describe ".all.sorted_by" do
   
     it "should sort ascending by default" do
       Post.new(:content => "b").save
