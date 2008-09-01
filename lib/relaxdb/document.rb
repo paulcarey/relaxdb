@@ -282,9 +282,7 @@ module RelaxDB
     end
     
     def self.one(id)
-      if id.is_a? String
-        self.all.sorted_by(:_id) {|q| q.key(id) }.first
-      end
+      RelaxDB.load(id) if id.is_a? String
     end
                 
     # destroy! nullifies all relationships with peers and children before deleting 
@@ -340,11 +338,6 @@ module RelaxDB
       end
     end
             
-  end
-  # END - Document 
-  
-  class Errors < Hash
-    alias_method :on, :[]
   end
   
 end

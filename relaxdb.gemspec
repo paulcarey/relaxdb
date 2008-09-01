@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
    "lib/relaxdb/belongs_to_proxy.rb",
    "lib/relaxdb/design_doc.rb",
    "lib/relaxdb/document.rb",
+   "lib/relaxdb/extlib.rb",
    "lib/relaxdb/has_many_proxy.rb",
    "lib/relaxdb/has_one_proxy.rb",
    "lib/relaxdb/query.rb",
