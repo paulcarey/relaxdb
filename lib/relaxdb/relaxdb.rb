@@ -25,6 +25,10 @@ module RelaxDB
       db.list_dbs
     end
     
+    def replicate_db(source, target)
+      db.replicate_db source, target
+    end
+    
     def bulk_save(*objs)
       docs = {}
       objs.each { |o| docs[o._id] = o }

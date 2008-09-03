@@ -44,7 +44,22 @@ describe RelaxDB do
     
   end
   
+  describe ".replicate_db" do
+    
+    it "should replicate the named database" do
+      orig = "relaxdb_spec_db"
+      replica = "relaxdb_spec_db_replica"
+      RelaxDB.delete_db replica rescue "ok"
+      Atom.new.save # implicitly saved to orig
+      RelaxDB.replicate_db orig, replica
+      RelaxDB.use_db replica
+      Atom.all.size.should == 1
+    end
+    
+  end
+  
   it "should offer an example where behaviour is different with caching enabled and caching disabled" do
+    # if caching is added
   end
             
 end

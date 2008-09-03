@@ -59,15 +59,12 @@ module RelaxDB
     end
     
     def use_db(name)
-      begin
-        @server.get("/#{name}")
-      rescue
-        @server.put("/#{name}", "")
-      end
+      create_db_if_non_existant(name)
       @db = name
     end
     
     def delete_db(name)
+      @logger.info("Deleting database #{name}")
       @server.delete("/#{name}")
     end
     
@@ -75,6 +72,13 @@ module RelaxDB
       JSON.parse(@server.get("/_all_dbs").body)
     end
     
+    def replicate_db(source, target)
+      @logger.info("Replicating from #{source} to #{target}")
+      create_db_if_non_existant target      
+      data = { "source" => source, "target" => target}
+      @server.post("/_replicate", data.to_json)
+    end
+
     def delete(path=nil)
       @logger.info("DELETE /#{@db}/#{unesc(path)}")
       @server.delete("/#{@db}/#{path}")
@@ -105,6 +109,16 @@ module RelaxDB
     
     def name
       @db
+    end
+    
+    private
+    
+    def create_db_if_non_existant(name)
+      begin
+        @server.get("/#{name}")
+      rescue
+        @server.put("/#{name}", "")
+      end
     end
     
   end
