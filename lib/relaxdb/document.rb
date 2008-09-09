@@ -109,9 +109,12 @@ module RelaxDB
             
     def to_json
       data = {}
-      self.class.belongs_to_rels.each do |relationship|
+      self.class.belongs_to_rels.each do |relationship, opts|
         id = instance_variable_get("@#{relationship}_id".to_sym)
         data["#{relationship}_id"] = id if id
+        if opts[:denormalise]
+          add_denormalised_data(data, relationship, opts)
+        end
       end
       properties.each do |prop|
         prop_val = instance_variable_get("@#{prop}".to_sym)
@@ -119,6 +122,16 @@ module RelaxDB
       end
       data["class"] = self.class.name
       data.to_json      
+    end
+    
+    # quick n' dirty denormalisation - explicit denormalisation will probably become a 
+    # permanent fixture of RelaxDB, but quite likely in a different form to this one
+    def add_denormalised_data(data, relationship, opts)
+      obj = send(relationship)
+      opts[:denormalise].each do |prop_name|
+        val = obj.send(prop_name)
+        data["#{relationship}_#{prop_name}"] = val
+      end
     end
     
     def save
@@ -247,9 +260,9 @@ module RelaxDB
       @has_one_rels ||= []      
     end
             
-    def self.belongs_to(relationship)
-      @belongs_to_rels ||= []
-      @belongs_to_rels << relationship
+    def self.belongs_to(relationship, opts={})
+      @belongs_to_rels ||= {}
+      @belongs_to_rels[relationship] = opts
 
       define_method(relationship) do
         create_or_get_proxy(BelongsToProxy, relationship).target
@@ -268,7 +281,7 @@ module RelaxDB
     
     def self.belongs_to_rels
       # Don't force clients to check that it's instantiated
-      @belongs_to_rels ||= []
+      @belongs_to_rels ||= {}
     end
     
     def self.all_relationships

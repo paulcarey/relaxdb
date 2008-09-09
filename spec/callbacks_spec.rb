@@ -1,8 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
-require File.dirname(__FILE__) + '/spec_models.rb'
 
-
-# A little naiive, need quite a bit more thought and work
+# A little naiive, needs quite a bit more thought and work
 
 describe RelaxDB::Document, "callbacks" do
   
