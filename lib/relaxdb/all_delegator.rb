@@ -18,7 +18,7 @@ module RelaxDB
       view_path = "_view/#{@klass}/all"
       map_function = ViewCreator.all(@klass)
       
-      @all = RelaxDB::retrieve(view_path, @klass, "all", map_function)      
+      @all = RelaxDB.retrieve(view_path, @klass, "all", map_function)      
     end
 
     def sorted_by(*atts)
@@ -27,7 +27,7 @@ module RelaxDB
       q = Query.new(@klass.name, v.view_name)
       yield q if block_given?
       
-      RelaxDB::retrieve(q.view_path, @klass, v.view_name, v.map_function)      
+      RelaxDB.retrieve(q.view_path, @klass, v.view_name, v.map_function)      
     end
     
     # Note that this method leaves the corresponding DesignDoc for the associated class intact

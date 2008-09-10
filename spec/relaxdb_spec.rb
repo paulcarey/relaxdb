@@ -58,8 +58,52 @@ describe RelaxDB do
     
   end
   
-  it "should offer an example where behaviour is different with caching enabled and caching disabled" do
-    # if caching is added
+  describe ".view" do
+    
+    map_func = %Q<
+      function (doc) {
+        emit(doc._id, doc);
+      }
+    >
+    
+    it "should request a view and return a hash" do
+      RelaxDB::DesignDocument.get("viewtest").add_view("simple", "map", map_func).save
+      data = RelaxDB.view("viewtest", "simple")
+      data.should be_instance_of(Hash)
+    end
+
+    it "may accept a block" do
+      RelaxDB::DesignDocument.get("viewtest").add_view("simple", "map", map_func).save
+      RelaxDB.db.put("x", {}.to_json)      
+      RelaxDB.db.put("y", {}.to_json)      
+      data = RelaxDB.view("viewtest", "simple") { |q| q.key("x") }
+      data["rows"].size.should == 1
+    end
+    
   end
+  
+  describe ".merge" do
+    
+    it "should merge rows sharing a common merge key into a single ViewObject" do
+      rows = [
+        {"value" => {"sculptor_id" => 1, "sculpture_name" => "strandbeesten"} },
+        {"value" => {"sculptor_id" => 1, "sculptor_name" => "hans"} },
+        {"value" => {"sculptor_id" => 2, "sculpture_name" => "parading dogs"} },
+        {"value" => {"sculptor_id" => 2, "sculptor_name" => "holmes"} }
+      ]
+      data = {"rows" => rows}
+      result = RelaxDB.merge(data, "sculptor_id")
+      result = result.sort { |a, b| a.sculptor_name <=> b.sculptor_name }      
+
+      result[0].sculptor_name.should == "hans"
+      result[0].sculpture_name.should == "strandbeesten"
+      result[1].sculptor_name.should == "holmes"
+      result[1].sculpture_name.should == "parading dogs"
+    end
+        
+  end
+  
+  # if caching is added
+  # it "should offer an example where behaviour is different with caching enabled and caching disabled"
             
 end

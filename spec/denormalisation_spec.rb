@@ -35,7 +35,7 @@ describe RelaxDB::Document, "denormalisation" do
     it "should not interfere with normal belongs_to behaviour" do
       tree = Tree.new(:name => "sapling", :climate => "tropical").save
       leaf = Leaf.new(:tree => tree).save
-      leaf = RelaxDB.load(leaf._id)      
+      leaf = RelaxDB.load(leaf._id)
       leaf.tree.name.should == "sapling"
       leaf.tree.climate.should == "tropical"
     end

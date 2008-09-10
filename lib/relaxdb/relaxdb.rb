@@ -49,6 +49,7 @@ module RelaxDB
       create_object(data)
     end
     
+    # Used internally by RelaxDB
     def retrieve(view_path, design_doc, view_name, map_function)
       begin
         resp = db.get(view_path)
@@ -61,21 +62,38 @@ module RelaxDB
       create_from_hash(data)      
     end
       
-    def view(design_doc, view_name, default_ret_val=[])
+    # Requests the given view from CouchDB and returns a hash.
+    # This method should typically be wrapped in one of merge, instantiate, or reduce_result.
+    def view(design_doc, view_name)
       q = Query.new(design_doc, view_name)
       yield q if block_given?
       
       resp = db.get(q.view_path)
-      data = JSON.parse(resp.body)
-
-      # presence of total_rows tells us a map function was invoked
-      # if it's absent a map reduce invocation occured
-      if data["total_rows"]
-        create_from_hash(data)
-      else
-        obj = data["rows"][0] && data["rows"][0]["value"]
-        obj ? ViewObject.create(obj) : default_ret_val
+      JSON.parse(resp.body)      
+    end
+    
+    # Should be invoked on the result of a join view
+    # Merges all rows based on merge_key and returns an array of ViewOject
+    def merge(data, merge_key)
+      merged = {}
+      data["rows"].each do |row|
+        value = row["value"]
+        merged[value[merge_key]] ||= {}
+        merged[value[merge_key]].merge!(value)
       end
+      
+      merged.values.map { |v| ViewObject.create(v) }
+    end
+    
+    # Creates RelaxDB::Document objects from the result
+    def instantiate(data)
+      create_from_hash(data)
+    end
+    
+    # Returns a scalar, an object, or an Array of objects
+    def reduce_result(data)
+      obj = data["rows"][0] && data["rows"][0]["value"]
+      ViewObject.create(obj)      
     end
         
     def create_from_hash(data)
