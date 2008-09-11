@@ -1,5 +1,11 @@
 module RelaxDB
   
+  #
+  # The GraphCreator uses dot to create a graphical model of an entire CouchDB database
+  # It probably only makes sense to run it on a database of a limited size
+  # The created graphs can be very useful for exploring relationships
+  # Run ruby scratch/grapher_demo.rb for an example
+  #
   class GraphCreator
     
     def self.create
