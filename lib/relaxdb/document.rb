@@ -128,9 +128,11 @@ module RelaxDB
     # permanent fixture of RelaxDB, but quite likely in a different form to this one
     def add_denormalised_data(data, relationship, opts)
       obj = send(relationship)
-      opts[:denormalise].each do |prop_name|
-        val = obj.send(prop_name)
-        data["#{relationship}_#{prop_name}"] = val
+      if obj
+        opts[:denormalise].each do |prop_name|
+          val = obj.send(prop_name)
+          data["#{relationship}_#{prop_name}"] = val
+        end
       end
     end
     

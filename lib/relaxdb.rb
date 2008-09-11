@@ -29,6 +29,7 @@ require 'relaxdb/uuid_generator'
 require 'relaxdb/view_object'
 require 'relaxdb/view_uploader'
 require 'relaxdb/views'
+require 'more/grapher.rb'
 
 module RelaxDB
 end

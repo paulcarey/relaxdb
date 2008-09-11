@@ -97,11 +97,7 @@ module RelaxDB
     end
         
     def create_from_hash(data)
-      @objects = []
-      data["rows"].each do |row|
-        @objects << create_object(row["value"])
-      end
-      @objects      
+      data["rows"].map { |row| create_object(row["value"]) }
     end
   
     def create_object(data)

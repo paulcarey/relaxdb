@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
    "lib/relaxdb/view_object.rb",
    "lib/relaxdb/view_uploader.rb",
    "lib/relaxdb/views.rb",
+   "lib/more/grapher.rb",
    "lib/relaxdb.rb",
    "spec/belongs_to_spec.rb",
    "spec/callbacks_spec.rb",

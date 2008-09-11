@@ -31,6 +31,10 @@ describe RelaxDB::Document, "denormalisation" do
       obj = JSON.parse(leaf.to_json)
       obj["tree_name"].should == "sapling"
     end
+
+    it "should ignore denormalised options for nil properties" do
+      Leaf.new.to_json
+    end
     
     it "should not interfere with normal belongs_to behaviour" do
       tree = Tree.new(:name => "sapling", :climate => "tropical").save
