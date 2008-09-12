@@ -87,6 +87,24 @@ h3. Creating views by hand
 </code>
 </pre>
 
+h3. Visualise
+
+Create an object graph by simply running
+<pre>
+<code>
+RelaxDB::GraphCreator.create
+</code>
+</pre>
+
+Requires graphviz. Useful for visualising relationships between a limited number of document e.g. test fixtures. "Description and example":http://dev.strawberrydiva.com/visually_explore_couchdb/.
+
+h3. Experimental Features
+
+* Declarative denormalisation
+** Create a partial object graph in JSON with a single call
+** May be used to require fewer GET requests
+** View the denormalisation spec for examples
+
 h2. Incomplete list of limitations
 
 * Error handling is not robust
