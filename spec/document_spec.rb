@@ -78,6 +78,32 @@ describe RelaxDB::Document do
         
   end
   
+  describe "user defined property reader" do
+    
+    it "should not effect normal operation" do
+      o = BespokeReader.new(:val => 101).save
+      o = RelaxDB.load o._id
+      o.val.should == 106
+    end
+    
+    it "should not modify internal state" do
+      o = BespokeReader.new(:val => 101).save
+      o = RelaxDB.load o._id
+      o.instance_variable_get(:@val).should == 101
+    end
+            
+  end
+
+  describe "user defined property writer" do
+    
+    it "should not be used" do
+      o = BespokeWriter.new(:val => 101).save
+      o = RelaxDB.load o._id
+      o.val.should == 81
+    end
+        
+  end
+  
   describe "loaded objects" do
     
     it "should contain state as when saved" do
@@ -113,7 +139,6 @@ describe RelaxDB::Document do
     end
     
     it "will result in undefined behaviour when invoked on unsaved objects" do
-      Photo.new.destroy!      
       lambda { Atom.new.destroy! }.should raise_error
     end
   

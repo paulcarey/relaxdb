@@ -59,7 +59,7 @@ module RelaxDB
       end
       
       data = JSON.parse(resp.body)
-      create_from_hash(data)      
+      ViewResult.new(data)
     end
       
     # Requests the given view from CouchDB and returns a hash.

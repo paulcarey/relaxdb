@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
    "lib/relaxdb/extlib.rb",
    "lib/relaxdb/has_many_proxy.rb",
    "lib/relaxdb/has_one_proxy.rb",
+   "lib/relaxdb/paginate_params.rb",
    "lib/relaxdb/query.rb",
    "lib/relaxdb/references_many_proxy.rb",
    "lib/relaxdb/relaxdb.rb",

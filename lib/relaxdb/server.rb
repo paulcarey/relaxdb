@@ -100,7 +100,8 @@ module RelaxDB
     end
     
     def unesc(path)
-       path ? ::CGI::unescape(path) : ""
+      # path
+      path ? ::CGI::unescape(path) : ""
     end
     
     def uri

@@ -12,6 +12,16 @@ class Primitives < RelaxDB::Document
   
 end
 
+class BespokeReader < RelaxDB::Document
+  property :val
+  def val; @val + 5; end
+end
+
+class BespokeWriter < RelaxDB::Document
+  property :val
+  def val=(v); @val = v - 10; end
+end
+
 class Invite < RelaxDB::Document
   
   property :message

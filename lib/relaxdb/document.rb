@@ -346,6 +346,50 @@ module RelaxDB
         callback.is_a?(Proc) ? callback.call(self) : send(callback)
       end
     end
+    
+    #
+    # Paginate
+    #
+    def self.paginate_by(view_params, *atts)
+      p = PaginateParams.new
+      yield p
+      p.update(JSON.parse(view_params))
+      
+      v = SortedByView.new(self.name, *atts)
+      q = Query.new(self.name, v.view_name)
+      q.merge(p)
+      
+      @docs = RelaxDB.retrieve(q.view_path, self, v.view_name, v.map_function)
+      total_docs = 8 # RelaxDB.retrieve # write the reduce func function(keys, values, combine) { return values.length; }
+      orig_offset = p.order_inverted? ? 2 : 0
+      
+      offset = @docs.offset
+      no_docs = @docs.size
+      
+      @docs.reverse! if p.order_inverted?
+
+      first, last = @docs.first, @docs.last
+      @docs.meta_class.instance_eval do
+        next_key = atts.map { |a| last.send(a) }
+        next_params = { :startkey => next_key, :descending => p.default_descending }
+        
+        next_exists = !p.order_inverted? ? (offset - orig_offset + no_docs < total_docs) : true
+        
+        define_method(:next_params) { next_exists ? next_params : false }
+        define_method(:next_query) { next_exists ? "view_params=#{::CGI::escape(next_params.to_json)}" : false }
+
+        prev_key = atts.map { |a| first.send(a) }
+        prev_params = { :startkey => prev_key, :descending => !p.default_descending }
+        
+        prev_exists = p.order_inverted? ? (offset - orig_offset + no_docs < total_docs) : 
+          (offset - orig_offset == 0 ? false : true)
+        
+        define_method(:prev_params) { prev_exists ? prev_params : false }
+        define_method(:prev_query) { prev_exists ? "view_params=#{::CGI::escape(prev_params.to_json)}" : false }
+      end
+      
+      @docs
+    end
             
   end
   

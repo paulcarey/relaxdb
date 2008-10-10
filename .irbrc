@@ -1,8 +1,8 @@
 require 'lib/relaxdb' 
 require 'spec/spec_models'
 
-RelaxDB::UuidGenerator.id_length = 3
-RelaxDB.configure :host => "localhost", :port => 5984
+RelaxDB::UuidGenerator.id_length = 4
+RelaxDB.configure :host => "localhost", :port => 5984, :logger => Logger.new(STDOUT)
 RelaxDB.use_db "scratch"
 
 require 'irb/ext/save-history'

@@ -20,7 +20,7 @@ module RelaxDB
     
     @@params.each do |param|
       define_method(param.to_sym) do |val|
-        val ||= ""
+        # val ||= "" # may cause a bunch of tests to break - think what happens when a user submits an empty key - potential for exposing data
         instance_variable_set("@#{param}".to_sym, val)
         self
       end
@@ -37,10 +37,17 @@ module RelaxDB
       query = ""
       @@params.each do |param|
         val = instance_variable_get("@#{param}")
-        query << "&#{param}=#{::CGI::escape(val.to_json)}" if val
+        query << "&#{param}=#{::CGI::escape(val.to_json)}" unless val.nil?
       end
     
       uri << query.sub(/^&/, "?")
+    end
+    
+    def merge(paginate_params)
+      paginate_params.instance_variables.each do |pp|
+        val = paginate_params.instance_variable_get(pp)
+        instance_variable_set(pp, val)
+      end
     end
         
   end
