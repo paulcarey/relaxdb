@@ -16,14 +16,14 @@ module RelaxDB
     end
   
     def update(params)
-      @order_inverted = params["descending"].nil? ? false : @descending ^ params["descending"]
+      @order_inverted = params[:descending].nil? ? false : @descending ^ params[:descending]
       @descending = !@descending if @order_inverted
 
       @endkey = @startkey if @order_inverted
     
-      @startkey = params["startkey"] || @startkey
+      @startkey = params[:startkey] || @startkey
     
-      @skip = 1 if params["startkey"]
+      @skip = 1 if params[:startkey]
     end
   
     def order_inverted?

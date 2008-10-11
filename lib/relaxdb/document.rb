@@ -350,11 +350,14 @@ module RelaxDB
     #
     # Paginate
     #
-    def self.paginate_by(view_params, *atts)
+    def self.paginate_by(page_params, *atts)
       p = PaginateParams.new
       yield p
       orig_p = p.clone
-      p.update(JSON.parse(view_params))
+      
+      page_params = page_params.is_a?(String) ? JSON.parse(page_params).to_mash : page_params
+
+      p.update(page_params)
       
       v = SortedByView.new(self.name, *atts)
       q = Query.new(self.name, v.view_name)
@@ -364,15 +367,7 @@ module RelaxDB
 
 
       # start total docs
-      
-      # >> RelaxDB.pp_get '_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["lynda"]&endkey=["lynyda",{}]'
-      #  ~ GET /pagination_dev/_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["lynda"]&endkey=["lynyda",{}]
-      # {"rows"=>[{"value"=>2, "key"=>nil}]}
-      # => nil
-      # >> RelaxDB.pp_get '_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["paul"]'
-      #  ~ GET /pagination_dev/_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["paul"]
-      # {"rows"=>[{"value"=>8, "key"=>nil}]}
-            
+                  
       # Bah, this sucks
       DesignDocument.get(self).add_map_view("reduce_#{v.view_name}", v.map_function).
         add_reduce_view("reduce_#{v.view_name}", v.reduce_function).save
@@ -399,7 +394,7 @@ module RelaxDB
         next_exists = !p.order_inverted? ? (offset - orig_offset + no_docs < total_docs) : true
         
         define_method(:next_params) { next_exists ? next_params : false }
-        define_method(:next_query) { next_exists ? "view_params=#{::CGI::escape(next_params.to_json)}" : false }
+        define_method(:next_query) { next_exists ? "page_params=#{::CGI::escape(next_params.to_json)}" : false }
 
         prev_key = atts.map { |a| first.send(a) }
         prev_params = { :startkey => prev_key, :descending => !orig_p.descending }
@@ -408,7 +403,7 @@ module RelaxDB
           (offset - orig_offset == 0 ? false : true)
         
         define_method(:prev_params) { prev_exists ? prev_params : false }
-        define_method(:prev_query) { prev_exists ? "view_params=#{::CGI::escape(prev_params.to_json)}" : false }
+        define_method(:prev_query) { prev_exists ? "page_params=#{::CGI::escape(prev_params.to_json)}" : false }
       end
       
       @docs

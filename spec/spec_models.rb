@@ -22,6 +22,13 @@ class BespokeWriter < RelaxDB::Document
   def val=(v); @val = v - 10; end
 end
 
+class Letter < RelaxDB::Document
+  
+  property :letter
+  property :number
+  
+end
+
 class Invite < RelaxDB::Document
   
   property :message
