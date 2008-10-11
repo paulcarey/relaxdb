@@ -9,15 +9,6 @@ module RelaxDB
       @atts = atts
     end
 
-    def view_name
-      name = "all_sorted_by"
-
-      @atts.each do |att|
-        name += "_#{att}_and"
-      end
-      name[0, name.size-4]
-    end
-    
     def map_function
       # To guard against non existing attributes in older documents, an OR with an object literal 
       # is inserted for each emitted key. The guard can be emitted in 0.9 trunk.
@@ -43,6 +34,21 @@ module RelaxDB
         return values.length;
       }
       QUERY
+    end
+    
+    def view_name
+      name = "all_sorted_by#{suffix}"
+    end
+    
+    def reduce_view_name
+      "reduce_by#{suffix}"
+    end
+    
+    def suffix
+      s = @atts.inject("") do |s, att|
+        s << "_#{att}_and"
+      end
+      s[0, s.size-4]
     end
   
   end

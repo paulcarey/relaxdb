@@ -351,74 +351,28 @@ module RelaxDB
     # Paginate
     #
     def self.paginate_by(page_params, *atts)
-      p = PaginateParams.new
-      yield p
-      orig_p = p.clone
+      paginate_params = PaginateParams.new
+      yield paginate_params
       
+      paginator = Paginator.new(paginate_params)
+            
       page_params = page_params.is_a?(String) ? JSON.parse(page_params).to_mash : page_params
 
-      p.update(page_params)
+      paginate_params.update(page_params)
       
       v = SortedByView.new(self.name, *atts)
       q = Query.new(self.name, v.view_name)
-      q.merge(p)
+      q.merge(paginate_params)
       
-      @docs = RelaxDB.retrieve(q.view_path, self, v.view_name, v.map_function)
+      @docs = RelaxDB.retrieve(q.view_path, self, v.view_name, v.map_function)      
 
+      paginator.add_next_and_prev(self.name, @docs, v, paginate_params, atts)
 
-      # start total docs
-                  
-      # Bah, this sucks
-      DesignDocument.get(self).add_map_view("reduce_#{v.view_name}", v.map_function).
-        add_reduce_view("reduce_#{v.view_name}", v.reduce_function).save
-      
-      total_docs = RelaxDB.reduce_result(RelaxDB.view(self, "reduce_#{v.view_name}") do |q|
-        q.group(true).group_level(0)
-        q.startkey(orig_p.startkey).endkey(orig_p.endkey).descending(orig_p.descending)  
-      end)
-      RelaxDB.logger.info("total_docs #{total_docs}")
-      
-      ### end total docs
-
-      orig_offset = self.orig_offset(p.order_inverted?, Query.new(self.name, v.view_name), orig_p, v)
-      offset = @docs.offset
-      no_docs = @docs.size
-      
-      @docs.reverse! if p.order_inverted?
-
-      first, last = @docs.first, @docs.last
-      @docs.meta_class.instance_eval do
-        next_key = atts.map { |a| last.send(a) }
-        next_params = { :startkey => next_key, :descending => orig_p.descending }
-        
-        next_exists = !p.order_inverted? ? (offset - orig_offset + no_docs < total_docs) : true
-        
-        define_method(:next_params) { next_exists ? next_params : false }
-        define_method(:next_query) { next_exists ? "page_params=#{::CGI::escape(next_params.to_json)}" : false }
-
-        prev_key = atts.map { |a| first.send(a) }
-        prev_params = { :startkey => prev_key, :descending => !orig_p.descending }
-        
-        prev_exists = p.order_inverted? ? (offset - orig_offset + no_docs < total_docs) : 
-          (offset - orig_offset == 0 ? false : true)
-        
-        define_method(:prev_params) { prev_exists ? prev_params : false }
-        define_method(:prev_query) { prev_exists ? "page_params=#{::CGI::escape(prev_params.to_json)}" : false }
-      end
+      @docs.reverse! if paginate_params.order_inverted?
       
       @docs
     end
-    
-    def self.orig_offset(inverted, query, orig_p, v)
-      if inverted
-        query.startkey(orig_p.endkey).descending(!orig_p.descending)
-      else
-        query.startkey(orig_p.startkey).descending(orig_p.descending)
-      end
-      query.count(1)
-      RelaxDB.retrieve(query.view_path, self, v.view_name, v.map_function).offset
-    end
-            
+                
   end
   
 end

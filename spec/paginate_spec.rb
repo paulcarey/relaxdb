@@ -22,13 +22,13 @@ describe "RelaxDB Pagination" do
     Letter.new(:letter => "c", :number => 1).save
     Letter.new(:letter => "c", :number => 2).save    
   end
+
+  # helper function
+  def s(letters)
+    letters.map { |l| "#{l.letter}#{l.number}"}.join(", ")
+  end
     
   describe "functional tests" do
-
-    # helper function
-    def s(letters)
-      letters.map { |l| "#{l.letter}#{l.number}"}.join(", ")
-    end
 
     it "should navigate through a series" do
       page_params = {}
@@ -133,15 +133,54 @@ describe "RelaxDB Pagination" do
     
   end
   
-  describe "next_query & prev_query" do
-    
+  describe "next_query" do
+
     it "should emit a url encoded and json encoded string with query name page_params" do
       letters = Letter.paginate_by({:startkey => ["b", 2]}, :letter, :number) do |p|
          p.startkey(["b"]).endkey(["b",{}]).count(2)
       end
       
       letters.next_query.should == "page_params=%7B%22descending%22%3Anull%2C%22startkey%22%3A%5B%22b%22%2C4%5D%7D"      
-      letters.prev_query.should == "page_params=%7B%22descending%22%3Atrue%2C%22startkey%22%3A%5B%22b%22%2C3%5D%7D"
+    end
+    
+    it "should be treated as next_param by the paginator" do
+      page_params = {}
+      query = lambda do
+         Letter.paginate_by(page_params, :letter, :number) do |p|
+           p.startkey(["b"]).endkey(["b", {}]).count(2)
+        end
+      end
+      
+      letters = query.call      
+      page_params = ::CGI::unescape(letters.next_query.split("=")[1])
+      letters = query.call
+      s(letters).should == "b3, b4"
+    end
+    
+  end
+  
+  describe "prev_query" do
+    
+    it "should be treated as prev_query by the paginator" do
+      page_params = {}
+      query = lambda do
+         Letter.paginate_by(page_params, :letter, :number) do |p|
+           p.startkey(["b", {}]).endkey(["b"]).descending(true).count(2)
+        end
+      end
+      
+      letters = query.call      
+      page_params = ::CGI::unescape(letters.next_query.split("=")[1])
+      letters = query.call
+      s(letters).should == "b3, b2"
+    end
+    
+    it "should emit a url encoded and json encoded string with query name page_params" do
+      letters = Letter.paginate_by({:startkey => ["b", 2]}, :letter, :number) do |p|
+         p.startkey(["b"]).endkey(["b",{}]).count(2)
+      end
+      
+      letters.prev_query.should == "page_params=%7B%22descending%22%3Atrue%2C%22startkey%22%3A%5B%22b%22%2C4%5D%7D"
     end
     
   end
@@ -151,6 +190,12 @@ describe "RelaxDB Pagination" do
     it "should not yet be used with pagination" do
       # use a - create map func with emitting multiple times
     end
+    
+  end
+  
+  describe "simple (non array) keys" do
+    
+    it "should work"
     
   end
     
