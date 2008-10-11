@@ -20,7 +20,7 @@ module RelaxDB
     
     def map_function
       # To guard against non existing attributes in older documents, an OR with an object literal 
-      # is inserted for each emitted key
+      # is inserted for each emitted key. The guard can be emitted in 0.9 trunk.
       # The object literal is the lowest sorting JSON category
         
       # Create the key from the attributes, wrapping it in [] if the key is composite
@@ -33,6 +33,14 @@ module RelaxDB
         if(doc.class == "#{@class_name}") {
           emit(#{pure}, doc);
         }
+      }
+      QUERY
+    end
+    
+    def reduce_function
+      <<-QUERY
+      function(keys, values, rereduce) {
+        return values.length;
       }
       QUERY
     end

@@ -16,7 +16,7 @@ module RelaxDB
   #
   class Query
     
-    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group)
+    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group group_level)
     
     @@params.each do |param|
       define_method(param.to_sym) do |val|

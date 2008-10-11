@@ -12,6 +12,10 @@ module RelaxDB
       @@db
     end
     
+    def logger
+      @@db.logger
+    end
+    
     # Creates the named database if it doesn't already exist
     def use_db(name)
       db.use_db(name)

@@ -353,6 +353,7 @@ module RelaxDB
     def self.paginate_by(view_params, *atts)
       p = PaginateParams.new
       yield p
+      orig_p = p.clone
       p.update(JSON.parse(view_params))
       
       v = SortedByView.new(self.name, *atts)
@@ -360,9 +361,31 @@ module RelaxDB
       q.merge(p)
       
       @docs = RelaxDB.retrieve(q.view_path, self, v.view_name, v.map_function)
-      total_docs = 8 # RelaxDB.retrieve # write the reduce func function(keys, values, combine) { return values.length; }
-      orig_offset = p.order_inverted? ? 2 : 0
+
+
+      # start total docs
       
+      # >> RelaxDB.pp_get '_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["lynda"]&endkey=["lynyda",{}]'
+      #  ~ GET /pagination_dev/_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["lynda"]&endkey=["lynyda",{}]
+      # {"rows"=>[{"value"=>2, "key"=>nil}]}
+      # => nil
+      # >> RelaxDB.pp_get '_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["paul"]'
+      #  ~ GET /pagination_dev/_view/Message/all_sorted_by_user_and_timestamp?group=true&group_level=0&startkey=["paul"]
+      # {"rows"=>[{"value"=>8, "key"=>nil}]}
+            
+      # Bah, this sucks
+      DesignDocument.get(self).add_map_view("reduce_#{v.view_name}", v.map_function).
+        add_reduce_view("reduce_#{v.view_name}", v.reduce_function).save
+      
+      total_docs = RelaxDB.reduce_result(RelaxDB.view(self, "reduce_#{v.view_name}") do |q|
+        q.group(true).group_level(0)
+        q.startkey(orig_p.startkey).endkey(orig_p.endkey).descending(orig_p.descending)  
+      end)
+      RelaxDB.logger.info("total_docs #{total_docs}")
+      
+      ### end total docs
+
+      orig_offset = self.orig_offset(p.order_inverted?, Query.new(self.name, v.view_name), orig_p, v)
       offset = @docs.offset
       no_docs = @docs.size
       
@@ -371,7 +394,7 @@ module RelaxDB
       first, last = @docs.first, @docs.last
       @docs.meta_class.instance_eval do
         next_key = atts.map { |a| last.send(a) }
-        next_params = { :startkey => next_key, :descending => p.default_descending }
+        next_params = { :startkey => next_key, :descending => orig_p.descending }
         
         next_exists = !p.order_inverted? ? (offset - orig_offset + no_docs < total_docs) : true
         
@@ -379,7 +402,7 @@ module RelaxDB
         define_method(:next_query) { next_exists ? "view_params=#{::CGI::escape(next_params.to_json)}" : false }
 
         prev_key = atts.map { |a| first.send(a) }
-        prev_params = { :startkey => prev_key, :descending => !p.default_descending }
+        prev_params = { :startkey => prev_key, :descending => !orig_p.descending }
         
         prev_exists = p.order_inverted? ? (offset - orig_offset + no_docs < total_docs) : 
           (offset - orig_offset == 0 ? false : true)
@@ -389,6 +412,16 @@ module RelaxDB
       end
       
       @docs
+    end
+    
+    def self.orig_offset(inverted, query, orig_p, v)
+      if inverted
+        query.startkey(orig_p.endkey).descending(!orig_p.descending)
+      else
+        query.startkey(orig_p.startkey).descending(orig_p.descending)
+      end
+      query.count(1)
+      RelaxDB.retrieve(query.view_path, self, v.view_name, v.map_function).offset
     end
             
   end

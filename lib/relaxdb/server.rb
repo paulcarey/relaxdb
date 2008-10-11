@@ -112,6 +112,10 @@ module RelaxDB
       @db
     end
     
+    def logger
+      @logger
+    end
+    
     private
     
     def create_db_if_non_existant(name)
