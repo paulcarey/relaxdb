@@ -5,28 +5,34 @@ describe "RelaxDB Pagination" do
     
   before(:all) do
     RelaxDB.configure(:host => "localhost", :port => 5984)  
+    # RelaxDB.configure(:host => "localhost", :port => 5984, :logger => Logger.new(STDOUT))  
   end
 
   before(:each) do
     RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
     RelaxDB.use_db "relaxdb_spec_db"
     
-    Letter.new(:letter => "a", :number => 1).save
-    Letter.new(:letter => "a", :number => 2).save
-    Letter.new(:letter => "a", :number => 3).save
-    Letter.new(:letter => "b", :number => 1).save
-    Letter.new(:letter => "b", :number => 2).save
-    Letter.new(:letter => "b", :number => 3).save
-    Letter.new(:letter => "b", :number => 4).save
-    Letter.new(:letter => "b", :number => 5).save
-    Letter.new(:letter => "c", :number => 1).save
-    Letter.new(:letter => "c", :number => 2).save    
+    Letter.new(:letter => "a", :number => 1).save # :_id => "a1",
+    Letter.new(:letter => "a", :number => 2).save # :_id => "a2", 
+    Letter.new(:letter => "a", :number => 3).save # :_id => "a3", 
+    Letter.new(:letter => "b", :number => 1).save # :_id => "b1", 
+    Letter.new(:letter => "b", :number => 2).save # :_id => "b2", 
+    Letter.new(:letter => "b", :number => 3).save # :_id => "b3", 
+    Letter.new(:letter => "b", :number => 4).save # :_id => "b4", 
+    Letter.new(:letter => "b", :number => 5).save # :_id => "b5", 
+    Letter.new(:letter => "c", :number => 1).save # :_id => "c1", 
+    Letter.new(:letter => "c", :number => 2).save # :_id => "c2",    
   end
 
   # helper function
   def s(letters)
     letters.map { |l| "#{l.letter}#{l.number}"}.join(", ")
   end
+  
+  def n(letters)
+    letters.map { |l| "#{l.number}"}.join(", ")
+  end
+  
     
   describe "functional tests" do
 
@@ -210,9 +216,105 @@ describe "RelaxDB Pagination" do
     
   end
   
-  describe "simple (non array) keys" do
+  describe "multiple keys per document, simple (non array) keys" do
     
-    it "should work"
+    it "should work when descending is false" do
+      page_params = {}
+      query = lambda do
+        Letter.paginate_by(page_params, :number) do |p|
+          p.startkey(1).endkey({}).count(4)
+        end
+      end
+      
+      numbers = query.call
+      n(numbers).should == "1, 1, 1, 2"
+      numbers.prev_params.should be_false
+      page_params = numbers.next_params
+      
+      numbers = query.call
+      n(numbers).should == "2, 2, 3, 3"
+      numbers.next_params.should be
+      page_params = numbers.prev_params
+      
+      numbers = query.call
+      n(numbers).should == "1, 1, 1, 2"
+      numbers.prev_params.should be_false
+      page_params = numbers.next_params
+      
+      numbers = query.call
+      n(numbers) == "2, 2, 3, 3"
+      numbers.prev_params.should be
+      page_params = numbers.next_params
+      
+      numbers = query.call
+      n(numbers) == "4, 5"
+      numbers.next_params.should be_false
+      page_params = numbers.prev_params
+      
+      numbers = query.call
+      n(numbers) == "2, 2, 3, 3"
+      numbers.next_params.should be
+      page_params = numbers.prev_params
+      
+      numbers = query.call
+      n(numbers) == "1, 1, 1, 2"
+      numbers.next_params.should be
+      numbers.prev_params.should be_false
+    end
+
+    it "should work when descending is true" do
+      page_params = {}
+      query = lambda do
+        Letter.paginate_by(page_params, :number) do |p|
+          p.startkey(5).endkey(nil).descending(true).count(4)
+        end
+      end
+      
+      numbers = query.call
+      n(numbers).should == "5, 4, 3, 3"
+      numbers.prev_params.should be_false
+      page_params = numbers.next_params
+      
+      numbers = query.call
+      n(numbers).should == "2, 2, 2, 1"
+      numbers.next_params.should be
+      page_params = numbers.prev_params
+
+      numbers = query.call
+      n(numbers).should == "5, 4, 3, 3"
+      numbers.prev_params.should be_false
+      page_params = numbers.next_params
+
+      numbers = query.call
+      n(numbers).should == "2, 2, 2, 1"
+      numbers.prev_params.should be
+      page_params = numbers.next_params
+
+      numbers = query.call
+      n(numbers).should == "1, 1"
+      numbers.next_params.should be_false
+      page_params = numbers.prev_params
+
+      numbers = query.call
+      n(numbers).should == "2, 2, 2, 1"
+      numbers.next_params.should be
+      page_params = numbers.prev_params
+
+      numbers = query.call
+      n(numbers).should == "5, 4, 3, 3"
+      numbers.prev_params.should be_false
+      numbers.next_params.should be
+    end
+    
+  end
+  
+  describe ".paginate_by" do
+    
+    it "should throw an error unless both startkey and endkey are specified" do
+      lambda do
+        Letter.paginate_by({}, :number) { |p| p.startkey(1).descending(true) }
+      end.should raise_error
+    end
     
   end
     

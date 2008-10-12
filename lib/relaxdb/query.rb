@@ -21,6 +21,7 @@ module RelaxDB
     @@params.each do |param|
       define_method(param.to_sym) do |val|
         instance_variable_set("@#{param}", val)
+        # null is meaningful to CouchDB. _set allows us to know that a param has been set, even to nil        
         instance_variable_set("@#{param}_set", true)
         self
       end
@@ -36,11 +37,12 @@ module RelaxDB
       
       query = ""
       @@params.each do |param|
-        val = instance_variable_get("@#{param}")
-        # Ensures we don't accidentally leak the results of an entire view if 
-        # users fail to provide a key
         val_set = instance_variable_get("@#{param}_set")
-        query << "&#{param}=#{::CGI::escape(val.to_json)}" if val_set
+        if val_set
+          val = instance_variable_get("@#{param}")
+          val = val.to_json unless ["startkey_docid", "endkey_docid"].include?(param)
+          query << "&#{param}=#{::CGI::escape(val)}" 
+        end
       end
     
       uri << query.sub(/^&/, "?")

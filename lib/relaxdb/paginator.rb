@@ -35,16 +35,19 @@ module RelaxDB
     def add_next_and_prev(docs, design_doc, view, view_keys)
       offset = docs.offset
       no_docs = docs.size
-      orig_offset = orig_offset(@paginate_params.order_inverted?, Query.new(design_doc, view.view_name), view)
+      orig_offset = orig_offset(Query.new(design_doc, view.view_name), view)
       total_doc_count = total_doc_count(design_doc, view)      
       
-      
       next_key = view_keys.map { |a| docs.last.send(a) }
-      next_params = { :startkey => next_key, :descending => @orig_paginate_params.descending }
+      next_key = next_key.length == 1 ? next_key[0] : next_key
+      next_key_docid = docs.last._id
+      next_params = { :startkey => next_key, :startkey_docid => next_key_docid, :descending => @orig_paginate_params.descending }
       next_exists = !@paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : true
       
       prev_key = view_keys.map { |a| docs.first.send(a) }
-      prev_params = { :startkey => prev_key, :descending => !@orig_paginate_params.descending }
+      prev_key = prev_key.length == 1 ? prev_key[0] : prev_key
+      prev_key_docid = docs.first._id
+      prev_params = { :startkey => prev_key, :startkey_docid => prev_key_docid, :descending => !@orig_paginate_params.descending }
       prev_exists = @paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : 
         (offset - orig_offset == 0 ? false : true)
       
@@ -57,8 +60,8 @@ module RelaxDB
       end      
     end
     
-    def orig_offset(inverted, query, view)
-      if inverted
+    def orig_offset(query, view)
+      if @paginate_params.order_inverted?
         query.startkey(@orig_paginate_params.endkey).descending(!@orig_paginate_params.descending)
       else
         query.startkey(@orig_paginate_params.startkey).descending(@orig_paginate_params.descending)

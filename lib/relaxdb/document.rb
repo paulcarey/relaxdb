@@ -350,6 +350,7 @@ module RelaxDB
     def self.paginate_by(page_params, *atts)
       paginate_params = PaginateParams.new
       yield paginate_params
+      raise paginate_params.error_msg if paginate_params.invalid? 
       
       paginator = Paginator.new(paginate_params, page_params)
                   

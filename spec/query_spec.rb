@@ -24,15 +24,15 @@ describe RelaxDB::Query do
     end
     
     it "should contain URL and JSON encoded key when the key has been set" do
-      q = RelaxDB::Query.new("Zenith", "mount")
+      q = RelaxDB::Query.new("", "")
       q.key("olympus")
-      q.view_path.should == "_view/Zenith/mount?key=%22olympus%22"
+      q.view_path.should == "_view//?key=%22olympus%22"
     end
     
     it "should honour startkey, endkey and count" do
-      q = RelaxDB::Query.new("Zenith", "all_sorted_by_name_and_height")
+      q = RelaxDB::Query.new("", "")
       q.startkey(["olympus"]).endkey(["vesuvius", 3600]).count(100)
-      q.view_path.should == "_view/Zenith/all_sorted_by_name_and_height?startkey=%5B%22olympus%22%5D&endkey=%5B%22vesuvius%22%2C3600%5D&count=100"
+      q.view_path.should == "_view//?startkey=%5B%22olympus%22%5D&endkey=%5B%22vesuvius%22%2C3600%5D&count=100"
     end
         
     it "should specify a null key if key was set to nil" do
@@ -51,6 +51,18 @@ describe RelaxDB::Query do
       q = RelaxDB::Query.new("", "")
       q.endkey(nil)
       q.view_path.should == "_view//?endkey=null"
+    end
+    
+    it "should not JSON encode the startkey_docid" do
+      q = RelaxDB::Query.new("", "")
+      q.startkey_docid("foo")
+      q.view_path.should == "_view//?startkey_docid=foo"
+    end
+
+    it "should not JSON encode the endkey_docid" do
+      q = RelaxDB::Query.new("", "")
+      q.endkey_docid("foo")
+      q.view_path.should == "_view//?endkey_docid=foo"
     end
     
   end  
