@@ -278,6 +278,11 @@ module RelaxDB
       define_method("#{relationship}_id=") do |id|
         instance_variable_set("@#{relationship}_id".to_sym, id)
       end
+
+      # Allows belongs_to relationships to be used by the paginator
+      define_method("#{relationship}_id") do
+        instance_variable_get("@#{relationship}_id")
+      end
       
     end
     
