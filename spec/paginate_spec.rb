@@ -66,6 +66,16 @@ describe "RelaxDB Pagination" do
       s(letters).should == "b1, b2"
       letters.prev_params.should be_false
       page_params = letters.next_params
+      
+      letters = query.call
+      s(letters).should == "b3, b4"
+      letters.next_params.should be
+      page_params = letters.prev_params
+
+      letters = query.call
+      s(letters).should == "b1, b2"
+      letters.prev_params.should be_false
+      page_params = letters.next_params
     
       letters = query.call
       s(letters).should == "b3, b4"
@@ -140,7 +150,11 @@ describe "RelaxDB Pagination" do
          p.startkey(["b"]).endkey(["b",{}]).count(2)
       end
       
-      letters.next_query.should == "page_params=%7B%22descending%22%3Anull%2C%22startkey%22%3A%5B%22b%22%2C4%5D%7D"      
+      # unescape and parse required as param order is implementation dependent
+      hash = JSON.parse(CGI.unescape(letters.next_query.split("=")[1]))
+      
+      hash["descending"].should be_false
+      hash["startkey"].should == ["b", 4]
     end
     
     it "should be treated as next_param by the paginator" do
@@ -180,7 +194,10 @@ describe "RelaxDB Pagination" do
          p.startkey(["b"]).endkey(["b",{}]).count(2)
       end
       
-      letters.prev_query.should == "page_params=%7B%22descending%22%3Atrue%2C%22startkey%22%3A%5B%22b%22%2C4%5D%7D"
+      hash = JSON.parse(CGI.unescape(letters.prev_query.split("=")[1]))
+      
+      hash["descending"].should be_true
+      hash["startkey"].should == ["b", 3]
     end
     
   end

@@ -14,6 +14,11 @@ module RelaxDB
         end
       end
     end
+    
+    def initialize
+      # If a client hasn't explicitly set descending, set it to the CouchDB default
+      @descending = false if @descending.nil?
+    end
   
     def update(params)
       @order_inverted = params[:descending].nil? ? false : @descending ^ params[:descending]

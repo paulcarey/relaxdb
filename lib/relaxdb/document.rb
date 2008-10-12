@@ -347,28 +347,20 @@ module RelaxDB
       end
     end
     
-    #
-    # Paginate
-    #
     def self.paginate_by(page_params, *atts)
       paginate_params = PaginateParams.new
       yield paginate_params
       
-      paginator = Paginator.new(paginate_params)
-            
-      page_params = page_params.is_a?(String) ? JSON.parse(page_params).to_mash : page_params
-
-      paginate_params.update(page_params)
+      paginator = Paginator.new(paginate_params, page_params)
+                  
+      doc_view = SortedByView.new(self.name, *atts)
+      doc_query = Query.new(self.name, doc_view.view_name)
+      doc_query.merge(paginator.paginate_params)
       
-      v = SortedByView.new(self.name, *atts)
-      q = Query.new(self.name, v.view_name)
-      q.merge(paginate_params)
-      
-      @docs = RelaxDB.retrieve(q.view_path, self, v.view_name, v.map_function)      
-
-      paginator.add_next_and_prev(self.name, @docs, v, paginate_params, atts)
-
+      @docs = RelaxDB.retrieve(doc_query.view_path, self, doc_view.view_name, doc_view.map_function)
       @docs.reverse! if paginate_params.order_inverted?
+      
+      paginator.add_next_and_prev(@docs, self.name, doc_view, atts)
       
       @docs
     end

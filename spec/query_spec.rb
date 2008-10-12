@@ -35,10 +35,22 @@ describe RelaxDB::Query do
       q.view_path.should == "_view/Zenith/all_sorted_by_name_and_height?startkey=%5B%22olympus%22%5D&endkey=%5B%22vesuvius%22%2C3600%5D&count=100"
     end
         
-    it "should specify the key as the empty string if key was set to nil" do
+    it "should specify a null key if key was set to nil" do
       q = RelaxDB::Query.new("", "")
       q.key(nil)
-      q.view_path.should == "_view//?key=%22%22"
+      q.view_path.should == "_view//?key=null"
+    end
+
+    it "should specify a null startkey if startkey was set to nil" do
+      q = RelaxDB::Query.new("", "")
+      q.startkey(nil)
+      q.view_path.should == "_view//?startkey=null"
+    end
+
+    it "should specify a null endkey if endkey was set to nil" do
+      q = RelaxDB::Query.new("", "")
+      q.endkey(nil)
+      q.view_path.should == "_view//?endkey=null"
     end
     
   end  
