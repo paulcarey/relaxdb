@@ -37,102 +37,87 @@ describe "RelaxDB Pagination" do
   describe "functional tests" do
 
     it "should navigate through a series" do
-      page_params = {}
-      query = lambda do
+      query = lambda do |page_params|
          Letter.paginate_by(page_params, :letter, :number) do |p|
            p.startkey(["a"]).endkey(["a",{}]).count(2)
         end
       end
     
-      letters = query.call
+      letters = query.call({})
       s(letters).should == "a1, a2"
       letters.prev_params.should be_false
-      page_params = letters.next_params
     
-      letters = query.call
+      letters = query.call(letters.next_params)
       s(letters).should == "a3"
       letters.next_params.should be_false
-      page_params = letters.prev_params
     
-      letters = query.call
+      letters = query.call(letters.prev_params)
       s(letters).should == "a1, a2"
       letters.prev_params.should be_false
       letters.next_params.should be    
     end
 
     it "should navigate through b series with descending false" do
-      page_params = {}
-      query = lambda do
+      query = lambda do |page_params|
          Letter.paginate_by(page_params, :letter, :number) do |p|
            p.startkey(["b"]).endkey(["b",{}]).count(2)
         end
       end
     
-      letters = query.call
+      letters = query.call({})
       s(letters).should == "b1, b2"
       letters.prev_params.should be_false
-      page_params = letters.next_params
       
-      letters = query.call
+      letters = query.call(letters.next_params)
       s(letters).should == "b3, b4"
       letters.next_params.should be
-      page_params = letters.prev_params
 
-      letters = query.call
+      letters = query.call(letters.prev_params)
       s(letters).should == "b1, b2"
       letters.prev_params.should be_false
-      page_params = letters.next_params
     
-      letters = query.call
+      letters = query.call(letters.next_params)
       s(letters).should == "b3, b4"
       letters.prev_params.should be
-      page_params = letters.next_params
     
-      letters = query.call
+      letters = query.call(letters.next_params)
       s(letters).should == "b5"
       letters.next_params.should be_false
-      page_params = letters.prev_params
 
-      letters = query.call
+      letters = query.call(letters.prev_params)
       s(letters).should == "b3, b4"
       letters.next_params.should be
-      page_params = letters.prev_params
     
-      letters = query.call
+      letters = query.call(letters.prev_params)
       s(letters).should == "b1, b2"
       letters.prev_params.should be_false
       letters.next_params.should be
     end
 
     it "should navigate through b series with descending true" do
-      page_params = {}
-      query = lambda do
+      query = lambda do |page_params|
          Letter.paginate_by(page_params, :letter, :number) do |p|
            p.startkey(["b", {}]).endkey(["b"]).descending(true).count(2)
         end
       end
     
-      letters = query.call
+      letters = query.call({})
       s(letters).should == "b5, b4"
       letters.prev_params.should be_false
-      page_params = letters.next_params
     
-      letters = query.call
+      letters = query.call(letters.next_params)
       s(letters).should == "b3, b2"
       letters.prev_params.should be
-      page_params = letters.next_params
     
-      letters = query.call
+      letters = query.call(letters.next_params)
       s(letters).should == "b1"
       letters.next_params.should be_false
-      page_params = letters.prev_params
 
-      letters = query.call
+      letters = query.call(letters.prev_params)
       s(letters).should == "b3, b2"
       letters.next_params.should be
-      page_params = letters.prev_params
     
-      letters = query.call
+      letters = query.call(letters.prev_params)
       s(letters).should == "b5, b4"
       letters.prev_params.should be_false
       letters.next_params.should be
@@ -219,91 +204,90 @@ describe "RelaxDB Pagination" do
   describe "multiple keys per document, simple (non array) keys" do
     
     it "should work when descending is false" do
-      page_params = {}
-      query = lambda do
+      query = lambda do |page_params|
         Letter.paginate_by(page_params, :number) do |p|
           p.startkey(1).endkey({}).count(4)
         end
       end
       
-      numbers = query.call
+      numbers = query.call({})
       n(numbers).should == "1, 1, 1, 2"
       numbers.prev_params.should be_false
-      page_params = numbers.next_params
       
-      numbers = query.call
+      numbers = query.call(numbers.next_params)
       n(numbers).should == "2, 2, 3, 3"
       numbers.next_params.should be
-      page_params = numbers.prev_params
       
-      numbers = query.call
+      numbers = query.call(numbers.prev_params)
       n(numbers).should == "1, 1, 1, 2"
       numbers.prev_params.should be_false
-      page_params = numbers.next_params
       
-      numbers = query.call
+      numbers = query.call(numbers.next_params)
       n(numbers) == "2, 2, 3, 3"
       numbers.prev_params.should be
-      page_params = numbers.next_params
       
-      numbers = query.call
+      numbers = query.call(numbers.next_params)
       n(numbers) == "4, 5"
       numbers.next_params.should be_false
-      page_params = numbers.prev_params
       
-      numbers = query.call
+      numbers = query.call(numbers.prev_params)
       n(numbers) == "2, 2, 3, 3"
       numbers.next_params.should be
-      page_params = numbers.prev_params
       
-      numbers = query.call
+      numbers = query.call(numbers.prev_params)
       n(numbers) == "1, 1, 1, 2"
       numbers.next_params.should be
       numbers.prev_params.should be_false
     end
 
     it "should work when descending is true" do
-      page_params = {}
-      query = lambda do
+      query = lambda do |page_params|
         Letter.paginate_by(page_params, :number) do |p|
           p.startkey(5).endkey(nil).descending(true).count(4)
         end
       end
       
-      numbers = query.call
+      numbers = query.call({})
       n(numbers).should == "5, 4, 3, 3"
       numbers.prev_params.should be_false
-      page_params = numbers.next_params
       
-      numbers = query.call
+      numbers = query.call(numbers.next_params)
       n(numbers).should == "2, 2, 2, 1"
       numbers.next_params.should be
-      page_params = numbers.prev_params
 
-      numbers = query.call
+      numbers = query.call(numbers.prev_params)
       n(numbers).should == "5, 4, 3, 3"
       numbers.prev_params.should be_false
-      page_params = numbers.next_params
 
-      numbers = query.call
+      numbers = query.call(numbers.next_params)
       n(numbers).should == "2, 2, 2, 1"
       numbers.prev_params.should be
-      page_params = numbers.next_params
 
-      numbers = query.call
+      numbers = query.call(numbers.next_params)
       n(numbers).should == "1, 1"
       numbers.next_params.should be_false
-      page_params = numbers.prev_params
 
-      numbers = query.call
+      numbers = query.call(numbers.prev_params)
       n(numbers).should == "2, 2, 2, 1"
       numbers.next_params.should be
-      page_params = numbers.prev_params
 
-      numbers = query.call
+      numbers = query.call(numbers.prev_params)
       n(numbers).should == "5, 4, 3, 3"
       numbers.prev_params.should be_false
       numbers.next_params.should be
+    end
+    
+    it "should not get stuck when the number of keys exceeds the count" do
+      query = lambda do |page_params|
+        Letter.paginate_by(page_params, :number) do |p|
+          p.startkey(1).endkey({}).count(2)
+        end
+      end
+      
+      numbers = query.call({})
+      n(numbers).should == "1, 1"
+      numbers = query.call(numbers.next_params)
+      n(numbers).should == "1, 2"
     end
     
   end
