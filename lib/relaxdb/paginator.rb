@@ -33,23 +33,27 @@ module RelaxDB
     end
     
     def add_next_and_prev(docs, design_doc, view, view_keys)
-      offset = docs.offset
-      no_docs = docs.size
-      orig_offset = orig_offset(Query.new(design_doc, view.view_name), view)
-      total_doc_count = total_doc_count(design_doc, view)      
+      unless docs.empty?
+        no_docs = docs.size
+        offset = docs.offset
+        orig_offset = orig_offset(Query.new(design_doc, view.view_name), view)
+        total_doc_count = total_doc_count(design_doc, view)      
       
-      next_key = view_keys.map { |a| docs.last.send(a) }
-      next_key = next_key.length == 1 ? next_key[0] : next_key
-      next_key_docid = docs.last._id
-      next_params = { :startkey => next_key, :startkey_docid => next_key_docid, :descending => @orig_paginate_params.descending }
-      next_exists = !@paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : true
+        next_key = view_keys.map { |a| docs.last.send(a) }
+        next_key = next_key.length == 1 ? next_key[0] : next_key
+        next_key_docid = docs.last._id
+        next_params = { :startkey => next_key, :startkey_docid => next_key_docid, :descending => @orig_paginate_params.descending }
+        next_exists = !@paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : true
       
-      prev_key = view_keys.map { |a| docs.first.send(a) }
-      prev_key = prev_key.length == 1 ? prev_key[0] : prev_key
-      prev_key_docid = docs.first._id
-      prev_params = { :startkey => prev_key, :startkey_docid => prev_key_docid, :descending => !@orig_paginate_params.descending }
-      prev_exists = @paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : 
-        (offset - orig_offset == 0 ? false : true)
+        prev_key = view_keys.map { |a| docs.first.send(a) }
+        prev_key = prev_key.length == 1 ? prev_key[0] : prev_key
+        prev_key_docid = docs.first._id
+        prev_params = { :startkey => prev_key, :startkey_docid => prev_key_docid, :descending => !@orig_paginate_params.descending }
+        prev_exists = @paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : 
+          (offset - orig_offset == 0 ? false : true)
+      else
+        next_exists, prev_exists = false
+      end
       
       docs.meta_class.instance_eval do        
         define_method(:next_params) { next_exists ? next_params : false }

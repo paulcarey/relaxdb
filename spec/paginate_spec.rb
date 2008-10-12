@@ -300,6 +300,19 @@ describe "RelaxDB Pagination" do
       end.should raise_error
     end
     
+    it "should return an empty array when no documents exist" do
+      Letter.all.destroy!
+      letters = Letter.paginate_by({}, :number) { |p| p.startkey(1).endkey(3) }
+      letters.should be_empty
+    end
+
+    it "should return an array that responds negatively to next_query and prev_query when no documents exist" do
+      Letter.all.destroy!
+      letters = Letter.paginate_by({}, :number) { |p| p.startkey(1).endkey(3) }
+      letters.prev_query.should be_false
+      letters.next_query.should be_false
+    end
+    
   end
     
 end
