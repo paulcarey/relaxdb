@@ -13,21 +13,21 @@ module RelaxDB
       @paginate_params.update(page_params)
     end
 
-    def total_doc_count(design_doc, reduce_view_name)
-      result = RelaxDB.view(design_doc, reduce_view_name) do |q|
-        q.group(true).group_level(0)
+    def total_doc_count(design_doc, view_name)
+      result = RelaxDB.view(design_doc, view_name) do |q|
+        q.group(true).group_level(0).reduce(true)
         q.startkey(@orig_paginate_params.startkey).endkey(@orig_paginate_params.endkey).descending(@orig_paginate_params.descending)  
       end
       
       total_docs = RelaxDB.reduce_result(result)
     end
     
-    def add_next_and_prev(docs, design_doc, view_name, reduce_view_name, view_keys)
+    def add_next_and_prev(docs, design_doc, view_name, view_keys)
       unless docs.empty?
         no_docs = docs.size
         offset = docs.offset
         orig_offset = orig_offset(design_doc, view_name)
-        total_doc_count = total_doc_count(design_doc, reduce_view_name)      
+        total_doc_count = total_doc_count(design_doc, view_name)      
       
         next_exists = !@paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : true
         next_params = create_next(docs.last, view_keys) if next_exists
@@ -69,7 +69,7 @@ module RelaxDB
       else
         query.startkey(@orig_paginate_params.startkey).descending(@orig_paginate_params.descending)
       end
-      query.count(1)
+      query.reduce(false).count(1)
       RelaxDB.retrieve(query.view_path).offset
     end
     

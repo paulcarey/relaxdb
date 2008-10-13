@@ -113,7 +113,7 @@ module RelaxDB
       docs = ViewResult.new(JSON.parse(db.get(query.view_path).body))
       docs.reverse! if paginate_params.order_inverted?
       
-      paginator.add_next_and_prev(docs, design_doc, view_name, "reduce_#{view_name}", view_keys)
+      paginator.add_next_and_prev(docs, design_doc, view_name, view_keys)
       
       docs
     end

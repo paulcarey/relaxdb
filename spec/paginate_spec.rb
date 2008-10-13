@@ -324,9 +324,8 @@ describe "RelaxDB Pagination" do
         }
       FUNC
       
-      RelaxDB::DesignDocument.get("Letter").add_map_view("by_letter_and_number", map).save
-      RelaxDB::DesignDocument.get("Letter").add_map_view("reduce_by_letter_and_number", map).
-        add_reduce_view("reduce_by_letter_and_number", reduce).save
+      view_name = "by_letter_and_number"
+      RelaxDB::DesignDocument.get("Letter").add_map_view(view_name, map).add_reduce_view(view_name, reduce).save
       
       query = lambda do |page_params|
         RelaxDB.paginate_view(page_params, "Letter", "by_letter_and_number", :letter, :number) do |p|

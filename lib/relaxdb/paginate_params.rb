@@ -2,7 +2,7 @@ module RelaxDB
 
   class PaginateParams
         
-    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending group)
+    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending group reduce)
   
     @@params.each do |param|
       define_method(param.to_sym) do |*val|
@@ -20,6 +20,8 @@ module RelaxDB
     def initialize
       # If a client hasn't explicitly set descending, set it to the CouchDB default
       @descending = false if @descending.nil?
+      # CouchDB defaults reduce to true when a reduce func is present
+      @reduce = false
     end
   
     def update(params)

@@ -16,14 +16,18 @@ module RelaxDB
   #
   class Query
     
-    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group group_level)
+    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group group_level reduce)
     
     @@params.each do |param|
-      define_method(param.to_sym) do |val|
-        instance_variable_set("@#{param}", val)
-        # null is meaningful to CouchDB. _set allows us to know that a param has been set, even to nil        
-        instance_variable_set("@#{param}_set", true)
-        self
+      define_method(param.to_sym) do |*val|
+        if val.empty?
+          instance_variable_get("@#{param}")
+        else 
+          instance_variable_set("@#{param}", val[0])
+          # null is meaningful to CouchDB. _set allows us to know that a param has been set, even to nil        
+          instance_variable_set("@#{param}_set", true)
+          self
+        end
       end
     end
         
