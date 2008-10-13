@@ -76,8 +76,22 @@ module RelaxDB
       JSON.parse(resp.body)      
     end
     
-    def paginate_view(view_params, design_doc, view_name, *view_keys)
+    def paginate_view(page_params, design_doc, view_name, *view_keys)
+      paginate_params = PaginateParams.new
+      yield paginate_params
+      raise paginate_params.error_msg if paginate_params.invalid? 
       
+      paginator = Paginator.new(paginate_params, page_params)
+                  
+      query = Query.new(design_doc, view_name)
+      query.merge(paginate_params)
+      
+      docs = ViewResult.new(JSON.parse(db.get(query.view_path).body))
+      docs.reverse! if paginate_params.order_inverted?
+      
+      paginator.add_next_and_prev(docs, design_doc, view_name, "#{view_name}_reduce", view_keys)
+      
+      docs
     end
     
     # Should be invoked on the result of a join view

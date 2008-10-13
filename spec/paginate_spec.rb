@@ -331,7 +331,7 @@ describe "RelaxDB Pagination" do
         p.startkey(["b"]).endkey(["b", {}]).count(2)
       end
       
-      # s(letters).should == "b1, b2"  
+      s(letters).should == "b1, b2"  
       
     end
     
