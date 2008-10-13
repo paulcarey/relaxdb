@@ -372,7 +372,7 @@ module RelaxDB
       design_doc_name = self.name
       view = SortedByView.new(design_doc_name, *view_keys)
       query = Query.new(design_doc_name, view.view_name)
-      query.merge(paginator.paginate_params)
+      query.merge(paginate_params)
       
       docs = view.query(query)
       docs.reverse! if paginate_params.order_inverted?
