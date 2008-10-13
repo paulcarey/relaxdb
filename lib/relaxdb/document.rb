@@ -352,16 +352,6 @@ module RelaxDB
       end
     end
     
-    #
-    # Document views are generated on demand if they don't exist when queried. 
-    # The paginator is used with both document generated views, and user defined views.
-    # Auto generating document views on demand in the paginator makes it significantly
-    # more complex and less amendable to use by user defined views. For these reasons,
-    # the first call to paginate_by for a particular list of attributes for a particular 
-    # Document class will update the corresponding design doc, even if it already contains
-    # the required view. This should not incur a penalty with CouchDB as it uses the 
-    # same index for byte identical views.
-    #
     def self.paginate_by(page_params, *view_keys)
       paginate_params = PaginateParams.new
       yield paginate_params
