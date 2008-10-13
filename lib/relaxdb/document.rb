@@ -296,7 +296,7 @@ module RelaxDB
     end
         
     def self.all
-      @all_delegator ||= AllDelegator.new(self)      
+      @all_delegator ||= AllDelegator.new(self.name)
     end
                     
     # destroy! nullifies all relationships with peers and children before deleting 

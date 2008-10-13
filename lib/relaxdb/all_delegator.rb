@@ -9,22 +9,22 @@ module RelaxDB
   #
   class AllDelegator < Delegator
     
-    def initialize(klass)
+    def initialize(class_name)
       super([])
-      @klass = klass
+      @class_name = class_name
     end
     
     def __getobj__
-      view_path = "_view/#{@klass}/all"
-      map_function = ViewCreator.all(@klass)
+      view_path = "_view/#{@class_name}/all"
+      map_function = ViewCreator.all(@class_name)
       
-      @all = RelaxDB.retrieve(view_path, @klass, "all", map_function)      
+      @all = RelaxDB.retrieve(view_path, @class_name, "all", map_function)      
     end
 
     def sorted_by(*atts)
-      view = SortedByView.new(@klass.name, *atts)
+      view = SortedByView.new(@class_name, *atts)
 
-      query = Query.new(@klass.name, view.view_name)
+      query = Query.new(@class_name, view.view_name)
       yield query if block_given?
       
       view.query(query)
