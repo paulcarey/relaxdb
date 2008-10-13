@@ -70,7 +70,7 @@ h3. Exploring models
 </code>
 </pre>
 
-h3. Paginating
+h3. Paginating models
 
 <pre>
 <code>
@@ -93,6 +93,18 @@ h3. Paginating
   
   <%= link_to "prev", "/posts/?#{@posts.prev_query}" if @posts.prev_query %>
   <%= link_to "next", "/posts/?#{@posts.next_query}" if @posts.next_query %>  
+</code>
+</pre>
+
+h3. Paginating over your own views
+
+<pre>
+<code>
+
+RelaxDB.paginate_view(page_params, "Letter", "by_letter_and_number", :letter, :number) do |p|
+  p.startkey(["b"]).endkey(["b", {}]).count(2)
+end
+
 </code>
 </pre>
 
