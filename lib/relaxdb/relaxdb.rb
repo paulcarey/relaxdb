@@ -54,7 +54,7 @@ module RelaxDB
     end
     
     # Used internally by RelaxDB
-    def retrieve(view_path, design_doc, view_name, map_function)
+    def retrieve(view_path, design_doc=nil, view_name=nil, map_function=nil)
       begin
         resp = db.get(view_path)
       rescue => e
@@ -74,6 +74,10 @@ module RelaxDB
       
       resp = db.get(q.view_path)
       JSON.parse(resp.body)      
+    end
+    
+    def paginate_view(view_params, design_doc, view_name, *view_keys)
+      
     end
     
     # Should be invoked on the result of a join view

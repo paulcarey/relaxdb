@@ -1,7 +1,8 @@
 h3. What's New?
 
- * Pagination! CouchDB offers great support for retrieving a subset of data, but the housekeeping is tricky. RelaxDB takes care of it.
- * Works with CouchDB 0.9 trunk as of 2008/10/08. Note that pagination won't work on trunk unil https://issues.apache.org/jira/browse/COUCHDB-135 is fixed.
+* Pagination! CouchDB offers great support for retrieving a subset of data, but the housekeeping is tricky. RelaxDB takes care of it.
+** Note that if you invoke paginate_by on an already created view, the necessary reduce function won't be automatically created. Take a look at SortedByView and create the reduce func by hand.
+* Works with CouchDB 0.9 trunk as of 2008/10/08. Note that pagination won't work on trunk until issue "COUCHDB-135":http://issues.apache.org/jira/browse/COUCHDB-135 is fixed.
 
 h2. Overview
 

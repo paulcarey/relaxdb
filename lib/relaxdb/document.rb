@@ -352,23 +352,34 @@ module RelaxDB
       end
     end
     
-    def self.paginate_by(page_params, *atts)
+    #
+    # Document views are generated on demand if they don't exist when queried. 
+    # The paginator is used with both document generated views, and user defined views.
+    # Auto generating document views on demand in the paginator makes it significantly
+    # more complex and less amendable to use by user defined views. For these reasons,
+    # the first call to paginate_by for a particular list of attributes for a particular 
+    # Document class will update the corresponding design doc, even if it already contains
+    # the required view. This should not incur a penalty with CouchDB as it uses the 
+    # same index for byte identical views.
+    #
+    def self.paginate_by(page_params, *view_keys)
       paginate_params = PaginateParams.new
       yield paginate_params
       raise paginate_params.error_msg if paginate_params.invalid? 
       
       paginator = Paginator.new(paginate_params, page_params)
                   
-      doc_view = SortedByView.new(self.name, *atts)
-      doc_query = Query.new(self.name, doc_view.view_name)
-      doc_query.merge(paginator.paginate_params)
+      design_doc_name = self.name
+      view = SortedByView.new(design_doc_name, *view_keys)
+      query = Query.new(design_doc_name, view.view_name)
+      query.merge(paginator.paginate_params)
       
-      @docs = RelaxDB.retrieve(doc_query.view_path, self, doc_view.view_name, doc_view.map_function)
-      @docs.reverse! if paginate_params.order_inverted?
+      docs = view.query(query)
+      docs.reverse! if paginate_params.order_inverted?
       
-      paginator.add_next_and_prev(@docs, self.name, doc_view, atts)
+      paginator.add_next_and_prev(docs, design_doc_name, view.view_name, view.reduce_view_name, view_keys)
       
-      @docs
+      docs
     end
                 
   end

@@ -22,12 +22,12 @@ module RelaxDB
     end
 
     def sorted_by(*atts)
-      v = SortedByView.new(@klass.name, *atts)
+      view = SortedByView.new(@klass.name, *atts)
 
-      q = Query.new(@klass.name, v.view_name)
-      yield q if block_given?
+      query = Query.new(@klass.name, view.view_name)
+      yield query if block_given?
       
-      RelaxDB.retrieve(q.view_path, @klass, v.view_name, v.map_function)      
+      view.query(query)
     end
     
     # Note that this method leaves the corresponding DesignDoc for the associated class intact

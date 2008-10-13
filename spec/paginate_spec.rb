@@ -192,15 +192,7 @@ describe "RelaxDB Pagination" do
     end
     
   end
-  
-  describe "multiple keys per doc" do
     
-    it "should not yet be used with pagination" do
-      # use a - create map func with emitting multiple times
-    end
-    
-  end
-  
   describe "multiple keys per document, simple (non array) keys" do
     
     it "should work when descending is false" do
@@ -311,6 +303,36 @@ describe "RelaxDB Pagination" do
       letters = Letter.paginate_by({}, :number) { |p| p.startkey(1).endkey(3) }
       letters.prev_query.should be_false
       letters.next_query.should be_false
+    end
+    
+  end
+  
+  describe ".paginate_view functional tests" do
+    
+    it "should pass" do
+      map = <<-FUNC
+        function (doc) {
+          if (doc.class === "Letter") {
+            emit([doc.letter, doc.number], doc);
+          }
+        }
+      FUNC
+      
+      reduce = <<-FUNC
+        function (keys, values, combine) {
+          return values.length;
+        }
+      FUNC
+      
+      RelaxDB::DesignDocument.get("Letter").add_map_view("by_ln", map).save
+      RelaxDB::DesignDocument.get("Letter").add_map_view("by_ln_reduce", map).add_reduce_view("by_ln_reduce", reduce).save
+      
+      letters = RelaxDB.paginate_view({}, "Letter", "by_ln", :letter, :number) do |p|
+        p.startkey(["b"]).endkey(["b", {}]).count(2)
+      end
+      
+      # s(letters).should == "b1, b2"  
+      
     end
     
   end

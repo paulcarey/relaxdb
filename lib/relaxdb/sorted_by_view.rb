@@ -50,6 +50,22 @@ module RelaxDB
       end
       s[0, s.size-4]
     end
+    
+    def query(query)
+      begin
+        resp = RelaxDB.db.get(query.view_path)
+      rescue => e
+        design_doc = DesignDocument.get(@class_name) 
+        design_doc.add_map_view(view_name, map_function).save
+        design_doc.add_map_view(reduce_view_name, map_function).
+          add_reduce_view(reduce_view_name, reduce_function).save
+        
+        resp = RelaxDB.db.get(query.view_path)
+      end
+
+      data = JSON.parse(resp.body)
+      ViewResult.new(data)            
+    end
   
   end
   

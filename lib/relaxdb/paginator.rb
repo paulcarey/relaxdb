@@ -12,32 +12,21 @@ module RelaxDB
       @paginate_params.update(page_params)
     end
 
-    def total_doc_count(design_doc, view)
-      query = lambda do
-        RelaxDB.view(design_doc, view.reduce_view_name) do |q|
-          q.group(true).group_level(0)
-          q.startkey(@orig_paginate_params.startkey).endkey(@orig_paginate_params.endkey).descending(@orig_paginate_params.descending)  
-        end
+    def total_doc_count(design_doc, reduce_view_name)
+      result = RelaxDB.view(design_doc, reduce_view_name) do |q|
+        q.group(true).group_level(0)
+        q.startkey(@orig_paginate_params.startkey).endkey(@orig_paginate_params.endkey).descending(@orig_paginate_params.descending)  
       end
-      
-      begin
-        result = query.call
-      rescue
-        # add the map reduce func if it doesn't exist
-        DesignDocument.get(design_doc).add_map_view(view.reduce_view_name, view.map_function).
-          add_reduce_view(view.reduce_view_name, view.reduce_function).save
-        result = query.call
-      end        
       
       total_docs = RelaxDB.reduce_result(result)
     end
     
-    def add_next_and_prev(docs, design_doc, view, view_keys)
+    def add_next_and_prev(docs, design_doc, view_name, reduce_view_name, view_keys)
       unless docs.empty?
         no_docs = docs.size
         offset = docs.offset
-        orig_offset = orig_offset(Query.new(design_doc, view.view_name), view)
-        total_doc_count = total_doc_count(design_doc, view)      
+        orig_offset = orig_offset(Query.new(design_doc, view_name))
+        total_doc_count = total_doc_count(design_doc, reduce_view_name)      
       
         next_key = view_keys.map { |a| docs.last.send(a) }
         next_key = next_key.length == 1 ? next_key[0] : next_key
@@ -64,14 +53,14 @@ module RelaxDB
       end      
     end
     
-    def orig_offset(query, view)
+    def orig_offset(query)
       if @paginate_params.order_inverted?
         query.startkey(@orig_paginate_params.endkey).descending(!@orig_paginate_params.descending)
       else
         query.startkey(@orig_paginate_params.startkey).descending(@orig_paginate_params.descending)
       end
       query.count(1)
-      RelaxDB.retrieve(query.view_path, self, view.view_name, view.map_function).offset
+      RelaxDB.retrieve(query.view_path).offset
     end
     
   end
