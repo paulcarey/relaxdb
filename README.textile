@@ -78,10 +78,10 @@ h3. Paginating models
 <code>
   # Controller (merb-action-args used for extracting view_params)
 
-  def action(view_params={})
+  def action(page_params={})
     u_id = @user._id
 
-    @posts = Post.paginate_by(view_params, :writer_id, :created_at) do |p|
+    @posts = Post.paginate_by(page_params, :writer_id, :created_at) do |p|
       p.startkey([u_id, {}]).endkey([u_id]).descending(true).count(5)
     end
     render
