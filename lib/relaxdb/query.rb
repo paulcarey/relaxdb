@@ -16,6 +16,7 @@ module RelaxDB
   #
   class Query
     
+    # keys is not included in the standard param as it is significantly different from the others
     @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group group_level reduce)
     
     @@params.each do |param|
@@ -34,6 +35,14 @@ module RelaxDB
     def initialize(design_doc, view_name)
       @design_doc = design_doc
       @view_name = view_name
+    end
+    
+    def keys(keys=nil)
+      if keys.nil?
+        @keys
+      else 
+        @keys = { :keys => keys }.to_json
+      end
     end
     
     def view_path

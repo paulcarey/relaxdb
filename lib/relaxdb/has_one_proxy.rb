@@ -37,7 +37,7 @@ module RelaxDB
       view_name = @relationship
       view_path = "_view/#{design_doc}/#{view_name}?key=\"#{@client._id}\""
       map_function = ViewCreator.has_n(@target_class, @relationship_as_viewed_by_target)
-      RelaxDB.retrieve(view_path, design_doc, view_name, map_function)[0]
+      RelaxDB.retrieve(view_path, design_doc, view_name, map_function).first
     end
         
   end

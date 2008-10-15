@@ -84,7 +84,8 @@ module RelaxDB
       @server.delete("/#{@db}/#{path}")
     end
     
-    def get(path=nil)
+    # *ignored allows methods to invoke get or post indifferently
+    def get(path=nil, *ignored)
       @logger.info("GET /#{@db}/#{unesc(path)}")
       @server.get("/#{@db}/#{path}")
     end

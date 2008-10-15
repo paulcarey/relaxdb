@@ -80,6 +80,17 @@ describe RelaxDB do
       data["rows"].size.should == 1
     end
     
+    it "should be queryable with a multi key post" do
+      5.times { |i| Primitives.new(:num => i).save }
+      # Create the view
+      Primitives.all.sorted_by(:num) 
+      resp = RelaxDB.view("Primitives", "all_sorted_by_num") do |q| 
+        q.keys([0, 4])
+        q.reduce(false).group(true) # group invocation should hopefully be temporary
+      end
+      RelaxDB.instantiate(resp).map{ |p| p.num }.should == [0, 4]
+    end
+    
   end
   
   describe ".merge" do

@@ -66,5 +66,15 @@ describe RelaxDB::Query do
     end
     
   end  
+  
+  describe "#keys" do
+    
+    it "should return a JSON encoded hash" do
+      q = RelaxDB::Query.new("", "")
+      q.keys(["a", "b"])
+      q.keys.should == '{"keys":["a","b"]}'
+    end
+    
+  end
       
 end

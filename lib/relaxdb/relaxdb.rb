@@ -72,7 +72,7 @@ module RelaxDB
       q = Query.new(design_doc, view_name)
       yield q if block_given?
       
-      resp = db.get(q.view_path)
+      resp = q.keys ? db.post(q.view_path, q.keys) : db.get(q.view_path)
       JSON.parse(resp.body)      
     end
     
@@ -138,6 +138,11 @@ module RelaxDB
     
     def pp_get(uri=nil)
       resp = db.get(uri)
+      pp(JSON.parse(resp.body))
+    end
+
+    def pp_post(uri=nil, json=nil)
+      resp = db.post(uri, json)
       pp(JSON.parse(resp.body))
     end
   

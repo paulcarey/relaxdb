@@ -31,25 +31,26 @@ module RelaxDB
     end
     
     def view_name
-      s = @atts.inject("all_sorted_by") do |s, att|
-        s << "_#{att}_and"
-      end
-      s[0, s.size-4]
+      "all_sorted_by_" << @atts.join("_and_")
     end
         
     def query(query)
       # If a view contains both a map and reduce function, CouchDB will by default return 
       # the result of the reduce function when queried. 
       # This class automatically creates both map and reduce functions so it can be used by the paginator.
-      # In normal usage, this class will be used with map functions, hence reduce is explicitly set to false.
+      # In normal usage, this class will be used with map functions, hence reduce is explicitly set 
+      # to false if it hasn't already been set.
       query.reduce(false) if query.reduce.nil?
       
+      # I hope the query.group(true) should be temporary only (given that reduce has been set to false)
+      method = query.keys ? (query.group(true) && :post) : :get
+      
       begin
-        resp = RelaxDB.db.get(query.view_path)
+        resp = RelaxDB.db.send(method, query.view_path, query.keys)
       rescue => e
         design_doc = DesignDocument.get(@class_name) 
         design_doc.add_map_view(view_name, map_function).add_reduce_view(view_name, reduce_function).save
-        resp = RelaxDB.db.get(query.view_path)
+        resp = RelaxDB.db.send(method, query.view_path, query.keys)        
       end
 
       data = JSON.parse(resp.body)

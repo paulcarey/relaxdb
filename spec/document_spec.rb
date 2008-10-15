@@ -15,8 +15,7 @@ describe RelaxDB::Document do
   describe ".new" do 
     
     it "should create an object with an id" do
-      p = Atom.new
-      p._id.should_not be_nil
+      Atom.new._id.should_not be_nil
     end
     
     it "should create an object with a nil revision" do
@@ -244,6 +243,12 @@ describe RelaxDB::Document do
         User.new(:name => "atlas").save
         User.all.sorted_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
       end
+      
+      it "should be retrievable by a multi key post" do
+        5.times { |i| Primitives.new(:num => i).save }
+        ps = Primitives.all.sorted_by(:num) { |q| q.keys([0, 4]) }
+        ps.map { |p| p.num }.should == [0, 4]
+      end
 
     end
     
@@ -304,7 +309,7 @@ describe RelaxDB::Document do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => lambda { |tu| tu >=0 && tu < 3 }
       end
-      r.new(:thumbs_up => 2).save.should_not be_false
+      r.new(:thumbs_up => 2).save.should be
       r.new(:thumbs_up => 3).save.should be_false
     end
 
