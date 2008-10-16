@@ -171,6 +171,7 @@ module RelaxDB
       @_rev.nil?
     end
     alias_method :new_record?, :unsaved?
+    alias_method :new_document?, :unsaved?
     
     def to_param
       self._id

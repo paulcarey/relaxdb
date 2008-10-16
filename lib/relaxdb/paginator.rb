@@ -36,7 +36,7 @@ module RelaxDB
           (offset - orig_offset == 0 ? false : true)
         prev_params = create_prev(docs.first, view_keys) if prev_exists
       else
-        next_exists, prev_exists = false
+        next_exists = prev_exists = false
       end
       
       docs.meta_class.instance_eval do        
