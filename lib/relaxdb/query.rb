@@ -17,7 +17,7 @@ module RelaxDB
   class Query
     
     # keys is not included in the standard param as it is significantly different from the others
-    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group group_level reduce)
+    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group group_level reduce include_docs)
     
     @@params.each do |param|
       define_method(param.to_sym) do |*val|

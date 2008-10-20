@@ -58,6 +58,23 @@ describe RelaxDB do
     
   end
   
+  describe ".load" do
+    
+    it "should load a single document" do
+      a = Atom.new.save
+      ar = RelaxDB.load a._id
+      ar.should == a
+    end
+    
+    it "should load an arbitrary number of documents" do
+      a1, a2 = Atom.new.save, Atom.new.save
+      ar1, ar2 = RelaxDB.load a1._id, a2._id
+      ar1.should == a1
+      ar2.should == a2
+    end
+    
+  end
+  
   describe ".view" do
     
     map_func = %Q<

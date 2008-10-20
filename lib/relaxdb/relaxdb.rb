@@ -47,10 +47,16 @@ module RelaxDB
       data["ok"]
     end
   
-    def load(id)
-      resp = db.get("#{id}")
-      data = JSON.parse(resp.body)
-      create_object(data)
+    def load(*ids)
+      if ids.size == 1
+        resp = db.get(ids[0])
+        data = JSON.parse(resp.body)
+        create_object(data)
+      else
+        resp = db.post("_all_docs?include_docs=true", {:keys => ids}.to_json)
+        data = JSON.parse(resp.body)
+        data["rows"].map { |row| create_object(row["doc"]) }
+      end
     end
     
     # Used internally by RelaxDB
