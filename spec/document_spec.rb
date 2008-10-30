@@ -333,6 +333,15 @@ describe RelaxDB::Document do
       x.errors[:bar].should == "rab"
     end
     
+    it "should prevent saving unless all validations pass" do
+      r = Class.new(RelaxDB::Document) do
+        property :foo, :validator => lambda { false }
+        property :bar, :validator => lambda { true }
+      end
+      x = r.new
+      x.save.should == false
+    end
+    
     it "may be a proc" do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => lambda { false }

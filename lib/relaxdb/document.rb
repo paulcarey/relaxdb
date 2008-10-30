@@ -136,9 +136,11 @@ module RelaxDB
       end
     end
     
+    # Order changed as of 30/10/2008 to be consistent with ActiveRecord
+    # Not yet sure of final implemention for hooks - may lean more towards DM than AR
     def save
-      return false unless before_save
       return false unless validates?
+      return false unless before_save
             
       set_created_at if unsaved? 
       
@@ -151,7 +153,7 @@ module RelaxDB
     end  
     
     def validates?
-      success = true
+      total_success = true
       properties.each do |prop|
         if methods.include? "validate_#{prop}"
           prop_val = instance_variable_get("@#{prop}")
@@ -161,9 +163,15 @@ module RelaxDB
               @errors["#{prop}".to_sym] = send("#{prop}_validation_msg")
             end
           end
+          total_success &= success          
         end
       end
-      success
+      total_success &= validate
+      total_success
+    end
+    
+    def validate
+      true
     end
         
     # Hmm. Rename... never_saved? newnew?
