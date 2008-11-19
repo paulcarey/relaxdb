@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
    "lib/relaxdb/sorted_by_view.rb",
    "lib/relaxdb/uuid_generator.rb",
    "lib/relaxdb/view_object.rb",
+   "lib/relaxdb/view_result.rb",
    "lib/relaxdb/view_uploader.rb",
    "lib/relaxdb/views.rb",
    "lib/more/grapher.rb",
