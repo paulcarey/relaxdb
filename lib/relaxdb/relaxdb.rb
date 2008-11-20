@@ -142,6 +142,10 @@ module RelaxDB
         
     # Convenience methods - should be in a diffent module?
     
+    def get(uri=nil)
+      JSON.parse(db.get(uri).body)
+    end
+    
     def pp_get(uri=nil)
       resp = db.get(uri)
       pp(JSON.parse(resp.body))
