@@ -1,5 +1,7 @@
 h3. What's New?
 
+* Time storage changes. All Time objects are now converted to UTC and formatted as %Y/%m/%d %H:%M:%S +0000. Storing all Times as UTC should have been happening anyway. Formatting Times as above (as opposed to ISO 8601 as was done prior to 0.2.3) allows the Time strings to be passed directly to Date.new in a JavaScript interpreter. 
+
 * Pagination! CouchDB offers great support for retrieving a subset of data, but the housekeeping is tricky. RelaxDB takes care of it.
 ** Note that if you invoke paginate_by on an already created view, the necessary reduce function won't be automatically created. Take a look at SortedByView and create the reduce func by hand.
 * Support for multi key post

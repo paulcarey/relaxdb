@@ -81,7 +81,7 @@ module RelaxDB
 
         # If the variable name ends in _at try to convert it to a Time
         if key =~ /_at$/
-            val = Time.local(*ParseDate.parsedate(val)) rescue val
+            val = Time.parse(val).utc rescue val
         end
         
         # Ignore param keys that don't have a corresponding writer

@@ -22,7 +22,7 @@ describe RelaxDB::Document do
       Atom.new._rev.should be_nil
     end
         
-    it "should convert attributes that end in _at to dates" do
+    it "should convert attributes that end in _at to Times" do
       now = Time.now
       p = Post.new(:viewed_at => now).save
       p = RelaxDB.load(p._id)
@@ -42,6 +42,13 @@ describe RelaxDB::Document do
     
     it "should not output nil attributes" do
       Atom.new.to_json.should_not include("rev")
+    end
+    
+    it "should convert times to '%Y/%m/%d %H:%M:%S +0000' format" do
+      s = Time.at(0)
+      p = Primitives.new(:created_at => s).save
+      json = RelaxDB.get(p._id)
+      json["created_at"].should == "1970/01/01 00:00:00 +0000"
     end
     
   end
