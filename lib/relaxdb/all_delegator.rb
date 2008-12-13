@@ -6,6 +6,7 @@ module RelaxDB
   #   FooDoc.all.sorted_by(:att1, :att2) - returns all docs in CouchDB of type FooDoc sorted by att1, then att2
   #   FooDoc.all.sorted_by(:att1) { |q| q.key("bar") } - returns all docs of type FooDoc where att1 equals "bar"
   #   FooDoc.all.destroy! - does what it says on the tin
+  #   FooDoc.all.size - issues a query to a reduce function that returns the total number of docs for that class
   #
   class AllDelegator < Delegator
     
@@ -15,10 +16,10 @@ module RelaxDB
     end
     
     def __getobj__
-      view_path = "_view/#{@class_name}/all"
-      map_function = ViewCreator.all(@class_name)
+      view_path = "_view/#{@class_name}/all?reduce=false"
+      map, reduce = ViewCreator.all(@class_name)
       
-      @all = RelaxDB.retrieve(view_path, @class_name, "all", map_function)      
+      RelaxDB.retrieve(view_path, @class_name, "all", map, reduce)
     end
 
     def sorted_by(*atts)
@@ -41,6 +42,25 @@ module RelaxDB
         
         o.destroy!
       end
+    end
+    
+    # This is pretty ugly - this pattern is now spread over three 
+    # places (sorted_by_view, relaxdb and here)
+    # Consolidation needed
+    def size
+      view_path = "_view/#{@class_name}/all"
+      map, reduce = ViewCreator.all(@class_name)
+      
+      begin
+        resp = RelaxDB.db.get(view_path)
+      rescue => e
+        DesignDocument.get(@class_name).add_map_view("all", map).
+          add_reduce_view("all", reduce).save
+        resp = RelaxDB.db.get(view_path)
+      end
+      
+      data = JSON.parse(resp.body)
+      data["rows"][0] ? data["rows"][0]["value"] : 0
     end
             
   end

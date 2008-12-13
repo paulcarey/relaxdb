@@ -3,13 +3,25 @@ module RelaxDB
   class ViewCreator
     
     def self.all(target_class)
-      template = <<-QUERY
+      map = <<-QUERY
       function(doc) {
         if(doc.class == "${target_class}")
           emit(null, doc);
       }
       QUERY
-      template.sub!("${target_class}", target_class.to_s)
+      map.sub!("${target_class}", target_class.to_s)
+      
+      reduce = <<-QUERY
+      function(keys, values, rereduce) {
+        if (rereduce) {
+          return sum(values);
+        } else {
+          return values.length;
+        }
+      }
+      QUERY
+      
+      [map, reduce]  
     end
   
     def self.has_n(target_class, relationship_to_client)

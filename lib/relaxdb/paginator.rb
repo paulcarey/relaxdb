@@ -15,7 +15,7 @@ module RelaxDB
 
     def total_doc_count(design_doc, view_name)
       result = RelaxDB.view(design_doc, view_name) do |q|
-        q.group(true).group_level(0).reduce(true)
+        q.reduce(true)
         q.startkey(@orig_paginate_params.startkey).endkey(@orig_paginate_params.endkey).descending(@orig_paginate_params.descending)  
       end
       

@@ -195,6 +195,21 @@ describe RelaxDB::Document do
     
   end
   
+  describe ".all.size" do
+    
+    it "should return the total number of docs" do
+      docs = []
+      100.times { docs << Atom.new }
+      RelaxDB.bulk_save(*docs)
+      Atom.all.size.should == 100
+    end
+    
+    it "should return 0 when no docs exist" do
+      Atom.all.size.should == 0
+    end
+    
+  end
+  
   describe ".all.sorted_by" do
   
     it "should sort ascending by default" do
@@ -220,6 +235,17 @@ describe RelaxDB::Document do
       posts = Post.all.sorted_by(:viewed_at)
       posts[0].content.should == "early"
       posts[1].content.should == "late"
+    end
+    
+    it "should return the count when queried with reduce=true" do
+      docs = []
+      100.times { |i| docs << Primitives.new(:num => i) }
+      RelaxDB.bulk_save(*docs)
+      # Create the view
+      Primitives.all.sorted_by(:num)
+      res = RelaxDB.view("Primitives", "all_sorted_by_num") { |q| q.reduce(true) }
+      count = RelaxDB.reduce_result(res)
+      count.should == 100
     end
     
     describe "results" do

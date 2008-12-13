@@ -60,11 +60,13 @@ module RelaxDB
     end
     
     # Used internally by RelaxDB
-    def retrieve(view_path, design_doc=nil, view_name=nil, map_function=nil)
+    def retrieve(view_path, design_doc=nil, view_name=nil, map_func=nil, reduce_func=nil)
       begin
         resp = db.get(view_path)
       rescue => e
-        DesignDocument.get(design_doc).add_map_view(view_name, map_function).save
+        dd = DesignDocument.get(design_doc).add_map_view(view_name, map_func)
+        dd.add_reduce_view(view_name, reduce_func) if reduce_func
+        dd.save
         resp = db.get(view_path)
       end
       

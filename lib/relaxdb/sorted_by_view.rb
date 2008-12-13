@@ -25,7 +25,11 @@ module RelaxDB
     def reduce_function
       <<-QUERY
       function(keys, values, rereduce) {
-        return values.length;
+        if (rereduce) {
+          return sum(values);
+        } else {
+          return values.length;
+        }
       }
       QUERY
     end
@@ -42,8 +46,7 @@ module RelaxDB
       # to false if it hasn't already been set.
       query.reduce(false) if query.reduce.nil?
       
-      # I hope the query.group(true) should be temporary only (given that reduce has been set to false)
-      method = query.keys ? (query.group(true) && :post) : :get
+      method = query.keys ? :post : :get
       
       begin
         resp = RelaxDB.db.send(method, query.view_path, query.keys)
