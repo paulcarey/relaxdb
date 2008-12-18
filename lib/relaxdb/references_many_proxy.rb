@@ -78,12 +78,14 @@ module RelaxDB
     def inspect
       @client.instance_variable_get("@#{@relationship}".to_sym).inspect
     end
-  
-    private
-  
+      
     def peer_ids
       @client.instance_variable_get("@#{@relationship}".to_sym)
     end
+  
+    alias to_id_a peer_ids
+  
+    private
     
     # Resolves the actual ids into real objects via a single GET to CouchDB. Called internally by each
     def resolve

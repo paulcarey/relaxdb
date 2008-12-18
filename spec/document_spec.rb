@@ -37,6 +37,17 @@ describe RelaxDB::Document do
     end  
     
   end
+  
+  describe "#initialize" do
+    
+    it "may be overridden by inheriting classes" do
+      i = Initiative.new(:x => "y").save
+      i = RelaxDB.load(i._id)
+      i.x.should == "y"
+      i.foo.should == :bar
+    end
+    
+  end
       
   describe "#to_json" do
     
@@ -119,7 +130,8 @@ describe RelaxDB::Document do
       p.str.should == "foo"
       p.num.should == 19.30
       p.true_bool.should be_true
-      p.false_bool.should_not be_true
+      # p.false_bool.should be_false
+      p.false_bool.should_not be
       p.created_at.should be_close(now, 1)
       p.empty.should be_nil
     end

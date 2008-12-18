@@ -1,6 +1,15 @@
 class Atom < RelaxDB::Document
 end
 
+class Initiative < RelaxDB::Document
+  property :x
+  attr_reader :foo
+  def initialize(hash={})
+    super
+    @foo = :bar
+  end
+end
+
 class Primitives < RelaxDB::Document
   
   property :str

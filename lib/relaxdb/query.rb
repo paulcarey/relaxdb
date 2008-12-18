@@ -42,6 +42,7 @@ module RelaxDB
         @keys
       else 
         @keys = { :keys => keys }.to_json
+        self
       end
     end
     
