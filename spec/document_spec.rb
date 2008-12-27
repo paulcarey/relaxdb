@@ -363,7 +363,7 @@ describe RelaxDB::Document do
         
     it "should prevent an object from being saved if it throws an exception" do
       r = Class.new(RelaxDB::Document) do
-        property :thumbs_up, :validator => lambda { raise "foo" }
+        property :thumbs_up, :validator => lambda { raise }
       end
       r.new.save.should be_false
     end
@@ -387,8 +387,8 @@ describe RelaxDB::Document do
     
     it "should perform all validations" do
       r = Class.new(RelaxDB::Document) do
-        property :foo, :validator => lambda { false }, :validation_msg => "oof"
-        property :bar, :validator => lambda { false }, :validation_msg => "rab"
+        property :foo, :validator => lambda { raise }, :validation_msg => "oof"
+        property :bar, :validator => lambda { raise }, :validation_msg => "rab"
       end
       x = r.new
       x.save
@@ -415,12 +415,31 @@ describe RelaxDB::Document do
     it "may be a method" do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => :count_em
-        def count_em
-          false
+        def count_em(tu)
+          tu >=0 && tu < 3
         end
       end
-      r.new.save.should be_false
+      r.new(:thumbs_up => 1).save.should be
     end
+    
+  end
+  
+  describe "predefined validator" do
+    
+    it "should be invoked when a symbol clash exists" do
+      c = Class.new(RelaxDB::Document) do
+        property :foo, :validator => :required
+        def required; raise; end;
+      end
+      c.new(:foo => :bar).save.should be
+    end
+    
+    it "should prevent an object from being saved if validation fails" do
+      c = Class.new(RelaxDB::Document) do
+        property :foo, :validator => :required
+      end
+      c.new.save.should be_false
+    end    
     
   end
   

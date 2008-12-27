@@ -13,6 +13,8 @@ require 'tempfile'
 $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
+require 'relaxdb/validators'
+
 require 'relaxdb/all_delegator'
 require 'relaxdb/belongs_to_proxy'
 require 'relaxdb/design_doc'

@@ -13,10 +13,7 @@ describe RelaxDB::ReferencesManyProxy do
   end
 
   describe "references_many" do
-    
-    it "is now deprecated and will be removed in the near future" do
-    end
-    
+        
     it "should preserve the relationships across the save / load boundary" do
       p = Photo.new
       t = Tag.new

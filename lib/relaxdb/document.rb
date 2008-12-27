@@ -2,6 +2,8 @@ module RelaxDB
     
   class Document
     
+    include RelaxDB::Validators
+    
     # Used to store validation messages
     attr_accessor :errors
     
@@ -29,11 +31,7 @@ module RelaxDB
         end
       end
       
-      if opts[:validator]
-        define_method("validate_#{prop}") do |prop_val|
-          opts[:validator].call(prop_val)
-        end
-      end
+      create_validator(prop, opts[:validator]) if opts[:validator]
       
       if opts[:validation_msg]
         define_method("#{prop}_validation_msg") do
@@ -46,6 +44,18 @@ module RelaxDB
     def self.properties
       # Ensure that classes that don't define their own properties still function as CouchDB objects
       @properties ||= [:_id, :_rev]
+    end
+    
+    def self.create_validator(att, v)
+      define_method("validate_#{att}") do |att_val|
+        if v.is_a? Proc
+          v.call(att_val)
+        elsif respond_to? "validator_#{v}"
+          send("validator_#{v}", att_val)
+        else
+          send(v, att_val)
+        end          
+      end
     end
 
     def properties
@@ -100,7 +110,7 @@ module RelaxDB
         prop_val = instance_variable_get("@#{prop}".to_sym)
         s << ", #{prop}: #{prop_val.inspect}" if prop_val
       end
-      self.class.belongs_to_rels.each do |relationship|
+      self.class.belongs_to_rels.each do |relationship, opts|
         id = instance_variable_get("@#{relationship}_id".to_sym)
         s << ", #{relationship}_id: #{id}" if id
       end
@@ -142,7 +152,7 @@ module RelaxDB
       return false unless validates?
       return false unless before_save
             
-      set_created_at if unsaved? 
+      set_created_at if new_document? 
       
       resp = RelaxDB.db.put("#{_id}", to_json)
       self._rev = JSON.parse(resp.body)["rev"]
@@ -170,19 +180,24 @@ module RelaxDB
           total_success &= success          
         end
       end
-      total_success &= validate
+      
+      # Unsure whether to pass the id or the doc itself - id is all I need right now 
+      self.class.belongs_to_rels.each do |rel, opts|
+        if methods.include? "validate_#{rel}"
+          rel_val = instance_variable_get("@#{rel}_id")
+          success = send("validate_#{rel}", rel_val) rescue false
+          total_success &= success
+        end
+      end
+      
       total_success
     end
-    
-    def validate
-      true
-    end
-        
-    def unsaved?
+            
+    def new_document?
       @_rev.nil?
     end
-    alias_method :new_record?, :unsaved?
-    alias_method :new_document?, :unsaved?
+    alias_method :new_record?, :new_document?
+    alias_method :unsaved?, :new_document?
     
     def to_param
       self._id
@@ -201,8 +216,8 @@ module RelaxDB
       proxy = instance_variable_get(proxy_sym)
       unless proxy
         proxy = opts ? klass.new(self, relationship, opts) : klass.new(self, relationship)
+        instance_variable_set(proxy_sym, proxy)
       end
-      instance_variable_set(proxy_sym, proxy)
       proxy     
     end
     
@@ -211,8 +226,8 @@ module RelaxDB
       other && _id == other._id
     end
    
-    # Deprecated. This method was experimental and will be removed
-    # once multi key GETs are available in CouchDB.
+    # If you're using this method, read the specs and make sure you understand
+    # how it can be used and how it shouldn't be used
     def self.references_many(relationship, opts={})
       # Treat the representation as a standard property 
       properties << relationship
@@ -296,6 +311,7 @@ module RelaxDB
         instance_variable_get("@#{relationship}_id")
       end
       
+      create_validator(relationship, opts[:validator]) if opts[:validator]
     end
     
     def self.belongs_to_rels

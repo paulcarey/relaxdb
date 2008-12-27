@@ -74,6 +74,13 @@ describe RelaxDB::BelongsToProxy do
       r = RelaxDB.load r._id
       r.photo.rating.should == r
     end    
+    
+    it "should function with the required validator" do
+      c = Class.new(RelaxDB::Document) do
+        belongs_to :foo, :validator => :required
+      end
+      c.new.save.should be_false
+    end
 
   end
 
