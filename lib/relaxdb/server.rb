@@ -1,4 +1,7 @@
 module RelaxDB
+  
+  class HTTP_404 < StandardError; end
+  class HTTP_409 < StandardError; end
 
   class Server
         
@@ -46,7 +49,14 @@ module RelaxDB
     private
 
     def handle_error(req, res)
-      e = RuntimeError.new("#{res.code}:#{res.message}\nMETHOD:#{req.method}\nURI:#{req.path}\n#{res.body}")
+      msg = "#{res.code}:#{res.message}\nMETHOD:#{req.method}\nURI:#{req.path}\n#{res.body}"
+      begin
+        klass = RelaxDB.const_get("HTTP_#{res.code}")
+        e = klass.new(msg)
+      rescue
+        e = RuntimeError.new(msg)
+      end
+
       raise e
     end
   end

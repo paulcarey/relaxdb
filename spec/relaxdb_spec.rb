@@ -73,6 +73,46 @@ describe RelaxDB do
       ar2.should == a2
     end
     
+    it "should return nil when given a id for a non existant doc" do
+      RelaxDB.load("nothere").should be_nil
+    end
+    
+    it "should return an array with correctly placed nils when given a list containing non existant doc ids" do
+      a1, a2 = Atom.new.save, Atom.new.save
+      res = RelaxDB.load nil, a1._id, nil, a2._id, nil
+      res.should == [nil, a1, nil, a2, nil]
+    end
+    
+  end
+  
+  describe ".load!" do
+    
+    it "should load a single document" do
+      a = Atom.new.save
+      ar = RelaxDB.load! a._id
+      ar.should == a      
+    end
+    
+    it "should load multiple documents" do
+      a1, a2 = Atom.new.save, Atom.new.save
+      ar1, ar2 = RelaxDB.load! a1._id, a2._id
+      ar1.should == a1
+      ar2.should == a2
+    end
+    
+    it "should throw an exception if given a single id for a non-existant doc" do
+      lambda do
+        RelaxDB.load! "nothere"
+      end.should raise_error(RelaxDB::NotFound)
+    end
+    
+    it "should throw an exception if any of a list of doc ids is for a non-existant doc" do
+      a = Atom.new.save
+      lambda do
+        RelaxDB.load! nil, a._id
+      end.should raise_error(RelaxDB::NotFound)
+    end
+    
   end
   
   describe ".view" do

@@ -95,6 +95,24 @@ describe RelaxDB::Document do
         
   end
   
+  describe "#save!" do
+    
+    it "should save objects" do
+      a = Atom.new.save
+      RelaxDB.load(a._id).should == a
+    end
+    
+    it "should throw an exception when an object is not saved" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { false }
+      end
+      lambda do
+        r.new.save!
+      end.should raise_error(RelaxDB::DocumentNotSaved)
+    end   
+    
+  end
+  
   describe "user defined property reader" do
     
     it "should not effect normal operation" do
@@ -148,7 +166,7 @@ describe RelaxDB::Document do
     
     it "should delete the corresponding document from CouchDB" do
       p = Atom.new.save.destroy!
-      lambda { RelaxDB.load(p._id) }.should raise_error
+      RelaxDB.load(p._id).should be_nil
     end
 
     it "should prevent the object from being resaved" do

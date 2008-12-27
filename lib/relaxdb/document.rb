@@ -152,6 +152,10 @@ module RelaxDB
       self
     end  
     
+    def save!
+      save || raise(DocumentNotSaved)
+    end
+    
     def validates?
       total_success = true
       properties.each do |prop|
@@ -174,7 +178,6 @@ module RelaxDB
       true
     end
         
-    # Hmm. Rename... never_saved? newnew?
     def unsaved?
       @_rev.nil?
     end

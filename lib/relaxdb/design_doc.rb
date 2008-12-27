@@ -15,6 +15,11 @@ module RelaxDB
       add_view(view_name, "reduce", function)
     end
     
+    def add_validation_func(function)
+      @data["validate_doc_update"] = function
+      self
+    end
+    
     def add_view(view_name, type, function)
       @data["views"] ||= {}
       @data["views"][view_name] ||= {}

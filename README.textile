@@ -1,5 +1,9 @@
 h3. What's New?
 
+* Semantic consistency for load, load!, save and save!. The bang versions raise an exception when their more relaxed siblings would simply return nil.
+
+* Minimal support for CouchDB validation 
+
 * Time storage changes. All Time objects are now converted to UTC and formatted as %Y/%m/%d %H:%M:%S +0000. Storing all Times as UTC should have been happening anyway. Formatting Times as above (as opposed to ISO 8601 as was done prior to 0.2.3) allows the Time strings to be passed directly to Date.new in a JavaScript interpreter. 
 
 * Pagination! CouchDB offers great support for retrieving a subset of data, but the housekeeping is tricky. RelaxDB takes care of it.

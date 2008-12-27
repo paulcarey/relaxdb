@@ -1,4 +1,7 @@
 module RelaxDB
+
+  class NotFound < StandardError; end
+  class DocumentNotSaved < StandardError; end
   
   @@db = nil
   
@@ -49,14 +52,27 @@ module RelaxDB
   
     def load(*ids)
       if ids.size == 1
-        resp = db.get(ids[0])
-        data = JSON.parse(resp.body)
-        create_object(data)
+        begin
+          resp = db.get(ids[0])
+          data = JSON.parse(resp.body)
+          create_object(data)
+        rescue HTTP_404
+          nil
+        end
       else
         resp = db.post("_all_docs?include_docs=true", {:keys => ids}.to_json)
         data = JSON.parse(resp.body)
-        data["rows"].map { |row| create_object(row["doc"]) }
+        data["rows"].map { |row| row["doc"] ? create_object(row["doc"]) : nil }
       end
+    end
+    
+    def load!(*ids)
+      res = load(*ids)
+      
+      raise NotFound if res == nil
+      raise NotFound if res.respond_to?(:include?) && res.include?(nil)
+      
+      res
     end
     
     # Used internally by RelaxDB

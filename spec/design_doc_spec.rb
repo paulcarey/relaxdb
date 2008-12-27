@@ -26,7 +26,7 @@ describe RelaxDB::DesignDocument do
     it "should delete the corresponding document from CouchDB" do
       dd = RelaxDB::DesignDocument.get("foo").save
       dd.destroy!
-      lambda { RelaxDB.load("_design%2Ffoo") }.should raise_error
+      RelaxDB.load("_design%2Ffoo").should be_nil
     end
     
   end
