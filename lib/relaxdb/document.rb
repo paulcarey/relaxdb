@@ -89,8 +89,8 @@ module RelaxDB
       data.each do |key, val|
         # Only set instance variables on creation - object references are resolved on demand
 
-        # If the variable name ends in _at try to convert it to a Time
-        if key =~ /_at$/
+        # If the variable name ends in _at, _on or _date try to convert it to a Time
+        if [/_at$/, /_on$/, /_date$/].inject(nil) { |i, r| i ||= (key =~ r) }
             val = Time.parse(val).utc rescue val
         end
         
@@ -174,18 +174,22 @@ module RelaxDB
           success = send("validate_#{prop}", prop_val) rescue false
           unless success
             if methods.include? "#{prop}_validation_msg"
-              @errors["#{prop}".to_sym] = send("#{prop}_validation_msg")
+              @errors[prop] = send("#{prop}_validation_msg")
+            else
+              @errors[prop] = "invalid:#{prop}"
             end
           end
           total_success &= success          
         end
       end
       
-      # Unsure whether to pass the id or the doc itself - id is all I need right now 
+      # Unsure whether to pass the id or the doc, or the proxy - id is all I need right now 
+      # Validating on anything more than the id would preclude the use of validation with bulk_save => bad idea
       self.class.belongs_to_rels.each do |rel, opts|
         if methods.include? "validate_#{rel}"
           rel_val = instance_variable_get("@#{rel}_id")
           success = send("validate_#{rel}", rel_val) rescue false
+          @errors[rel] = "invalid:#{rel_val}" unless success
           total_success &= success
         end
       end

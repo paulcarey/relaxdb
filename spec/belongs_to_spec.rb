@@ -82,6 +82,15 @@ describe RelaxDB::BelongsToProxy do
       c.new.save.should be_false
     end
 
+    it "should be provided with a default error message when validation fails" do
+      c = Class.new(RelaxDB::Document) do
+        belongs_to :foo, :validator => :required
+      end
+      x = c.new
+      x.save
+      x.errors[:foo].should_not be_blank
+    end
+
   end
 
 end

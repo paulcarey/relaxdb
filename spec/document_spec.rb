@@ -405,6 +405,15 @@ describe RelaxDB::Document do
       x.save.should == false
     end
     
+    it "should add a default error message if none is specified" do
+      r = Class.new(RelaxDB::Document) do
+        property :foo, :validator => lambda { raise }
+      end
+      x = r.new
+      x.save
+      x.errors[:foo].should_not be_blank
+    end
+    
     it "may be a proc" do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => lambda { false }
