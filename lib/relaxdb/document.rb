@@ -154,7 +154,7 @@ module RelaxDB
             
       set_created_at if new_document? 
       
-      resp = RelaxDB.db.put("#{_id}", to_json)
+      resp = RelaxDB.db.put(_id, to_json)
       self._rev = JSON.parse(resp.body)["rev"]
 
       after_save
