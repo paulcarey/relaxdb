@@ -169,7 +169,7 @@ module RelaxDB
     end  
     
     def save!
-      save || raise(DocumentNotSaved)
+      save || raise(DocumentNotSaved.new(self.errors.to_json))
     end
     
     def validates?
