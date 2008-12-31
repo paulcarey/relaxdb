@@ -375,15 +375,6 @@ describe RelaxDB::Document do
       r.new(:thumbs_up => 2).save.should be
       r.new(:thumbs_up => 3).save.should be_false
     end
-
-    it "should add the validation error message if supplied, on failure" do
-      r = Class.new(RelaxDB::Document) do
-        property :thumbs_up, :validator => lambda { false }, :validation_msg => "Too many thumbs"
-      end
-      x = r.new
-      x.save
-      x.errors[:thumbs_up].should == "Too many thumbs"
-    end
     
     it "should perform all validations" do
       r = Class.new(RelaxDB::Document) do
@@ -429,6 +420,29 @@ describe RelaxDB::Document do
         end
       end
       r.new(:thumbs_up => 1).save.should be
+    end
+    
+  end
+  
+  describe "validation message" do
+  
+    it "should be set on failure" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { false }, :validation_msg => "Too many thumbs"
+      end
+      x = r.new
+      x.save
+      x.errors[:thumbs_up].should == "Too many thumbs"
+    end
+    
+    it "may be a proc" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { false }, 
+          :validation_msg => lambda { |o| "#{o.thumbs_up}" }
+      end      
+      x = r.new(:thumbs_up => 13)
+      x.save
+      x.errors[:thumbs_up].should == "13"
     end
     
   end

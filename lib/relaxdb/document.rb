@@ -31,12 +31,12 @@ module RelaxDB
         end
       end
       
-      create_validator(prop, opts[:validator]) if opts[:validator]
+      if opts[:validator]
+        create_validator(prop, opts[:validator]) 
+      end
       
       if opts[:validation_msg]
-        define_method("#{prop}_validation_msg") do
-          opts[:validation_msg]
-        end
+        create_validation_msg(prop, opts[:validation_msg])
       end
       
     end
@@ -55,6 +55,12 @@ module RelaxDB
         else
           send(v, att_val)
         end          
+      end
+    end
+    
+    def self.create_validation_msg(prop, validation_msg)
+      define_method("#{prop}_validation_msg") do
+        validation_msg.is_a?(Proc) ? validation_msg.call(self) : validation_msg
       end
     end
 
