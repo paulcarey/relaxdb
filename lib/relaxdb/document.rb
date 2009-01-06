@@ -39,6 +39,9 @@ module RelaxDB
         create_validation_msg(prop, opts[:validation_msg])
       end
       
+      if opts[:derived]
+        add_derived_prop(prop, opts[:derived])
+      end
     end
 
     def self.properties
@@ -47,20 +50,47 @@ module RelaxDB
     end
     
     def self.create_validator(att, v)
-      define_method("validate_#{att}") do |att_val|
-        if v.is_a? Proc
-          v.call(att_val)
-        elsif respond_to? "validator_#{v}"
-          send("validator_#{v}", att_val)
-        else
-          send(v, att_val)
-        end          
-      end
+      method_name = "validate_#{att}"
+      if v.is_a? Proc
+        v.arity == 1 ?
+          define_method(method_name) { |att_val| v.call(att_val) } :
+          define_method(method_name) { |att_val| v.call(att_val, self) }
+      elsif instance_methods.include? "validator_#{v}"
+        define_method(method_name) { |att_val| send("validator_#{v}", att_val, self) }
+      else
+        define_method(method_name) { |att_val| send(v, att_val) }
+      end          
     end
     
     def self.create_validation_msg(prop, validation_msg)
-      define_method("#{prop}_validation_msg") do
-        validation_msg.is_a?(Proc) ? validation_msg.call(self) : validation_msg
+      if validation_msg.is_a?(Proc)        
+        validation_msg.arity == 1 ?
+          define_method("#{prop}_validation_msg") { |prop_val| validation_msg.call(prop_val) } :
+          define_method("#{prop}_validation_msg") { |prop_val| validation_msg.call(prop_val, self) } 
+      else  
+        define_method("#{prop}_validation_msg") { validation_msg } 
+      end
+    end
+    
+    # See derived_properties_spec.rb for usage
+    def self.add_derived_prop(prop, deriver)
+        source, writer = deriver[0], deriver[1]
+        @derived_prop_writers ||= {}
+        @derived_prop_writers[source] ||= {}
+        @derived_prop_writers[source][prop] = writer
+    end
+    
+    def self.derived_prop_writers
+      @derived_prop_writers ||= {}
+    end
+    
+    def write_derived_props(source)
+      writers = self.class.derived_prop_writers[source]
+      if writers 
+        writers.each do |prop, writer|
+          current_val = send(prop)
+          send("#{prop}=", writer.call(current_val, self))
+        end
       end
     end
 
@@ -180,7 +210,7 @@ module RelaxDB
           success = send("validate_#{prop}", prop_val) rescue false
           unless success
             if methods.include? "#{prop}_validation_msg"
-              @errors[prop] = send("#{prop}_validation_msg")
+              @errors[prop] = send("#{prop}_validation_msg", prop_val)
             else
               @errors[prop] = "invalid:#{prop}"
             end
@@ -309,11 +339,13 @@ module RelaxDB
       
       define_method("#{relationship}=") do |new_target|
         create_or_get_proxy(BelongsToProxy, relationship).target = new_target
+        write_derived_props(relationship)
       end
       
       # Allows all writers to be invoked from the hash passed to initialize 
       define_method("#{relationship}_id=") do |id|
         instance_variable_set("@#{relationship}_id".to_sym, id)
+        write_derived_props(relationship)
       end
 
       # Allows belongs_to relationships to be used by the paginator

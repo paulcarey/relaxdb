@@ -375,6 +375,14 @@ describe RelaxDB::Document do
       r.new(:thumbs_up => 2).save.should be
       r.new(:thumbs_up => 3).save.should be_false
     end
+
+    it "should pass the property value and object to the validator" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { |tu, o| tu >=0 && o.thumbs_up < 3 }
+      end
+      r.new(:thumbs_up => 2).save.should be
+      r.new(:thumbs_up => 3).save.should be_false
+    end
     
     it "should perform all validations" do
       r = Class.new(RelaxDB::Document) do
@@ -435,14 +443,25 @@ describe RelaxDB::Document do
       x.errors[:thumbs_up].should == "Too many thumbs"
     end
     
-    it "may be a proc" do
+    it "may be a proc accepting the prop only" do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => lambda { false }, 
-          :validation_msg => lambda { |o| "#{o.thumbs_up}" }
+          :validation_msg => lambda { |tu| "#{tu}" }
       end      
       x = r.new(:thumbs_up => 13)
       x.save
       x.errors[:thumbs_up].should == "13"
+    end
+    
+    
+    it "may be a proc accepting the prop and object" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { false }, 
+          :validation_msg => lambda { |tu, o| "#{tu} #{o.thumbs_up}" }
+      end      
+      x = r.new(:thumbs_up => 13)
+      x.save
+      x.errors[:thumbs_up].should == "13 13"
     end
     
   end
@@ -454,7 +473,7 @@ describe RelaxDB::Document do
         property :foo, :validator => :required
         def required; raise; end;
       end
-      c.new(:foo => :bar).save.should be
+      c.new(:foo => :bar).save!.should be
     end
     
     it "should prevent an object from being saved if validation fails" do

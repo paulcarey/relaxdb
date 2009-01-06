@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
    "spec/callbacks_spec.rb",
    "spec/denormalisation_spec.rb",
    "spec/design_doc_spec.rb",
+   "spec/derived_properties_spec.rb",
    "spec/document_spec.rb",
    "spec/has_many_spec.rb",
    "spec/has_one_spec.rb",
