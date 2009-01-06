@@ -33,8 +33,11 @@ describe RelaxDB::Document, "derived properties" do
   it "should have its value persisted" do
     e = DpEvent.new(:name => "shindig").save!
     i = DpInvite.new(:event => e).save!
+    
+    RelaxDB.db.get_count = 0
     i = RelaxDB.load i._id
     i.event_name.should == "shindig"
+    RelaxDB.db.get_count.should == 1
   end  
   
   it "should have its value updated when the source_id is updated for a saved event" do
@@ -44,7 +47,7 @@ describe RelaxDB::Document, "derived properties" do
   end  
   
   it "will fail when the source_id is updated for a unsaved event" do
-    # Probably not desired - merely codifying current behaviour
+    # Almost certainly not desired - merely codifying current behaviour
     e = DpEvent.new(:name => "shindig")
     lambda { DpInvite.new(:event_id => e._id) }.should raise_error
   end  
