@@ -16,13 +16,15 @@ module RelaxDB
     end
 
     def <<(obj)
-      return false unless obj.validates?
       return false if @children.include?(obj)
-      
+
       obj.send("#{@relationship_as_viewed_by_target}=".to_sym, @client)
-      obj.save
-      @children << obj
-      self
+      if obj.save
+        @children << obj
+        self
+      else
+        false
+      end
     end
   
     def clear
