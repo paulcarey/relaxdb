@@ -242,7 +242,7 @@ module RelaxDB
           success = send("validate_#{prop}", prop_val) rescue false
           unless success
             if methods.include? "#{prop}_validation_msg"
-              @errors[prop] = send("#{prop}_validation_msg", prop_val)
+              @errors[prop] = send("#{prop}_validation_msg", prop_val) rescue "validation_msg_exception:invalid:#{prop_val}"
             else
               @errors[prop] = "invalid:#{prop}"
             end
