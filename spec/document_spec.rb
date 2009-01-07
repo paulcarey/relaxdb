@@ -131,10 +131,10 @@ describe RelaxDB::Document do
 
   describe "user defined property writer" do
     
-    it "should not be used" do
+    it "may be used with caution" do
       o = BespokeWriter.new(:val => 101).save
       o = RelaxDB.load o._id
-      o.val.should == 81
+      o.val.should == 91
     end
         
   end

@@ -103,7 +103,9 @@ module RelaxDB
     property :_id 
     property :_rev    
     
-    def initialize(hash={})
+    def initialize(set_via_writers={}, hash=nil)
+      hash, set_via_writers = set_via_writers, true if set_via_writers.is_a?(Hash)
+      
       # The default _id will be overwritten if loaded from CouchDB
       self._id = UuidGenerator.uuid 
       
@@ -118,7 +120,9 @@ module RelaxDB
         end
       end
       
-      set_attributes(hash)
+      # Maybe use the presence of _rev in hash to determine this rather than 
+      # exposing the implementation detail to clients that choose to override?
+      set_via_writers ? set_attributes(hash) : set_raw_attributes(hash)
     end
     
     def set_attributes(data)
@@ -133,13 +137,40 @@ module RelaxDB
         # Ignore param keys that don't have a corresponding writer
         # This allows us to comfortably accept a hash containing superflous data 
         # such as a params hash in a controller 
-        if methods.include? "#{key}="
-          send("#{key}=".to_sym, val)
-        end
-                
+        send("#{key}=".to_sym, val) if methods.include? "#{key}="
       end
     end  
     
+    # Set the raw attribute values rather than setting via the associated writers
+    # The associated writers may invoke validation functions or set derived values
+    # Such behaviour is unwanted when loading from CouchDB and potentially under
+    # other circumstances
+    def set_raw_attributes(data)
+      data.each do |key, val|
+        if [/_at$/, /_on$/, /_date$/].inject(nil) { |i, r| i ||= (key =~ r) }
+            val = Time.parse(val).utc rescue val
+        end
+        
+        if methods.include? "#{key}="
+          key = key.to_sym
+          if properties.include? key
+            instance_variable_set("@#{key}".to_sym, val)
+          elsif self.class.has_one_rels.include? key
+            create_or_get_proxy(HasOneProxy, key).target = val
+          else 
+            # belongs_to
+            if key.to_s =~ /_id$/                                            
+              instance_variable_set("@#{key}".to_sym, val)                   
+            else                                                             
+              create_or_get_proxy(BelongsToProxy, key).target = val          
+            end                                                              
+          end                                                                
+        end
+                
+      end
+      
+    end
+        
     def inspect
       s = "#<#{self.class}:#{self.object_id}"
       properties.each do |prop|

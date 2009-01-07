@@ -4,7 +4,7 @@ end
 class Initiative < RelaxDB::Document
   property :x
   attr_reader :foo
-  def initialize(hash={})
+  def initialize(svw=true, hash={})
     super
     @foo = :bar
   end

@@ -151,7 +151,7 @@ module RelaxDB
       klass = data.delete("class")
       if klass
         k = Module.const_get(klass)
-        k.new(data)
+        k.new(false, data)
       else 
         # data is not of a known class
         ViewObject.create(data)
