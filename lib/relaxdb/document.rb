@@ -189,9 +189,6 @@ module RelaxDB
       self.class.belongs_to_rels.each do |relationship, opts|
         id = instance_variable_get("@#{relationship}_id".to_sym)
         data["#{relationship}_id"] = id if id
-        if opts[:denormalise]
-          add_denormalised_data(data, relationship, opts)
-        end
       end
       properties.each do |prop|
         prop_val = instance_variable_get("@#{prop}".to_sym)
@@ -200,19 +197,7 @@ module RelaxDB
       data["class"] = self.class.name
       data.to_json      
     end
-    
-    # quick n' dirty denormalisation - explicit denormalisation will probably become a 
-    # permanent fixture of RelaxDB, but quite likely in a different form to this one
-    def add_denormalised_data(data, relationship, opts)
-      obj = send(relationship)
-      if obj
-        opts[:denormalise].each do |prop_name|
-          val = obj.send(prop_name)
-          data["#{relationship}_#{prop_name}"] = val
-        end
-      end
-    end
-    
+        
     # Order changed as of 30/10/2008 to be consistent with ActiveRecord
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
     def save(*validation_skip_list)
@@ -251,8 +236,6 @@ module RelaxDB
         end
       end
       
-      # Unsure whether to pass the id or the doc, or the proxy - id is all I need right now 
-      # Validating on anything more than the id would preclude the use of validation with bulk_save => bad idea
       self.class.belongs_to_rels.each do |rel, opts|
         if methods.include? "validate_#{rel}"
           rel_val = instance_variable_get("@#{rel}_id")
