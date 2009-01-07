@@ -75,22 +75,34 @@ describe RelaxDB::BelongsToProxy do
       r.photo.rating.should == r
     end    
     
-    it "should function with the required validator" do
-      c = Class.new(RelaxDB::Document) do
-        belongs_to :foo, :validator => :required
+    describe "validator" do
+      
+      it "should be passed the _id and object" do
+        a = Atom.new(:_id => "atom").save!
+        c = Class.new(RelaxDB::Document) do
+          belongs_to :foo, :validator => lambda { |foo_id, obj| foo_id.reverse == obj._id }
+        end
+        c.new(:_id => "mota", :foo => a).save!
       end
-      c.new.save.should be_false
-    end
-
-    it "should be provided with a default error message when validation fails" do
-      c = Class.new(RelaxDB::Document) do
-        belongs_to :foo, :validator => :required
+      
+      it "may be used with a predefined validator" do
+        c = Class.new(RelaxDB::Document) do
+          belongs_to :foo, :validator => :required
+        end
+        c.new.save.should be_false
       end
-      x = c.new
-      x.save
-      x.errors[:foo].should_not be_blank
-    end
 
+      it "should be provided with a default error message when validation fails" do
+        c = Class.new(RelaxDB::Document) do
+          belongs_to :foo, :validator => :required
+        end
+        x = c.new
+        x.save
+        x.errors[:foo].should_not be_blank
+      end
+          
+    end
+    
   end
 
 end
