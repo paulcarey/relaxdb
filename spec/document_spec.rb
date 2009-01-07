@@ -430,6 +430,13 @@ describe RelaxDB::Document do
       r.new(:thumbs_up => 1).save.should be
     end
     
+    it "may be skipped by passing the property symbol to save" do
+      r = Class.new(RelaxDB::Document) do
+        property :thumbs_up, :validator => lambda { raise }
+      end
+      r.new.save!(:thumbs_up)
+    end
+    
   end
   
   describe "validation message" do

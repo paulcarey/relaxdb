@@ -215,8 +215,8 @@ module RelaxDB
     
     # Order changed as of 30/10/2008 to be consistent with ActiveRecord
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
-    def save
-      return false unless validates?
+    def save(*validation_skip_list)
+      return false unless validates?(*validation_skip_list)
       return false unless before_save
             
       set_created_at if new_document? 
@@ -229,13 +229,14 @@ module RelaxDB
       self
     end  
     
-    def save!
-      save || raise(DocumentNotSaved.new(self.errors.to_json))
+    def save!(*validation_skip_list)
+      save(*validation_skip_list) || raise(DocumentNotSaved.new(self.errors.to_json))
     end
     
-    def validates?
+    def validates?(*skip_list)
       total_success = true
       properties.each do |prop|
+        next if skip_list.include? prop
         if methods.include? "validate_#{prop}"
           prop_val = instance_variable_get("@#{prop}")
           success = send("validate_#{prop}", prop_val) rescue false
