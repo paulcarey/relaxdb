@@ -1,16 +1,22 @@
 h3. What's New?
 
+* Denormalisation via derived properties. Examples in spec/derived_properties_spec.rb.
+
+* Validations may be skipped by passing the attribute symbol(s) to @save@ or @save!@.
+
+* Semantic changes for @ has_many#<< @. The parent object is now assigned to the child object *prior* to validation. This potentially breaking change was made to allow child objects to derive properties from a parent object.
+
 * Semantic consistency for load, load!, save and save!. The bang versions raise an exception when their more relaxed siblings would simply return nil.
 
 * Minimal support for CouchDB validation 
 
-* Time storage changes. All Time objects are now converted to UTC and formatted as %Y/%m/%d %H:%M:%S +0000. Storing all Times as UTC should have been happening anyway. Formatting Times as above (as opposed to ISO 8601 as was done prior to 0.2.3) allows the Time strings to be passed directly to Date.new in a JavaScript interpreter. 
+* Time storage changes. All Time objects are now converted to UTC and formatted as @ %Y/%m/%d %H:%M:%S +0000 @. Storing all Times as UTC should have been happening anyway. Formatting Times as above (as opposed to ISO 8601 as was done prior to 0.2.3) allows the Time strings to be passed directly to Date.new in a JavaScript interpreter. 
 
 * Pagination! CouchDB offers great support for retrieving a subset of data, but the housekeeping is tricky. RelaxDB takes care of it.
 ** Note that if you invoke paginate_by on an already created view, the necessary reduce function won't be automatically created. Take a look at SortedByView and create the reduce func by hand.
 * Support for multi key post
 ** For example, @ Numbers.all.sorted_by(:val) { |q| q.keys([1,2,3,5]) } @
-* Works with CouchDB 0.9 trunk as of 2008/10/08. Note that pagination won't work correctly on trunk until issue "COUCHDB-135":http://issues.apache.org/jira/browse/COUCHDB-135 is fixed.
+* Works with CouchDB 0.9 trunk as of 2009/01/02. Note that pagination won't work correctly on trunk until issue "COUCHDB-135":http://issues.apache.org/jira/browse/COUCHDB-135 is fixed.
 
 *Note*: 0.2.1 requires CouchDB 0.9 trunk. 0.2.0 works with CouchDB 0.8 onwards.
 
@@ -153,13 +159,6 @@ RelaxDB::GraphCreator.create
 </pre>
 
 Requires graphviz. Useful for visualising relationships between a limited number of document e.g. test fixtures. "Description and example":http://dev.strawberrydiva.com/visually_explore_couchdb/.
-
-h3. Experimental Features
-
-* Declarative denormalisation
-** Create a partial object graph in JSON with a single call
-** May be used to require fewer GET requests
-** View the denormalisation spec for examples
 
 h2. Incomplete list of limitations
 

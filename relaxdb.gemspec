@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = "relaxdb"
-  s.version = "0.2.4"
-  s.date = "2008-12-26"
+  s.version = "0.2.5"
+  s.date = "2009-01-07"
   s.summary = "RelaxDB provides a simple interface to CouchDB"
   s.email = "paul.p.carey@gmail.com"
   s.homepage = "http://github.com/paulcarey/relaxdb/"
@@ -36,7 +36,6 @@ Gem::Specification.new do |s|
    "lib/relaxdb.rb",
    "spec/belongs_to_spec.rb",
    "spec/callbacks_spec.rb",
-   "spec/denormalisation_spec.rb",
    "spec/design_doc_spec.rb",
    "spec/derived_properties_spec.rb",
    "spec/document_spec.rb",
