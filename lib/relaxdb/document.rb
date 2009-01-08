@@ -181,8 +181,11 @@ module RelaxDB
         id = instance_variable_get("@#{relationship}_id".to_sym)
         s << ", #{relationship}_id: #{id}" if id
       end
+      s << ", errors: #{errors.inspect}" unless errors.empty?
       s << ">"
     end
+    
+    alias_method :to_s, :inspect
             
     def to_json
       data = {}
@@ -197,7 +200,7 @@ module RelaxDB
       data["class"] = self.class.name
       data.to_json      
     end
-        
+            
     # Order changed as of 30/10/2008 to be consistent with ActiveRecord
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
     def save(*validation_skip_list)
@@ -219,33 +222,47 @@ module RelaxDB
     end
     
     def validates?(*skip_list)
-      total_success = true
-      properties.each do |prop|
-        next if skip_list.include? prop
-        if methods.include? "validate_#{prop}"
-          prop_val = instance_variable_get("@#{prop}")
-          success = send("validate_#{prop}", prop_val) rescue false
-          unless success
-            if methods.include? "#{prop}_validation_msg"
-              @errors[prop] = send("#{prop}_validation_msg", prop_val) rescue "validation_msg_exception:invalid:#{prop_val}"
-            else
-              @errors[prop] = "invalid:#{prop}"
-            end
-          end
-          total_success &= success          
+      props = properties - skip_list
+      prop_vals = props.map { |prop| instance_variable_get("@#{prop}") }
+      
+      rels = self.class.belongs_to_rels.keys - skip_list
+      rel_vals = rels.map { |rel| instance_variable_get("@#{rel}_id") }
+      
+      att_names = props + rels
+      att_vals =  prop_vals + rel_vals
+      
+      total_success = true      
+      att_names.each_index do |i|
+        att_name, att_val = att_names[i], att_vals[i]
+        if methods.include? "validate_#{att_name}"
+          total_success &= validate_att(att_name, att_val)
         end
       end
-      
-      self.class.belongs_to_rels.each do |rel, opts|
-        if methods.include? "validate_#{rel}"
-          rel_val = instance_variable_get("@#{rel}_id")
-          success = send("validate_#{rel}", rel_val) rescue false
-          @errors[rel] = "invalid:#{rel_val}" unless success
-          total_success &= success
-        end
-      end
-      
+            
       total_success
+    end
+    
+    def validate_att(att_name, att_val)
+      begin
+        success = send("validate_#{att_name}", att_val)
+      rescue => e
+        RelaxDB.logger.warn("Validating #{att_name} with #{att_val} raised #{e}")
+        succes = false
+      end
+
+      unless success
+        if methods.include? "#{att_name}_validation_msg"
+          begin
+            @errors[att_name] = send("#{att_name}_validation_msg", att_val)
+          rescue => e
+            RelaxDB.logger.warn("Validation_msg for #{att_name} with #{att_val} raised #{e}")
+            @errors[att_name] = "validation_msg_exception:invalid:#{att_name_val}"
+          end
+        else
+          @errors[att_name] = "invalid:#{att_val}"
+        end
+      end
+      success
     end
             
     def new_document?
