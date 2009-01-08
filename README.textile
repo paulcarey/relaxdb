@@ -18,7 +18,7 @@ h3. What's New?
 ** For example, @ Numbers.all.sorted_by(:val) { |q| q.keys([1,2,3,5]) } @
 * Works with CouchDB 0.9 trunk as of 2009/01/02. Note that pagination won't work correctly on trunk until issue "COUCHDB-135":http://issues.apache.org/jira/browse/COUCHDB-135 is fixed.
 
-*Note*: 0.2.1 requires CouchDB 0.9 trunk. 0.2.0 works with CouchDB 0.8 onwards.
+*Note*: Current versions require CouchDB 0.9 trunk. If you're working with CouchDB 0.8 or 0.8.1, please build from commit @ a8a2d496462 @.
 
 h2. Overview
 
