@@ -2,6 +2,7 @@ module RelaxDB
   
   class HTTP_404 < StandardError; end
   class HTTP_409 < StandardError; end
+  class HTTP_412 < StandardError; end
 
   class Server
         
