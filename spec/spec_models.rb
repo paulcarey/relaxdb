@@ -1,139 +1,150 @@
-class Atom < RelaxDB::Document
-end
+#
+# RSpec loads this file multiple times, thus breaking invocations like Document.has_one_rels
+# The following clause ensures the tests pass, but perhaps Document should raise a warning 
+# if it's loaded more than once...
+#
+unless @spec_models_loaded
 
-class Initiative < RelaxDB::Document
-  property :x
-  attr_reader :foo
-  def initialize(svw=true, hash={})
-    super
-    @foo = :bar
+  class Atom < RelaxDB::Document
   end
-end
 
-class Primitives < RelaxDB::Document
-  
-  property :str
-  property :num
-  property :true_bool
-  property :false_bool
-  property :created_at
-  property :empty
-  
-end
+  class Initiative < RelaxDB::Document
+    property :x
+    attr_reader :foo
+    def initialize(svw=true, hash={})
+      super
+      @foo = :bar
+    end
+  end
 
-class BespokeReader < RelaxDB::Document
-  property :val
-  def val; @val + 5; end
-end
+  class Primitives < RelaxDB::Document
+  
+    property :str
+    property :num
+    property :true_bool
+    property :false_bool
+    property :created_at
+    property :empty
+  
+  end
 
-class BespokeWriter < RelaxDB::Document
-  property :val
-  def val=(v); @val = v - 10; end
-end
+  class BespokeReader < RelaxDB::Document
+    property :val
+    def val; @val + 5; end
+  end
 
-class Letter < RelaxDB::Document
-  
-  property :letter
-  property :number
-  
-end
+  class BespokeWriter < RelaxDB::Document
+    property :val
+    def val=(v); @val = v - 10; end
+  end
 
-class Invite < RelaxDB::Document
+  class Letter < RelaxDB::Document
   
-  property :message
+    property :letter
+    property :number
   
-  belongs_to :sender
-  belongs_to :recipient
+  end
+
+  class Invite < RelaxDB::Document
+  
+    property :message
+  
+    belongs_to :sender
+    belongs_to :recipient
     
-end
+  end
 
-class Item < RelaxDB::Document
+  class Item < RelaxDB::Document
   
-  property :name
-  belongs_to :user
+    property :name
+    belongs_to :user
   
-end
+  end
 
-class User < RelaxDB::Document
+  class User < RelaxDB::Document
   
-  property :name, :default => "u" 
-  property :age
+    property :name, :default => "u" 
+    property :age
   
-  has_many :items, :class => "Item"
+    has_many :items, :class => "Item"
   
-  has_many :invites_received, :class => "Invite", :known_as => :recipient
-  has_many :invites_sent, :class => "Invite", :known_as => :sender
+    has_many :invites_received, :class => "Invite", :known_as => :recipient
+    has_many :invites_sent, :class => "Invite", :known_as => :sender
   
-end
+  end
 
-class Post < RelaxDB::Document
+  class Post < RelaxDB::Document
   
-  property :subject
-  property :content
-  property :created_at
-  property :viewed_at
+    property :subject
+    property :content
+    property :created_at
+    property :viewed_at
   
-end
+  end
 
-class Rating < RelaxDB::Document
+  class Rating < RelaxDB::Document
 
-  property :stars, :default => 5
-  belongs_to :photo
+    property :stars, :default => 5
+    belongs_to :photo
 
-end
+  end
 
-class Photo < RelaxDB::Document
+  class Photo < RelaxDB::Document
   
-  property :name
+    property :name
   
-  has_one :rating
+    has_one :rating
   
-  references_many :tags, :class => "Tag", :known_as => :photos
+    references_many :tags, :class => "Tag", :known_as => :photos
   
-  has_many :taggings, :class => "Tagging"
+    has_many :taggings, :class => "Tagging"
 
-end
+  end
 
-class Tag < RelaxDB::Document
+  class Tag < RelaxDB::Document
   
-  property :name
-  references_many :photos, :class => "Photo", :known_as => :tags
+    property :name
+    references_many :photos, :class => "Photo", :known_as => :tags
   
-  has_many :taggings, :class => "Tagging"
+    has_many :taggings, :class => "Tagging"
   
-end
+  end
 
-class Tagging < RelaxDB::Document
+  class Tagging < RelaxDB::Document
 
-  belongs_to :photo
-  belongs_to :tag
-  property :relevance  
+    belongs_to :photo
+    belongs_to :tag
+    property :relevance  
 
-end
+  end
 
-class MultiWordClass < RelaxDB::Document
-  has_one :multi_word_child
-  has_many :multi_word_children, :class => "MultiWordChild"
-end
+  class MultiWordClass < RelaxDB::Document
+    has_one :multi_word_child
+    has_many :multi_word_children, :class => "MultiWordChild"
+  end
 
-class MultiWordChild < RelaxDB::Document
-  belongs_to :multi_word_class
-end
+  class MultiWordChild < RelaxDB::Document
+    belongs_to :multi_word_class
+  end
 
-class TwitterUser < RelaxDB::Document
+  class TwitterUser < RelaxDB::Document
   
-  property :name
-  references_many :followers, :class => "User", :known_as => :leaders
-  references_many :leaders, :class => "User", :known_as => :followers
+    property :name
+    references_many :followers, :class => "User", :known_as => :leaders
+    references_many :leaders, :class => "User", :known_as => :followers
   
-end
+  end
 
-class Dysfunctional < RelaxDB::Document
-  has_one :failure
-  has_many :failures, :class => "Failure"
-end
+  class Dysfunctional < RelaxDB::Document
+    has_one :failure
+    has_many :failures, :class => "Failure"
+  end
 
-class Failure < RelaxDB::Document
-  property :pathological, :validator => lambda { false }
-  belongs_to :dysfunctional
+  class Failure < RelaxDB::Document
+    property :pathological, :validator => lambda { false }
+    belongs_to :dysfunctional
+  end
+
+  @spec_models_loaded = true
+
 end
