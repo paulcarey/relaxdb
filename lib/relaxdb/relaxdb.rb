@@ -38,18 +38,35 @@ module RelaxDB
       db.replicate_db source, target
     end
     
-    def bulk_save(*objs)
+    def bulk_save!(*objs)
+      pre_save_success = objs.inject(true) { |s, o| s &= o.validates? }
+      raise ValidationFailure unless pre_save_success
+      
       docs = {}
       objs.each { |o| docs[o._id] = o }
+      
+      begin
+        resp = db.post("_bulk_docs", { "docs" => objs }.to_json )
+        data = JSON.parse(resp.body)
     
-      resp = db.post("_bulk_docs", { "docs" => objs }.to_json )
-      data = JSON.parse(resp.body)
-    
-      data["new_revs"].each do |new_rev|
-        docs[ new_rev["id"] ]._rev = new_rev["rev"]
+        data["new_revs"].each do |new_rev|
+          obj = docs[ new_rev["id"] ]
+          obj._rev = new_rev["rev"]
+          obj.post_save
+        end
+      rescue HTTP_412
+        raise UpdateConflict
       end
     
-      data["ok"]
+      objs
+    end
+    
+    def bulk_save(*objs)
+      begin
+        bulk_save!(*objs)
+      rescue ValidationFailure, UpdateConflict
+        false
+      end
     end
   
     def load(*ids)

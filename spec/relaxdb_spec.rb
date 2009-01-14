@@ -28,18 +28,67 @@ describe RelaxDB do
     end
     
   end  
-      
+
+  # bulk_save and bulk_save! should match Document#save and Document#save! semantics
   describe ".bulk_save" do
     
     it "should be invokable multiple times" do
-      t1 = Tag.new(:name => "t1")
-      t2 = Tag.new(:name => "t2")
+      t1, t2 = Tag.new, Tag.new
       RelaxDB.bulk_save(t1, t2)
       RelaxDB.bulk_save(t1, t2)
     end
     
+    it "should return the objects it was passed" do
+      t1, t2 = Tag.new, Tag.new
+      ta, tb = RelaxDB.bulk_save(t1, t2)
+      ta.should == t1
+      tb.should == t2
+    end
+    
     it "should succeed when passed no args" do
       RelaxDB.bulk_save
+    end
+    
+    it "should return false on failure" do
+      c = Class.new(RelaxDB::Document) do
+        property :foo, :validator => lambda { false }
+      end
+      x = c.new
+      RelaxDB.bulk_save(x).should be_false
+    end
+
+    it "should not attempt to save if a pre-save stage fails" do
+      c = Class.new(RelaxDB::Document) do
+        property :foo, :validator => lambda { false }
+      end
+      x = c.new
+      RelaxDB.bulk_save(x)
+      x.should be_new_document
+    end
+    
+    it "should invoke the after-save stage after a successful save" do
+      c = Class.new(RelaxDB::Document) do
+        attr_accessor :foo
+        after_save lambda { |c| c.foo = :bar }
+      end
+      x = c.new
+      RelaxDB.bulk_save(x).first.foo.should == :bar
+    end
+    
+  end
+  
+  describe ".bulk_save!" do
+    
+    it "should raise an exception if a obj fails validation" do
+      c = Class.new(RelaxDB::Document) do
+        property :foo, :validator => lambda { false }
+      end
+      lambda { RelaxDB.bulk_save!(c.new) }.should raise_error(RelaxDB::ValidationFailure)
+    end
+    
+    it "should raise an exception if a document update conflict occurs on save" do
+      Atom.new(:_id => "a1").save!
+      lambda { RelaxDB.bulk_save! Atom.new(:_id => "a1") }.should raise_error(RelaxDB::UpdateConflict)
     end
     
   end

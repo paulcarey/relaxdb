@@ -215,10 +215,7 @@ module RelaxDB
             
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
     def save(*validation_skip_list)
-      return false unless validates?(*validation_skip_list)
-      return false unless before_save
-            
-      set_created_at if new_document? 
+      return false unless pre_save(*validation_skip_list)
       
       begin
         resp = RelaxDB.db.put(_id, to_json)
@@ -229,10 +226,21 @@ module RelaxDB
         return false
       end
 
-      after_save
+      post_save
 
       self
     end  
+    
+    def pre_save(*validation_skip_list)
+      return false unless validates?(*validation_skip_list)
+      return false unless before_save            
+      set_created_at if new_document?
+      true 
+    end  
+    
+    def post_save
+      after_save
+    end
     
     def save!(*validation_skip_list)
       if save(*validation_skip_list)
