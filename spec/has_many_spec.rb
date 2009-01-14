@@ -16,7 +16,7 @@ describe RelaxDB::HasManyProxy do
     
     it "should be considered enumerable" do
       u = User.new.save
-      u.items.should be_a_kind_of( Enumerable)
+      u.items.should be_a_kind_of(Enumerable)
     end
     
     it "should actually be enumerable" do
@@ -41,7 +41,7 @@ describe RelaxDB::HasManyProxy do
       m = RelaxDB.load m._id
       m.multi_word_children[0].should == c
     end    
-        
+            
     describe "#<<" do
 
       it "should link the added item to the parent" do
@@ -74,10 +74,25 @@ describe RelaxDB::HasManyProxy do
     end
     
     describe "#=" do
-
-      it "should fail" do
-        # This may be implemented in future
-        lambda { User.new.items = [] }.should raise_error
+      
+      before(:each) do
+        # Create the underlying views
+        User.new(:items => [], :invites_received => [], :invites_sent => [])
+      end
+      
+      it "should not attempt to save the child objects when the relationship is established" do
+        RelaxDB.db.put_count = 0
+        i1, i2 = Item.new(:name => "i1"), Item.new(:name => "i2")
+        User.new(:items => [i1, i2])
+        RelaxDB.db.put_count.should == 0
+      end
+      
+      it "should preserve given relationships across save/load boundary" do
+        i1, i2 = Item.new(:name => "i1"), Item.new(:name => "i2")
+        u = User.new(:items => [i1, i2])
+        u.save_all!
+        u = RelaxDB.load u._id
+        u.items.map { |i| i.name }.sort.join.should == "i1i2"
       end
       
     end

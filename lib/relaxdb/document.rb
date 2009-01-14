@@ -214,9 +214,16 @@ module RelaxDB
     end
             
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
-    def save(*validation_skip_list)
-      return false unless pre_save(*validation_skip_list)
-      
+    def save(*skip_list)
+      if pre_save(*skip_list) && save_to_couch
+        after_save
+        self
+      else
+        false
+      end
+    end  
+    
+    def save_to_couch
       begin
         resp = RelaxDB.db.put(_id, to_json)
         self._rev = JSON.parse(resp.body)["rev"]
@@ -224,15 +231,11 @@ module RelaxDB
         on_update_conflict if respond_to? :on_update_conflict
         @update_conflict = true
         return false
-      end
-
-      post_save
-
-      self
-    end  
+      end      
+    end
     
-    def pre_save(*validation_skip_list)
-      return false unless validates?(*validation_skip_list)
+    def pre_save(*skip_list)
+      return false unless validates?(*skip_list)
       return false unless before_save            
       set_created_at if new_document?
       true 
@@ -242,14 +245,28 @@ module RelaxDB
       after_save
     end
     
-    def save!(*validation_skip_list)
-      if save(*validation_skip_list)
+    def save!(*skip_list)
+      if save(*skip_list)
         self
       elsif update_conflict?
         raise UpdateConflict
       else
         raise ValidationFailure.new(self.errors.to_json)
       end
+    end
+    
+    def save_all
+      RelaxDB.bulk_save(self, *all_children)
+    end
+
+    def save_all!
+      RelaxDB.bulk_save!(self, *all_children)
+    end
+    
+    def all_children      
+      ho = self.class.has_one_rels.map { |r| send(r) }
+      hm = self.class.has_many_rels.inject([]) { |m,r| m += send(r).children }
+      ho + hm
     end
     
     def update_conflict?
@@ -369,8 +386,8 @@ module RelaxDB
         create_or_get_proxy(HasManyProxy, relationship, opts)
       end
       
-      define_method("#{relationship}=") do
-        raise "You may not currently assign to a has_many relationship - may be implemented"
+      define_method("#{relationship}=") do |children|
+        create_or_get_proxy(HasManyProxy, relationship, opts).children = children
       end      
     end
 
@@ -443,6 +460,9 @@ module RelaxDB
     # destroy! nullifies all relationships with peers and children before deleting 
     # itself in CouchDB
     # The nullification and deletion are not performed in a transaction
+    #
+    # TODO: Current implemention may be inappropriate - causing CouchDB to try to JSON
+    # encode undefined. Ensure nil is serialized? See has_many_spec#should nullify its child relationships
     def destroy!
       self.class.references_many_rels.each do |rel|
         send(rel).clear

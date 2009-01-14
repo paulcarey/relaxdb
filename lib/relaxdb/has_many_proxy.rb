@@ -3,6 +3,8 @@ module RelaxDB
   class HasManyProxy
 
     include Enumerable
+    
+    attr_reader :children
   
     def initialize(client, relationship, opts)
       @client = client 
@@ -80,6 +82,13 @@ module RelaxDB
       view_name = @relationship
       map_function = ViewCreator.has_n(@target_class, @relationship_as_viewed_by_target)
       @children = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)
+    end
+    
+    def children=(children)
+      children.each do |obj|
+        obj.send("#{@relationship_as_viewed_by_target}=".to_sym, @client)
+      end
+      @children = children
     end
   
     def inspect

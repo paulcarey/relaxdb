@@ -56,7 +56,7 @@ end
 
 class User < RelaxDB::Document
   
-  property :name 
+  property :name, :default => "u" 
   property :age
   
   has_many :items, :class => "Item"
