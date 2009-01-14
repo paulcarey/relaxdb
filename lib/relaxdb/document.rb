@@ -84,12 +84,24 @@ module RelaxDB
       @derived_prop_writers ||= {}
     end
     
+    #
+    # The rationale for rescuing nil below is that the lambda for a derived 
+    # property shouldn't need to concern itself with checking the validity of
+    # the underlying property. Nor, IMO, should clients be exposed to the 
+    # possibility of a writer raising an exception.
+    #
+    # However, this behaviour has the potential to give rise to frustrating
+    # debugging sessions where exceptions are effectively swallowed. 
+    # For this reason, a validator should _always_ be used with either the 
+    # derived property or the source property. Doing so will ensure that
+    # exceptions are stored in the errors property.
+    #
     def write_derived_props(source)
       writers = self.class.derived_prop_writers[source]
       if writers 
         writers.each do |prop, writer|
           current_val = send(prop)
-          send("#{prop}=", writer.call(current_val, self))
+          send("#{prop}=", writer.call(current_val, self)) rescue nil
         end
       end
     end
@@ -201,7 +213,6 @@ module RelaxDB
       data.to_json      
     end
             
-    # Order changed as of 30/10/2008 to be consistent with ActiveRecord
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
     def save(*validation_skip_list)
       return false unless validates?(*validation_skip_list)
@@ -209,8 +220,14 @@ module RelaxDB
             
       set_created_at if new_document? 
       
-      resp = RelaxDB.db.put(_id, to_json)
-      self._rev = JSON.parse(resp.body)["rev"]
+      begin
+        resp = RelaxDB.db.put(_id, to_json)
+        self._rev = JSON.parse(resp.body)["rev"]
+      rescue HTTP_412
+        on_update_conflict if respond_to? :on_update_conflict
+        @update_conflict = true
+        return false
+      end
 
       after_save
 
@@ -218,7 +235,17 @@ module RelaxDB
     end  
     
     def save!(*validation_skip_list)
-      save(*validation_skip_list) || raise(DocumentNotSaved.new(self.errors.to_json))
+      if save(*validation_skip_list)
+        self
+      elsif update_conflict?
+        raise UpdateConflict
+      else
+        raise ValidationFailure.new(self.errors.to_json)
+      end
+    end
+    
+    def update_conflict?
+      @update_conflict
     end
     
     def validates?(*skip_list)
@@ -256,7 +283,7 @@ module RelaxDB
             @errors[att_name] = send("#{att_name}_validation_msg", att_val)
           rescue => e
             RelaxDB.logger.warn("Validation_msg for #{att_name} with #{att_val} raised #{e}")
-            @errors[att_name] = "validation_msg_exception:invalid:#{att_name_val}"
+            @errors[att_name] = "validation_msg_exception:invalid:#{att_val}"
           end
         else
           @errors[att_name] = "invalid:#{att_val}"
@@ -386,6 +413,10 @@ module RelaxDB
       end
       
       create_validator(relationship, opts[:validator]) if opts[:validator]
+    end
+  
+    class << self
+      alias_method :references, :belongs_to
     end
     
     def self.belongs_to_rels

@@ -2,6 +2,8 @@ module RelaxDB
 
   class NotFound < StandardError; end
   class DocumentNotSaved < StandardError; end
+  class UpdateConflict < DocumentNotSaved; end
+  class ValidationFailure < DocumentNotSaved; end
   
   @@db = nil
   

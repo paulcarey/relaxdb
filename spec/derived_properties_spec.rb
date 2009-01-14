@@ -1,9 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 require File.dirname(__FILE__) + '/spec_models.rb'
 
-# These tests would ideally instrument server.rb, asserting that no
-# HTTP requests are made when retrieving the derived values
-
 class DpInvite < RelaxDB::Document
   property :event_name, :derived => [:event, lambda { |en, i| i.event.name }]
   belongs_to :event  
@@ -46,12 +43,11 @@ describe RelaxDB::Document, "derived properties" do
     i.event_name.should == "shindig"
   end  
   
-  it "will fail when the source_id is updated for a unsaved event" do
-    # Almost certainly not desired - merely codifying current behaviour
-    e = DpEvent.new(:name => "shindig")
-    lambda { DpInvite.new(:event_id => e._id) }.should raise_error
+  it "will not raise an exception when the source is nil" do
+    # See the rationale in Document.write_derived_props
+    DpInvite.new(:event => nil).save!
   end  
-  
+      
   it "should only be updated for registered properties" do
     invite = Class.new(RelaxDB::Document) do
       property :event_name, :derived => [:foo, lambda { |en, i| i.event.name }]

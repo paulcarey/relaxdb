@@ -36,6 +36,10 @@ describe RelaxDB::Document do
       Post.new(:foo => "").save
     end  
     
+    it "should create a document with a non conflicing state" do
+      Atom.new.should_not be_update_conflict
+    end
+    
   end
   
   describe "#initialize" do
@@ -92,6 +96,14 @@ describe RelaxDB::Document do
       p = Post.new(:created_at => back_then).save
       p.created_at.should be_close(back_then, 1)
     end
+    
+    it "should set document conflict state on conflicting save" do
+      a1 = Atom.new
+      a2 = a1.dup
+      a1.save!
+      a2.save
+      a2.should be_update_conflict
+    end
         
   end
   
@@ -102,14 +114,21 @@ describe RelaxDB::Document do
       RelaxDB.load(a._id).should == a
     end
     
-    it "should throw an exception when an object is not saved" do
+    it "should raise ValidationFailure on validation failure" do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => lambda { false }
       end
       lambda do
         r.new.save!
-      end.should raise_error(RelaxDB::DocumentNotSaved)
+      end.should raise_error(RelaxDB::ValidationFailure)
     end   
+    
+    it "should raise UpdateConflict on an update conflict" do
+      a1 = Atom.new
+      a2 = a1.dup
+      a1.save!
+      lambda { a2.save! }.should raise_error(RelaxDB::UpdateConflict)      
+    end
     
   end
   
@@ -171,7 +190,7 @@ describe RelaxDB::Document do
 
     it "should prevent the object from being resaved" do
       p = Atom.new.save.destroy!
-      lambda { p.save }.should raise_error
+      lambda { p.save! }.should raise_error
     end
     
     it "will result in undefined behaviour when invoked on unsaved objects" do

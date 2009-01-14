@@ -57,6 +57,14 @@ module RelaxDB
     def [](*args)
       @children[*args]
     end
+    
+    def first
+      @children[0]
+    end
+    
+    def last
+      @children[size-1]
+    end
   
     def each(&blk)
       @children.each(&blk)

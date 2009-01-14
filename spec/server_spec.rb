@@ -17,13 +17,13 @@ describe RelaxDB do
     
     it "should raise a HTTP_404 for a non existant doc" do
       lambda do
-        @server.get "/scratch/foo"
+        @server.get "/relaxdb_spec_db/foo"
       end.should raise_error(RelaxDB::HTTP_404)
     end
 
     it "should raise a RuntimeError for non specific errors" do
       lambda do
-        @server.get "/scratch/_view?fail=true"
+        @server.get "/relaxdb_spec_db/_view?fail=true"
       end.should raise_error(RuntimeError)
     end
     
