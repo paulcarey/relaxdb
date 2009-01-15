@@ -374,7 +374,6 @@ module RelaxDB
     end
    
     def self.references_many_rels
-      # Don't force clients to check its instantiated
       @references_many_rels ||= []
     end
    
@@ -388,6 +387,8 @@ module RelaxDB
       
       define_method("#{relationship}=") do |children|
         create_or_get_proxy(HasManyProxy, relationship, opts).children = children
+        write_derived_props(relationship)
+        children
       end      
     end
 
@@ -406,6 +407,8 @@ module RelaxDB
       
       define_method("#{relationship}=") do |new_target|
         create_or_get_proxy(HasOneProxy, relationship).target = new_target
+        write_derived_props(relationship)
+        new_target
       end
     end
     
@@ -430,6 +433,7 @@ module RelaxDB
       define_method("#{relationship}_id=") do |id|
         instance_variable_set("@#{relationship}_id".to_sym, id)
         write_derived_props(relationship)
+        id
       end
 
       # Allows belongs_to relationships to be used by the paginator
@@ -445,7 +449,6 @@ module RelaxDB
     end
     
     def self.belongs_to_rels
-      # Don't force clients to check that it's instantiated
       @belongs_to_rels ||= {}
     end
     

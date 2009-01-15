@@ -95,6 +95,20 @@ describe RelaxDB::HasManyProxy do
         u.items.map { |i| i.name }.sort.join.should == "i1i2"
       end
       
+      it "should invoke the derived properties writer" do
+        P = Class.new(RelaxDB::Document) do
+          property :foo, :derived => [:zongs, lambda {|f, o| o.zongs.first.z / 2 }]
+          has_many :zongs, :class => "Zong"
+        end
+        Zong = Class.new(RelaxDB::Document) do
+          property :z
+          belongs_to :p
+        end
+        oz = Zong.new(:z => 10)
+        op = P.new(:zongs => [oz])
+        op.foo.should == 5
+      end
+      
     end
 
     describe "#delete" do
