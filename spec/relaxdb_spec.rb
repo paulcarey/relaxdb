@@ -117,7 +117,7 @@ describe RelaxDB do
     
     it "should load an arbitrary number of documents" do
       a1, a2 = Atom.new.save, Atom.new.save
-      ar1, ar2 = RelaxDB.load a1._id, a2._id
+      ar1, ar2 = RelaxDB.load [a1._id, a2._id]
       ar1.should == a1
       ar2.should == a2
     end
@@ -128,7 +128,7 @@ describe RelaxDB do
     
     it "should return an array with correctly placed nils when given a list containing non existant doc ids" do
       a1, a2 = Atom.new.save, Atom.new.save
-      res = RelaxDB.load nil, a1._id, nil, a2._id, nil
+      res = RelaxDB.load [nil, a1._id, nil, a2._id, nil]
       res.should == [nil, a1, nil, a2, nil]
     end
     
@@ -144,7 +144,7 @@ describe RelaxDB do
     
     it "should load multiple documents" do
       a1, a2 = Atom.new.save, Atom.new.save
-      ar1, ar2 = RelaxDB.load! a1._id, a2._id
+      ar1, ar2 = RelaxDB.load! [a1._id, a2._id]
       ar1.should == a1
       ar2.should == a2
     end
@@ -158,7 +158,7 @@ describe RelaxDB do
     it "should throw an exception if any of a list of doc ids is for a non-existant doc" do
       a = Atom.new.save
       lambda do
-        RelaxDB.load! nil, a._id
+        RelaxDB.load! [nil, a._id]
       end.should raise_error(RelaxDB::NotFound)
     end
     

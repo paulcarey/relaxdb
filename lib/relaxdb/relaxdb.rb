@@ -39,7 +39,7 @@ module RelaxDB
     end
     
     def bulk_save!(*objs)
-      pre_save_success = objs.inject(true) { |s, o| s &= o.validates? }
+      pre_save_success = objs.inject(true) { |s, o| s &= o.pre_save }
       raise ValidationFailure unless pre_save_success
       
       docs = {}
@@ -69,24 +69,24 @@ module RelaxDB
       end
     end
   
-    def load(*ids)
-      if ids.size == 1
+    def load(ids)
+      if ids.is_a? Array
+        resp = db.post("_all_docs?include_docs=true", {:keys => ids}.to_json)
+        data = JSON.parse(resp.body)
+        data["rows"].map { |row| row["doc"] ? create_object(row["doc"]) : nil }
+      else
         begin
-          resp = db.get(ids[0])
+          resp = db.get(ids)
           data = JSON.parse(resp.body)
           create_object(data)
         rescue HTTP_404
           nil
         end
-      else
-        resp = db.post("_all_docs?include_docs=true", {:keys => ids}.to_json)
-        data = JSON.parse(resp.body)
-        data["rows"].map { |row| row["doc"] ? create_object(row["doc"]) : nil }
       end
     end
     
-    def load!(*ids)
-      res = load(*ids)
+    def load!(ids)
+      res = load(ids)
       
       raise NotFound if res == nil
       raise NotFound if res.respond_to?(:include?) && res.include?(nil)
