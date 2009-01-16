@@ -65,7 +65,7 @@ module RelaxDB
   class CouchDB
         
     # Used for test instrumentation only i.e. to assert that 
-    # an expected number of GET requests have been issued
+    # an expected number of requests have been issued
     attr_accessor :get_count, :put_count 
         
     def initialize(config)

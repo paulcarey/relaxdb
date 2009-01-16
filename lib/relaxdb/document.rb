@@ -85,23 +85,21 @@ module RelaxDB
     end
     
     #
-    # The rationale for rescuing nil below is that the lambda for a derived 
+    # The rationale for rescuing the send below is that the lambda for a derived 
     # property shouldn't need to concern itself with checking the validity of
     # the underlying property. Nor, IMO, should clients be exposed to the 
     # possibility of a writer raising an exception.
-    #
-    # However, this behaviour has the potential to give rise to frustrating
-    # debugging sessions where exceptions are effectively swallowed. 
-    # For this reason, a validator should _always_ be used with either the 
-    # derived property or the source property. Doing so will ensure that
-    # exceptions are stored in the errors property.
     #
     def write_derived_props(source)
       writers = self.class.derived_prop_writers[source]
       if writers 
         writers.each do |prop, writer|
           current_val = send(prop)
-          send("#{prop}=", writer.call(current_val, self)) rescue nil
+          begin
+            send("#{prop}=", writer.call(current_val, self)) 
+          rescue => e
+            RelaxDB.logger.warn "Deriving #{prop} from #{source} raised #{e}"
+          end
         end
       end
     end
@@ -249,9 +247,9 @@ module RelaxDB
       if save(*skip_list)
         self
       elsif update_conflict?
-        raise UpdateConflict
+        raise UpdateConflict, self
       else
-        raise ValidationFailure.new(self.errors.to_json)
+        raise ValidationFailure, self.errors.to_json
       end
     end
     
@@ -298,7 +296,7 @@ module RelaxDB
       begin
         success = send("validate_#{att_name}", att_val)
       rescue => e
-        RelaxDB.logger.warn("Validating #{att_name} with #{att_val} raised #{e}")
+        RelaxDB.logger.warn "Validating #{att_name} with #{att_val} raised #{e}"
         succes = false
       end
 
@@ -307,7 +305,7 @@ module RelaxDB
           begin
             @errors[att_name] = send("#{att_name}_validation_msg", att_val)
           rescue => e
-            RelaxDB.logger.warn("Validation_msg for #{att_name} with #{att_val} raised #{e}")
+            RelaxDB.logger.warn "Validation_msg for #{att_name} with #{att_val} raised #{e}"
             @errors[att_name] = "validation_msg_exception:invalid:#{att_val}"
           end
         else

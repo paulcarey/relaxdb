@@ -40,7 +40,7 @@ module RelaxDB
     
     def bulk_save!(*objs)
       pre_save_success = objs.inject(true) { |s, o| s &= o.pre_save }
-      raise ValidationFailure unless pre_save_success
+      raise ValidationFailure, objs unless pre_save_success
       
       docs = {}
       objs.each { |o| docs[o._id] = o }
@@ -55,7 +55,7 @@ module RelaxDB
           obj.post_save
         end
       rescue HTTP_412
-        raise UpdateConflict
+        raise UpdateConflict, objs
       end
     
       objs
@@ -88,8 +88,8 @@ module RelaxDB
     def load!(ids)
       res = load(ids)
       
-      raise NotFound if res == nil
-      raise NotFound if res.respond_to?(:include?) && res.include?(nil)
+      raise NotFound, ids if res == nil
+      raise NotFound, ids if res.respond_to?(:include?) && res.include?(nil)
       
       res
     end
