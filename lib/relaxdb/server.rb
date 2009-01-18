@@ -63,10 +63,12 @@ module RelaxDB
   end
       
   class CouchDB
+
+    attr_reader :logger
         
     # Used for test instrumentation only i.e. to assert that 
     # an expected number of requests have been issued
-    attr_accessor :get_count, :put_count 
+    attr_accessor :get_count, :put_count
         
     def initialize(config)
       @get_count, @put_count = 0, 0
@@ -77,6 +79,10 @@ module RelaxDB
     def use_db(name)
       create_db_if_non_existant(name)
       @db = name
+    end
+    
+    def db_exists?(name)
+      @server.get("/#{name}") rescue false
     end
     
     def delete_db(name)
@@ -131,10 +137,10 @@ module RelaxDB
       @db
     end
     
-    def logger
-      @logger
+    def name=(name)
+      @db = name
     end
-    
+        
     private
     
     def create_db_if_non_existant(name)

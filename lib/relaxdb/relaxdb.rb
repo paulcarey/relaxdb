@@ -23,11 +23,15 @@ module RelaxDB
     
     # Creates the named database if it doesn't already exist
     def use_db(name)
-      db.use_db(name)
+      db.use_db name
+    end
+    
+    def db_exists?(name)
+      db.db_exists? name
     end
     
     def delete_db(name)
-      db.delete_db(name)
+      db.delete_db name
     end
     
     def list_dbs

@@ -488,7 +488,9 @@ describe RelaxDB::Document do
       r = Class.new(RelaxDB::Document) do
         property :thumbs_up, :validator => lambda { raise }
       end
-      r.new.save!(:thumbs_up)
+      x = r.new
+      x.validation_skip_list << :thumbs_up
+      x.save!
     end
     
   end

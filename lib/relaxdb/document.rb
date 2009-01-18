@@ -7,6 +7,9 @@ module RelaxDB
     # Used to store validation messages
     attr_accessor :errors
     
+    # Attribute symbols added to this list won't be validated on save
+    attr_accessor :validation_skip_list
+    
     # Define properties and property methods
     
     def self.property(prop, opts={})
@@ -62,13 +65,13 @@ module RelaxDB
       end          
     end
     
-    def self.create_validation_msg(prop, validation_msg)
+    def self.create_validation_msg(att, validation_msg)
       if validation_msg.is_a?(Proc)        
         validation_msg.arity == 1 ?
-          define_method("#{prop}_validation_msg") { |prop_val| validation_msg.call(prop_val) } :
-          define_method("#{prop}_validation_msg") { |prop_val| validation_msg.call(prop_val, self) } 
+          define_method("#{att}_validation_msg") { |att_val| validation_msg.call(att_val) } :
+          define_method("#{att}_validation_msg") { |att_val| validation_msg.call(att_val, self) } 
       else  
-        define_method("#{prop}_validation_msg") { validation_msg } 
+        define_method("#{att}_validation_msg") { validation_msg } 
       end
     end
     
@@ -120,6 +123,7 @@ module RelaxDB
       self._id = UuidGenerator.uuid 
       
       @errors = Errors.new
+      @validation_skip_list = []
 
       # Set default properties if this object has not known CouchDB
       unless hash["_rev"]
@@ -212,8 +216,8 @@ module RelaxDB
     end
             
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
-    def save(*skip_list)
-      if pre_save(*skip_list) && save_to_couch
+    def save
+      if pre_save && save_to_couch
         after_save
         self
       else
@@ -226,14 +230,19 @@ module RelaxDB
         resp = RelaxDB.db.put(_id, to_json)
         self._rev = JSON.parse(resp.body)["rev"]
       rescue HTTP_412
-        on_update_conflict if respond_to? :on_update_conflict
+        on_update_conflict
         @update_conflict = true
         return false
       end      
     end
     
-    def pre_save(*skip_list)
-      return false unless validates?(*skip_list)
+    def on_update_conflict
+      # override with any behaviour you want to happen when
+      # CouchDB returns DocumentConflict on an attempt to save
+    end
+    
+    def pre_save
+      return false unless validates?
       return false unless before_save            
       set_created_at if new_document?
       true 
@@ -243,8 +252,8 @@ module RelaxDB
       after_save
     end
     
-    def save!(*skip_list)
-      if save(*skip_list)
+    def save!
+      if save
         self
       elsif update_conflict?
         raise UpdateConflict, self
@@ -271,11 +280,11 @@ module RelaxDB
       @update_conflict
     end
     
-    def validates?(*skip_list)
-      props = properties - skip_list
+    def validates?
+      props = properties - validation_skip_list
       prop_vals = props.map { |prop| instance_variable_get("@#{prop}") }
       
-      rels = self.class.belongs_to_rels.keys - skip_list
+      rels = self.class.belongs_to_rels.keys - validation_skip_list
       rel_vals = rels.map { |rel| instance_variable_get("@#{rel}_id") }
       
       att_names = props + rels
@@ -440,6 +449,9 @@ module RelaxDB
       end
       
       create_validator(relationship, opts[:validator]) if opts[:validator]
+      
+      # Untested below
+      create_validation_msg(relationship, opts[:validation_msg]) if opts[:validation_msg]
     end
   
     class << self
