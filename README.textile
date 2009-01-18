@@ -1,8 +1,22 @@
 h3. What's New?
 
-* Denormalisation via derived properties. Examples in spec/derived_properties_spec.rb.
+* Potentially breaking change. Skipping validations is now done by adding attribute symbols to an object's list rather than passing them to @save@. For example @my_obj.validation_skip_list << :foo@. This offers per object granularity over validations when working with bulk_save.
+
+* Potentially breaking change. @load@ now returns an array if passed an array of size one. Previously it would have returned a single object.
+
+* Update conflict hook and property
+
+* Semantic consistency for bulk_save and bulk_save! wrt to save and save!
+
+* Multiple exception handling improvements
+
+* @save_all@ that issues a bulk_save for an object and its has_one and has_many children
+
+* assignment of @has_many@ relationships
 
 * Validations may be skipped by passing the attribute symbol(s) to @save@ or @save!@.
+
+* Denormalisation via derived properties. Examples in spec/derived_properties_spec.rb.
 
 * Semantic changes for @ has_many#<< @. The parent object is now assigned to the child object *prior* to validation. This potentially breaking change was made to allow child objects to derive properties from a parent object.
 
