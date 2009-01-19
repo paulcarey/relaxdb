@@ -27,12 +27,12 @@ module RelaxDB
     def self.has_n(target_class, relationship_to_client)
       template = <<-MAP_FUNC
       function(doc) {
-        if(doc.class == "${target_class}")
+        if(doc.class == "${target_class}" && doc.${relationship_to_client}_id)
           emit(doc.${relationship_to_client}_id, doc);
       }
       MAP_FUNC
       template.sub!("${target_class}", target_class)
-      template.sub("${relationship_to_client}", relationship_to_client)
+      template.gsub("${relationship_to_client}", relationship_to_client)
     end
   
     def self.has_many_through(target_class, peers)
