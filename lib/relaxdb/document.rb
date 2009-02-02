@@ -198,7 +198,7 @@ module RelaxDB
       begin
         resp = RelaxDB.db.put(_id, to_json)
         self._rev = JSON.parse(resp.body)["rev"]
-      rescue HTTP_412
+      rescue HTTP_409
         on_update_conflict
         @update_conflict = true
         return false

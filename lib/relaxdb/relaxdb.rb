@@ -58,7 +58,7 @@ module RelaxDB
           obj._rev = new_rev["rev"]
           obj.post_save
         end
-      rescue HTTP_412
+      rescue HTTP_409
         raise UpdateConflict, objs
       end
     
