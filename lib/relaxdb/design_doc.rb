@@ -29,7 +29,7 @@ module RelaxDB
   
     def save
       database = RelaxDB.db    
-      resp = database.put(::CGI::escape(@data["_id"]), @data.to_json)
+      resp = database.put(@data["_id"], @data.to_json)
       @data["_rev"] = JSON.parse(resp.body)["rev"]
       self
     end
@@ -37,16 +37,16 @@ module RelaxDB
     def self.get(client_class)
       begin
         database = RelaxDB.db
-        resp = database.get(::CGI::escape("_design/#{client_class}"))
+        resp = database.get("_design/#{client_class}")
         DesignDocument.new(client_class, JSON.parse(resp.body))
-      rescue => e
+      rescue HTTP_404
         DesignDocument.new(client_class, {"_id" => "_design/#{client_class}"} )
       end
     end  
     
     def destroy!
       # Implicitly prevent the object from being resaved by failing to update its revision
-      RelaxDB.db.delete("#{::CGI::escape(@data["_id"])}?rev=#{@data["_rev"]}")
+      RelaxDB.db.delete("#{@data["_id"]}?rev=#{@data["_rev"]}")
       self      
     end
   

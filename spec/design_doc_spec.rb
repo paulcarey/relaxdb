@@ -16,7 +16,7 @@ describe RelaxDB::DesignDocument do
     
     it "should create a corresponding document in CouchDB" do
       RelaxDB::DesignDocument.get("foo").save      
-      RelaxDB.load("_design%2Ffoo").should_not be_nil
+      RelaxDB.load("_design/foo").should_not be_nil
     end
     
   end
@@ -26,7 +26,7 @@ describe RelaxDB::DesignDocument do
     it "should delete the corresponding document from CouchDB" do
       dd = RelaxDB::DesignDocument.get("foo").save
       dd.destroy!
-      RelaxDB.load("_design%2Ffoo").should be_nil
+      RelaxDB.load("_design/foo").should be_nil
     end
     
   end
