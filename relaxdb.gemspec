@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
    "lib/relaxdb/server.rb",
    "lib/relaxdb/sorted_by_view.rb",
    "lib/relaxdb/uuid_generator.rb",
-   "lib/relaxdb/validators",
+   "lib/relaxdb/validators.rb",
    "lib/relaxdb/view_object.rb",
    "lib/relaxdb/view_result.rb",
    "lib/relaxdb/view_uploader.rb",
