@@ -75,6 +75,27 @@ describe RelaxDB::BelongsToProxy do
       r.photo.rating.should == r
     end    
     
+    it "may be used reciprocally" do
+      C1 = Class.new(RelaxDB::Document) do
+        belongs_to :c2
+      end
+      C2 = Class.new(RelaxDB::Document) do
+        belongs_to :c1
+      end
+      i1, i2 = C1.new, C2.new
+
+      i1.c2 = i2
+      i1.save!
+      i2.c1 = i1
+      i2.save!
+      
+      i1 = RelaxDB.load i1._id
+      i1.c2.should == i2
+      
+      i2 = RelaxDB.load i2._id
+      i2.c1.should == i1
+    end
+    
     describe "validator" do
       
       it "should be passed the _id and object" do

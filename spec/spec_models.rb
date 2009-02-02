@@ -11,8 +11,9 @@ unless @spec_models_loaded
   class Initiative < RelaxDB::Document
     property :x
     attr_reader :foo
-    def initialize(*data)
-      super *data
+    def initialize(data)
+      data[:_id] = data[:x]
+      super data
       @foo = :bar
     end
   end

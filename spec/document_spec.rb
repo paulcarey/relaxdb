@@ -46,13 +46,13 @@ describe RelaxDB::Document do
     
     it "may be overridden by inheriting classes" do
       i = Initiative.new(:x => "y").save
-      i = RelaxDB.load(i._id)
+      i = RelaxDB.load("y")
       i.x.should == "y"
       i.foo.should == :bar
     end
     
   end
-      
+        
   describe "#to_json" do
     
     it "should not output nil attributes" do
@@ -139,7 +139,8 @@ describe RelaxDB::Document do
       User.new(:items => [], :invites_received => [], :invites_sent => [])
     end
     
-    it "should issue only a single PUT request" do
+    # it should issue a single POST
+    it "should issue no PUT requests" do
       RelaxDB.db.put_count = 0
       RelaxDB.db.get_count = 0
       
@@ -185,10 +186,10 @@ describe RelaxDB::Document do
 
   describe "user defined property writer" do
     
-    it "may be used with caution" do
+    it "should not be used" do
       o = BespokeWriter.new(:val => 101).save
       o = RelaxDB.load o._id
-      o.val.should == 91
+      o.val.should == 81
     end
         
   end
@@ -333,6 +334,10 @@ describe RelaxDB::Document do
     end
     
     describe "results" do
+      
+      it "should be an empty array when no docs match" do
+        Post.all.sorted_by(:subject).should == []
+      end
 
       it "should be retrievable by exact criteria" do
         Post.new(:subject => "foo").save

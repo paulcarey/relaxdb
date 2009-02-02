@@ -74,6 +74,8 @@ module RelaxDB
     end
   
     def load(ids)
+      # RelaxDB.logger.debug(caller.inject("#{db.name}/#{ids}\n") { |a, i| a += "#{i}\n" })
+      
       if ids.is_a? Array
         resp = db.post("_all_docs?include_docs=true", {:keys => ids}.to_json)
         data = JSON.parse(resp.body)
@@ -174,7 +176,7 @@ module RelaxDB
       klass = data.delete("class")
       if klass
         k = Module.const_get(klass)
-        k.new(false, data)
+        k.new(data)
       else 
         # data is not of a known class
         ViewObject.create(data)

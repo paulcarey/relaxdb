@@ -80,6 +80,18 @@ describe RelaxDB::Document, "derived properties" do
     i.event_name.should == "bar"
   end
   
+  it "should contintue to be derived post load" do
+    e = DpEvent.new(:name => "shindig").save!
+    i = DpInvite.new(:event => e).save!
+    
+    i = RelaxDB.load i._id
+    i.event_name.should == "shindig"
+    
+    e = DpEvent.new(:name => "gidnihs").save!
+    i.event = e
+    i.event_name.should == "gidnihs"
+  end    
+  
   describe "multiple properties" do
 
     it "should be derivable from the same source" do

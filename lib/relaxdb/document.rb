@@ -116,16 +116,15 @@ module RelaxDB
     property :_id 
     property :_rev    
     
-    def initialize(set_via_writers={}, hash=nil)
-      hash, set_via_writers = set_via_writers, true if set_via_writers.is_a?(Hash)
-      
-      # The default _id will be overwritten if loaded from CouchDB
-      self._id = UuidGenerator.uuid 
+    def initialize(hash={})
+      unless hash["_id"]
+        self._id = UuidGenerator.uuid 
+      end
       
       @errors = Errors.new
       @validation_skip_list = []
 
-      # Set default properties if this object has not known CouchDB
+      # Set default properties if this object isn't being loaded from CouchDB
       unless hash["_rev"]
         properties.each do |prop|
          if methods.include?("set_default_#{prop}")
@@ -133,10 +132,10 @@ module RelaxDB
          end
         end
       end
-      
-      # Maybe use the presence of _rev in hash to determine this rather than 
-      # exposing the implementation detail to clients that choose to override?
-      set_via_writers ? set_attributes(hash) : set_raw_attributes(hash)
+            
+      @set_derived_props = hash["_rev"] ? false : true
+      set_attributes(hash)
+      @set_derived_props = true
     end
     
     def set_attributes(data)
@@ -154,37 +153,7 @@ module RelaxDB
         send("#{key}=".to_sym, val) if methods.include? "#{key}="
       end
     end  
-    
-    # Set the raw attribute values rather than setting via the associated writers
-    # The associated writers may invoke validation functions or set derived values
-    # Such behaviour is unwanted when loading from CouchDB and potentially under
-    # other circumstances
-    def set_raw_attributes(data)
-      data.each do |key, val|
-        if [/_at$/, /_on$/, /_date$/].inject(nil) { |i, r| i ||= (key =~ r) }
-            val = Time.parse(val).utc rescue val
-        end
-        
-        if methods.include? "#{key}="
-          key = key.to_sym
-          if properties.include? key
-            instance_variable_set("@#{key}".to_sym, val)
-          elsif self.class.has_one_rels.include? key
-            create_or_get_proxy(HasOneProxy, key).target = val
-          else 
-            # belongs_to
-            if key.to_s =~ /_id$/                                            
-              instance_variable_set("@#{key}".to_sym, val)                   
-            else                                                             
-              create_or_get_proxy(BelongsToProxy, key).target = val          
-            end                                                              
-          end                                                                
-        end
-                
-      end
-      
-    end
-        
+            
     def inspect
       s = "#<#{self.class}:#{self.object_id}"
       properties.each do |prop|
@@ -367,16 +336,21 @@ module RelaxDB
       @references_many_rels ||= []
       @references_many_rels << relationship
      
+      id_arr_sym = "@#{relationship}".to_sym
+     
       define_method(relationship) do
-        array_sym = "@#{relationship}".to_sym
-        instance_variable_set(array_sym, []) unless instance_variable_defined? array_sym
-
-        create_or_get_proxy(RelaxDB::ReferencesManyProxy, relationship, opts)
+        instance_variable_set(id_arr_sym, []) unless instance_variable_defined? id_arr_sym
+        create_or_get_proxy(ReferencesManyProxy, relationship, opts)
+      end
+      
+      define_method("#{relationship}_ids") do
+        instance_variable_set(id_arr_sym, []) unless instance_variable_defined? id_arr_sym
+        instance_variable_get(id_arr_sym)
       end
     
       define_method("#{relationship}=") do |val|
-        # Sharp edge - do not invoke this method
-        instance_variable_set("@#{relationship}".to_sym, val)
+        # Don't invoke this method unless you know what you're doing
+        instance_variable_set(id_arr_sym, val)
       end           
     end
    
@@ -394,7 +368,7 @@ module RelaxDB
       
       define_method("#{relationship}=") do |children|
         create_or_get_proxy(HasManyProxy, relationship, opts).children = children
-        write_derived_props(relationship)
+        write_derived_props(relationship) if @set_derived_props
         children
       end      
     end
@@ -414,7 +388,7 @@ module RelaxDB
       
       define_method("#{relationship}=") do |new_target|
         create_or_get_proxy(HasOneProxy, relationship).target = new_target
-        write_derived_props(relationship)
+        write_derived_props(relationship) if @set_derived_props
         new_target
       end
     end
@@ -433,13 +407,13 @@ module RelaxDB
       
       define_method("#{relationship}=") do |new_target|
         create_or_get_proxy(BelongsToProxy, relationship).target = new_target
-        write_derived_props(relationship)
+        write_derived_props(relationship) if @set_derived_props
       end
       
       # Allows all writers to be invoked from the hash passed to initialize 
       define_method("#{relationship}_id=") do |id|
         instance_variable_set("@#{relationship}_id".to_sym, id)
-        write_derived_props(relationship)
+        write_derived_props(relationship) if @set_derived_props
         id
       end
 

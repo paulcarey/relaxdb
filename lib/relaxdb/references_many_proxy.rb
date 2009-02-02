@@ -10,6 +10,8 @@ module RelaxDB
     
       @target_class = opts[:class]
       @relationship_as_viewed_by_target = opts[:known_as].to_s
+      
+      @peers = resolve
     end
   
     def <<(obj, reciprocal_invocation=false)
@@ -30,7 +32,6 @@ module RelaxDB
     end
   
     def clear
-      resolve
       @peers.each do |peer|
         peer.send(@relationship_as_viewed_by_target).send(:delete_from_self, @client)
       end
@@ -53,7 +54,7 @@ module RelaxDB
     end
   
     def delete_from_self(obj)
-      @peers.delete(obj) if @peers
+      @peers.delete(obj)
       peer_ids.delete(obj._id)
     end
         
@@ -66,12 +67,10 @@ module RelaxDB
     end
   
     def [](*args)
-      resolve
       @peers[*args]
     end
   
     def each(&blk)
-      resolve
       @peers.each(&blk)    
     end
       
@@ -87,7 +86,7 @@ module RelaxDB
   
     private
     
-    # Resolves the actual ids into real objects via a single GET to CouchDB. Called internally by each
+    # Resolves the actual ids into real objects via a single GET to CouchDB
     def resolve
       design_doc = @client.class
       view_name = @relationship

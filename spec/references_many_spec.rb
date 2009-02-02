@@ -27,7 +27,37 @@ describe RelaxDB::ReferencesManyProxy do
       t.photos.size.should == 1
       t.photos[0].should == p
     end
-  
+    
+    it "should issue only a single request to resolve the relationship" do
+      p, t = Photo.new, Tag.new
+      p.tags << t
+      
+      # Create the views
+      p.tags.map { |t| t._id }
+      
+      p = RelaxDB.load p._id      
+      RelaxDB.db.get_count = 0
+      p.tags.map { |t| t._id }
+      p.tags.map { |t| t._id }
+      RelaxDB.db.get_count.should == 1
+    end
+    
+    it "should not resolve the relationship when an object is instantiated" do
+      p, t = Photo.new, Tag.new
+      p.tags << t
+
+      RelaxDB.db.get_count = 0
+      p = RelaxDB.load p._id      
+      RelaxDB.db.get_count.should == 1
+    end
+    
+    it "should make the ids available as a property" do
+      p, t = Photo.new, Tag.new
+      p.tags << t
+      
+      p.tags_ids.should == [t._id]
+    end
+      
     describe "#=" do
       it "should not be invoked" do
       end
@@ -62,6 +92,17 @@ describe RelaxDB::ReferencesManyProxy do
         p.tags.size.should == 1
         t.photos.size.should == 1
       end
+      
+      it "will resolve the reciprocal relationship" do
+        # Create the views
+        p, t = Photo.new, Tag.new
+        p.tags << t
+        
+        p, t = Photo.new, Tag.new
+        RelaxDB.db.get_count = 0
+        p.tags << t
+        RelaxDB.db.get_count.should == 2
+      end      
 
     end
 
@@ -81,14 +122,13 @@ describe RelaxDB::ReferencesManyProxy do
     
     describe "owner#destroy" do
       
-      it "will not remove its membership from its peers in memory" do
-        # Documentating behaviour, not stating that this behaviour is desired
+      it "should remove its membership from its peers in memory" do
         p = Photo.new
         t = Tag.new
         p.tags << t
 
         p.destroy!
-        t.photos.size.should == 1
+        t.photos.size.should == 0
       end
 
       it "should remove its membership from its peers in CouchDB" do
@@ -103,7 +143,7 @@ describe RelaxDB::ReferencesManyProxy do
     end  
     
     # Leaving this test as a reminder of problems with all.destroy and a self referential 
-    # references_many until references_many is removed
+    # references_many
     #
     # This test more complex than it needs to be to prove the point
     # It also serves as a proof of a self referential references_many, but there are better places for that
