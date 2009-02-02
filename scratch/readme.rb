@@ -41,12 +41,12 @@ paul.ratings << Rating.new(:thumbs_up => 3, :post => post)  # returns false as r
 paul.ratings.size                                           # 0
 
 # Simple views are auto created
-Rating.all.sorted_by(:thumbs_up) { |q| q.key(2).count(1) }  # query params map directly to CouchDB
+Rating.all.sorted_by(:thumbs_up) { |q| q.key(2).limit(1) }  # query params map directly to CouchDB
 
 view_params = {}
 @user = Writer.all.sorted_by(:name) { |q| q.key("paul") }.first
 u_id = @user._id
 
 @posts = Post.paginate_by(view_params, :writer_id, :created_at) do |p|
-  p.startkey([u_id, {}]).endkey([u_id]).descending(true).count(5)
+  p.startkey([u_id, {}]).endkey([u_id]).descending(true).limit(5)
 end

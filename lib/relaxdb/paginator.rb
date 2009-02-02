@@ -69,7 +69,7 @@ module RelaxDB
       else
         query.startkey(@orig_paginate_params.startkey).descending(@orig_paginate_params.descending)
       end
-      query.reduce(false).count(1)
+      query.reduce(false).limit(1)
       RelaxDB.retrieve(query.view_path).offset
     end
     

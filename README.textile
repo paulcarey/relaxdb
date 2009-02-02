@@ -96,7 +96,7 @@ h3. Exploring models
   paul.ratings.size                                           # 0
 
   # Simple views are auto created
-  Rating.all.sorted_by(:thumbs_up) { |q| q.key(2).count(1) }  # query params map directly to CouchDB
+  Rating.all.sorted_by(:thumbs_up) { |q| q.key(2).limit(1) }  # query params map directly to CouchDB
 </code>
 </pre>
 
@@ -110,7 +110,7 @@ h3. Paginating models
     u_id = @user._id
 
     @posts = Post.paginate_by(page_params, :writer_id, :created_at) do |p|
-      p.startkey([u_id, {}]).endkey([u_id]).descending(true).count(5)
+      p.startkey([u_id, {}]).endkey([u_id]).descending(true).limit(5)
     end
     render
   end
@@ -132,7 +132,7 @@ h3. Paginating over your own views
 <code>
 
 RelaxDB.paginate_view(page_params, "Letter", "by_letter_and_number", :letter, :number) do |p|
-  p.startkey(["b"]).endkey(["b", {}]).count(2)
+  p.startkey(["b"]).endkey(["b", {}]).limit(2)
 end
 
 </code>

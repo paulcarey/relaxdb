@@ -2,7 +2,7 @@ module RelaxDB
 
   class PaginateParams
         
-    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending group reduce include_docs)
+    @@params = %w(key startkey startkey_docid endkey endkey_docid limit update descending group reduce include_docs)
   
     @@params.each do |param|
       define_method(param.to_sym) do |*val|

@@ -29,10 +29,10 @@ describe RelaxDB::Query do
       q.view_path.should == "_view//?key=%22olympus%22"
     end
     
-    it "should honour startkey, endkey and count" do
+    it "should honour startkey, endkey and limit" do
       q = RelaxDB::Query.new("", "")
-      q.startkey(["olympus"]).endkey(["vesuvius", 3600]).count(100)
-      q.view_path.should == "_view//?startkey=%5B%22olympus%22%5D&endkey=%5B%22vesuvius%22%2C3600%5D&count=100"
+      q.startkey(["olympus"]).endkey(["vesuvius", 3600]).limit(100)
+      q.view_path.should == "_view//?startkey=%5B%22olympus%22%5D&endkey=%5B%22vesuvius%22%2C3600%5D&limit=100"
     end
         
     it "should specify a null key if key was set to nil" do

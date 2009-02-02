@@ -3,7 +3,7 @@ module RelaxDB
   # A Query is used to build the query string made against a view
   # All parameter values are first JSON encoded and then URL encoded
   # Nil values are set to the empty string
-  # All parameter calls return self so calls may be chained => q.startkey("foo").endkey("bar").count(2)
+  # All parameter calls return self so calls may be chained => q.startkey("foo").endkey("bar").limit(2)
   
   #
   # The query object is currently inconsistent with the RelaxDB object idiom. Consider
@@ -17,7 +17,7 @@ module RelaxDB
   class Query
     
     # keys is not included in the standard param as it is significantly different from the others
-    @@params = %w(key startkey startkey_docid endkey endkey_docid count update descending skip group group_level reduce include_docs)
+    @@params = %w(key startkey startkey_docid endkey endkey_docid limit update descending skip group group_level reduce include_docs)
     
     @@params.each do |param|
       define_method(param.to_sym) do |*val|
