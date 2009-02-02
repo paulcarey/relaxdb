@@ -1,5 +1,7 @@
 h3. What's New?
 
+* 02/02/09 - mostly fixes and tweaks for CouchDB trunk (tested against revision 0.9.0a740000). This includes a couple of breaking API changes - count became limit, 409 rather than 412 is returned on document update conflict, and '/' in design docs is treated differently.
+
 * Potentially breaking change. Skipping validations is now done by adding attribute symbols to an object's list rather than passing them to @save@. For example @my_obj.validation_skip_list << :foo@. This offers per object granularity over validations when working with bulk_save.
 
 * Potentially breaking change. @load@ now returns an array if passed an array of size one. Previously it would have returned a single object.
