@@ -482,7 +482,10 @@ module RelaxDB
     def before_save
       self.class.before_save_callbacks.each do |callback|
         resp = callback.is_a?(Proc) ? callback.call(self) : send(callback)
-        return false unless resp
+        if resp == false
+          errors[:before_save] = :failed
+          return false
+        end
       end
     end
     
