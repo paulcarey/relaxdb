@@ -211,9 +211,9 @@ module RelaxDB
     end
     
     def pre_save
+      set_created_at if new_document?
       return false unless validates?
       return false unless before_save            
-      set_created_at if new_document?
       true 
     end  
     
@@ -269,6 +269,7 @@ module RelaxDB
             
       total_success
     end
+    alias_method :validate, :validates?
     
     def validate_att(att_name, att_val)
       begin
@@ -286,7 +287,9 @@ module RelaxDB
             RelaxDB.logger.warn "Validation_msg for #{att_name} with #{att_val} raised #{e}"
             @errors[att_name] = "validation_msg_exception:invalid:#{att_val}"
           end
-        else
+        elsif @errors[att_name].nil?
+          # The above prevents overwriting when validators set their own
+          # validation messages
           @errors[att_name] = "invalid:#{att_val}"
         end
       end

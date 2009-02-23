@@ -94,6 +94,10 @@ module RelaxDB
     def inspect
       @children.inspect
     end
+    
+    # Play nice with Merb partials - [ obj ].flatten invokes
+    # obj.to_ary if it responds to to_ary
+    alias_method :to_ary, :to_a
   
   end
 

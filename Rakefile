@@ -50,3 +50,9 @@ Spec::Rake::SpecTask.new('spec:html') do |t|
   t.spec_files = FileList['spec/**/*.rb']
   t.spec_opts = ["--format", "html:docs/spec_results.html"]
 end
+
+desc "Supports atomic bulk save"
+task :atomic_bulk_save_support do |t|
+  require 'lib/more/atomic_bulk_save_support.rb'
+end
+

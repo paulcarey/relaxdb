@@ -72,6 +72,10 @@ module RelaxDB
         false
       end
     end
+    
+    def reload(obj)
+      load(obj._id)
+    end
   
     def load(ids)
       # RelaxDB.logger.debug(caller.inject("#{db.name}/#{ids}\n") { |a, i| a += "#{i}\n" })

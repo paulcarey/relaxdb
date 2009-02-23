@@ -25,6 +25,7 @@ module RelaxDB
         obj.send(@relationship_as_viewed_by_target).send(:<<, @client, true) 
     
         # Bulk save to ensure relationship is persisted on both sides
+        # TODO: Should this be bulk_save! ? Probably.
         RelaxDB.bulk_save(@client, obj)
       end
     
