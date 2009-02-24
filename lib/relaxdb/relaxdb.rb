@@ -11,6 +11,15 @@ module RelaxDB
 
     def configure(config)
       @@db = CouchDB.new(config)
+      
+      raise "A design_doc must be provided" unless config[:design_doc]
+      @dd = config[:design_doc]
+    end
+    
+    # This is a temporary method that helps the transition as RelaxDB moves to a single 
+    # design doc per application.
+    def dd
+      @dd
     end
   
     def db

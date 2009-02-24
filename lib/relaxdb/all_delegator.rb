@@ -10,22 +10,22 @@ module RelaxDB
   #
   class AllDelegator < Delegator
     
-    def initialize(class_name)
+    def initialize(design_doc)
       super([])
-      @class_name = class_name
+      @design_doc = design_doc
     end
     
     def __getobj__
-      view_path = "_view/#{@class_name}/all?reduce=false"
-      map, reduce = ViewCreator.all(@class_name)
+      view_path = "_view/#{@design_doc}/all?reduce=false"
+      map, reduce = ViewCreator.all(@design_doc)
       
-      RelaxDB.retrieve(view_path, @class_name, "all", map, reduce)
+      RelaxDB.retrieve(view_path, @design_doc, "all", map, reduce)
     end
 
     def sorted_by(*atts)
-      view = SortedByView.new(@class_name, *atts)
+      view = SortedByView.new(@design_doc, *atts)
 
-      query = Query.new(@class_name, view.view_name)
+      query = Query.new(@design_doc, view.view_name)
       yield query if block_given?
       
       view.query(query)
@@ -48,13 +48,13 @@ module RelaxDB
     # places (sorted_by_view, relaxdb and here)
     # Consolidation needed
     def size
-      view_path = "_view/#{@class_name}/all"
-      map, reduce = ViewCreator.all(@class_name)
+      view_path = "_view/#{@design_doc}/all"
+      map, reduce = ViewCreator.all(@design_doc)
       
       begin
         resp = RelaxDB.db.get(view_path)
       rescue => e
-        DesignDocument.get(@class_name).add_map_view("all", map).
+        DesignDocument.get(@design_doc).add_map_view("all", map).
           add_reduce_view("all", reduce).save
         resp = RelaxDB.db.get(view_path)
       end
