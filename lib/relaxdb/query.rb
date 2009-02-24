@@ -32,8 +32,7 @@ module RelaxDB
       end
     end
         
-    def initialize(design_doc, view_name)
-      @design_doc = design_doc
+    def initialize(view_name)
       @view_name = view_name
     end
     
@@ -47,7 +46,7 @@ module RelaxDB
     end
     
     def view_path
-      uri = "_view/#{@design_doc}/#{@view_name}"
+      uri = "_view/#{RelaxDB.dd}/#{@view_name}"
       
       query = ""
       @@params.each do |param|

@@ -130,8 +130,8 @@ module RelaxDB
       
     # Requests the given view from CouchDB and returns a hash.
     # This method should typically be wrapped in one of merge, instantiate, or reduce_result.
-    def view(design_doc, view_name)
-      q = Query.new(design_doc, view_name)
+    def view(view_name)
+      q = Query.new(view_name)
       yield q if block_given?
       
       resp = q.keys ? db.post(q.view_path, q.keys) : db.get(q.view_path)
@@ -169,7 +169,7 @@ module RelaxDB
       
       paginator = Paginator.new(paginate_params, page_params)
                   
-      query = Query.new(design_doc, view_name)
+      query = Query.new(view_name)
       query.merge(paginate_params)
       
       docs = ViewResult.new(JSON.parse(db.get(query.view_path).body))

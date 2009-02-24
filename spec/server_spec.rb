@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB do
 
   before(:all) do
-    RelaxDB.configure(:host => "localhost", :port => 5984)  
+    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
     @server = RelaxDB::Server.new("localhost", 5984)
   end
 

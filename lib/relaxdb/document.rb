@@ -515,7 +515,7 @@ module RelaxDB
                   
       design_doc_name = self.name
       view = SortedByView.new(design_doc_name, *view_keys)
-      query = Query.new(design_doc_name, view.view_name)
+      query = Query.new(view.view_name)
       query.merge(paginate_params)
       
       docs = view.query(query)

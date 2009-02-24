@@ -14,7 +14,7 @@ module RelaxDB
     end
 
     def total_doc_count(design_doc, view_name)
-      result = RelaxDB.view(design_doc, view_name) do |q|
+      result = RelaxDB.view(view_name) do |q|
         q.reduce(true)
         q.startkey(@orig_paginate_params.startkey).endkey(@orig_paginate_params.endkey).descending(@orig_paginate_params.descending)  
       end
@@ -63,7 +63,7 @@ module RelaxDB
     end
     
     def orig_offset(design_doc, view_name)
-      query = Query.new(design_doc, view_name)
+      query = Query.new(view_name)
       if @paginate_params.order_inverted?
         query.startkey(@orig_paginate_params.endkey).descending(!@orig_paginate_params.descending)
       else

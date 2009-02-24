@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB do
 
   before(:all) do
-    RelaxDB.configure(:host => "localhost", :port => 5984)  
+    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
   end
 
   before(:each) do
@@ -173,16 +173,16 @@ describe RelaxDB do
     >
     
     it "should request a view and return a hash" do
-      RelaxDB::DesignDocument.get("viewtest").add_view("simple", "map", map_func).save
-      data = RelaxDB.view("viewtest", "simple")
+      RelaxDB::DesignDocument.get(RelaxDB.dd).add_view("simple", "map", map_func).save
+      data = RelaxDB.view("simple")
       data.should be_instance_of(Hash)
     end
 
     it "may accept a block" do
-      RelaxDB::DesignDocument.get("viewtest").add_view("simple", "map", map_func).save
+      RelaxDB::DesignDocument.get(RelaxDB.dd).add_view("simple", "map", map_func).save
       RelaxDB.db.put("x", {}.to_json)      
       RelaxDB.db.put("y", {}.to_json)      
-      data = RelaxDB.view("viewtest", "simple") { |q| q.key("x") }
+      data = RelaxDB.view("simple") { |q| q.key("x") }
       data["rows"].size.should == 1
     end
     
@@ -190,7 +190,7 @@ describe RelaxDB do
       5.times { |i| Primitives.new(:num => i).save }
       # Create the view
       Primitives.all.sorted_by(:num) 
-      resp = RelaxDB.view("Primitives", "all_sorted_by_num") do |q| 
+      resp = RelaxDB.view("Primitives_by_num") do |q| 
         q.keys([0, 4])
         q.reduce(false).group(true) # group invocation should hopefully be temporary
       end

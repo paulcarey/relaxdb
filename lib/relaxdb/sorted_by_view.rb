@@ -35,7 +35,7 @@ module RelaxDB
     end
     
     def view_name
-      "all_sorted_by_" << @atts.join("_and_")
+      "#{@class_name}_by_" << @atts.join("_and_")
     end
         
     def query(query)
@@ -51,7 +51,7 @@ module RelaxDB
       begin
         resp = RelaxDB.db.send(method, query.view_path, query.keys)
       rescue => e
-        design_doc = DesignDocument.get(@class_name) 
+        design_doc = DesignDocument.get(RelaxDB.dd) 
         design_doc.add_map_view(view_name, map_function).add_reduce_view(view_name, reduce_function).save
         resp = RelaxDB.db.send(method, query.view_path, query.keys)        
       end

@@ -89,8 +89,8 @@ module RelaxDB
     
     # Resolves the actual ids into real objects via a single GET to CouchDB
     def resolve
-      design_doc = @client.class
-      view_name = @relationship
+      design_doc = RelaxDB.dd
+      view_name = "#{@client.class}_#{@relationship}"
       view_path = "_view/#{design_doc}/#{view_name}?key=\"#{@client._id}\""
       map_function = ViewCreator.has_many_through(@target_class, @relationship_as_viewed_by_target)
       @peers = RelaxDB.retrieve(view_path, design_doc, view_name, map_function)

@@ -4,8 +4,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe "RelaxDB Pagination" do
     
   before(:all) do
-    RelaxDB.configure(:host => "localhost", :port => 5984)  
-    # RelaxDB.configure(:host => "localhost", :port => 5984, :logger => Logger.new(STDOUT))  
+    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
   end
 
   before(:each) do
@@ -325,7 +324,7 @@ describe "RelaxDB Pagination" do
       FUNC
       
       view_name = "by_letter_and_number"
-      RelaxDB::DesignDocument.get("Letter").add_map_view(view_name, map).add_reduce_view(view_name, reduce).save
+      RelaxDB::DesignDocument.get(RelaxDB.dd).add_map_view(view_name, map).add_reduce_view(view_name, reduce).save
       
       query = lambda do |page_params|
         RelaxDB.paginate_view(page_params, "Letter", "by_letter_and_number", :letter, :number) do |p|

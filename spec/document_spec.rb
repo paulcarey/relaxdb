@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB::Document do
   
   before(:all) do
-    RelaxDB.configure(:host => "localhost", :port => 5984)  
+    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
   end
 
   before(:each) do
@@ -328,7 +328,7 @@ describe RelaxDB::Document do
       RelaxDB.bulk_save(*docs)
       # Create the view
       Primitives.all.sorted_by(:num)
-      res = RelaxDB.view("Primitives", "all_sorted_by_num") { |q| q.reduce(true) }
+      res = RelaxDB.view("Primitives_by_num") { |q| q.reduce(true) }
       count = RelaxDB.reduce_result(res)
       count.should == 100
     end

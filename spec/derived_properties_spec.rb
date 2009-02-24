@@ -13,7 +13,7 @@ end
 describe RelaxDB::Document, "derived properties" do
   
   before(:all) do
-    RelaxDB.configure(:host => "localhost", :port => 5984)  
+    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"  
   end
 
   before(:each) do

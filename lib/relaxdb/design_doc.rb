@@ -2,8 +2,8 @@ module RelaxDB
 
   class DesignDocument
   
-    def initialize(client_class, data)
-      @client_class = client_class
+    def initialize(design_doc_name, data)
+      @design_doc_name = design_doc_name
       @data = data
     end
       
@@ -34,13 +34,13 @@ module RelaxDB
       self
     end
   
-    def self.get(client_class)
+    def self.get(design_doc_name)
       begin
         database = RelaxDB.db
-        resp = database.get("_design/#{client_class}")
-        DesignDocument.new(client_class, JSON.parse(resp.body))
+        resp = database.get("_design/#{design_doc_name}")
+        DesignDocument.new(design_doc_name, JSON.parse(resp.body))
       rescue HTTP_404
-        DesignDocument.new(client_class, {"_id" => "_design/#{client_class}"} )
+        DesignDocument.new(design_doc_name, {"_id" => "_design/#{design_doc_name}"} )
       end
     end  
     
