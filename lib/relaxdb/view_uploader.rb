@@ -6,16 +6,16 @@ module RelaxDB
       
       # Methods must start and finish on different lines
       # The function declaration must start at the beginning of a line
-      # As '-' is used as a delimiter, neither design doc nor view name may contain '-'
+      # As '-' is used as a delimiter, the view name may not contain '-'
       # Exepcted function declaration form is 
-      #   function DesignDoc-funcname-functype(doc) {
+      #   function funcname-functype(doc) {
       # For example 
-      #   function Users-followers-map(doc) {
+      #   function Users_followers-map(doc) {
       #
       def upload(filename)
         lines = File.readlines(filename)
-        extract(lines) do |dd, vn, t, f|
-          RelaxDB::DesignDocument.get(dd).add_view(vn, t, f).save
+        extract(lines) do |vn, t, f|
+          RelaxDB::DesignDocument.get(RelaxDB.dd).add_view(vn, t, f).save
         end
       end
       
@@ -32,11 +32,11 @@ module RelaxDB
 
         0.upto(m.size-2) do |i|
           declr = lines[m[i]]
-          declr =~ /(\w)+-(\w)+-(\w)+/
+          declr =~ /(\w)+-(\w)+/
           declr.sub!($&, '')
-          design_doc, view_name, type = $&.split('-')
+          view_name, type = $&.split('-')
           func = lines[m[i]...m[i+1]].join
-          yield design_doc, view_name, type, func
+          yield view_name, type, func
         end
       end
 
