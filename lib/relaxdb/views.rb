@@ -31,29 +31,29 @@ module RelaxDB
     end
     
   
-    def self.has_n(target_class, relationship_to_client)
-      template = <<-MAP_FUNC
-      function(doc) {
-        if(doc.class == "${target_class}" && doc.${relationship_to_client}_id)
-          emit(doc.${relationship_to_client}_id, doc);
-      }
-      MAP_FUNC
-      template.sub!("${target_class}", target_class)
-      template.gsub("${relationship_to_client}", relationship_to_client)
+    def self.has_n(client_class, relationship, target_class, relationship_to_client)
+      map = <<-QUERY
+        function(doc) {
+          if(doc.class == "#{target_class}" && doc.#{relationship_to_client}_id)
+            emit(doc.#{relationship_to_client}_id, doc);
+        }
+      QUERY
+      
+      view_name = "#{client_class}_#{relationship}"
+      View.new view_name, map
     end
   
     def self.has_many_through(target_class, peers)
-      template = <<-MAP_FUNC
+      <<-QUERY
         function(doc) {
-          if(doc.class == "${target_class}" && doc.${peers}) {
+          if(doc.class == "#{target_class}" && doc.#{peers}) {
             var i;
-            for(i = 0; i < doc.${peers}.length; i++) {
-              emit(doc.${peers}[i], doc);
+            for(i = 0; i < doc.#{peers}.length; i++) {
+              emit(doc.#{peers}[i], doc);
             }
           }
         }
-      MAP_FUNC
-      template.sub!("${target_class}", target_class).gsub!("${peers}", peers)
+      QUERY
     end
     
     def self.sum_reduce_func
@@ -74,7 +74,7 @@ module RelaxDB
     
     attr_reader :view_name
         
-    def initialize view_name, map_func, reduce_func
+    def initialize view_name, map_func, reduce_func = nil
       @view_name = view_name
       @map_func = map_func
       @reduce_func = reduce_func
@@ -83,7 +83,7 @@ module RelaxDB
     def save
       dd = DesignDocument.get(RelaxDB.dd) 
       dd.add_map_view(@view_name, @map_func)
-      dd.add_reduce_view(@view_name, @reduce_func)
+      dd.add_reduce_view(@view_name, @reduce_func) if @reduce_func
       dd.save
     end
     

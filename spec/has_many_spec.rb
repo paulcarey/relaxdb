@@ -4,12 +4,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB::HasManyProxy do
   
   before(:all) do
-    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
-  end
-
-  before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"
+    setup_test_db
   end
 
   describe "has_many" do
@@ -96,16 +91,16 @@ describe RelaxDB::HasManyProxy do
       end
       
       it "should invoke the derived properties writer" do
-        P = Class.new(RelaxDB::Document) do
+        class HmsdParent < RelaxDB::Document
           property :foo, :derived => [:zongs, lambda {|f, o| o.zongs.first.z / 2 }]
-          has_many :zongs, :class => "Zong"
+          has_many :zongs, :class => "HmsdChild"
         end
-        Zong = Class.new(RelaxDB::Document) do
+        class HmsdChild < RelaxDB::Document
           property :z
-          belongs_to :p
+          belongs_to :hmsd_parent
         end
-        oz = Zong.new(:z => 10)
-        op = P.new(:zongs => [oz])
+        oz = HmsdChild.new(:z => 10)
+        op = HmsdParent.new(:zongs => [oz])
         op.foo.should == 5
       end
       

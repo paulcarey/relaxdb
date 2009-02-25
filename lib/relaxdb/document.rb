@@ -274,8 +274,7 @@ module RelaxDB
             @errors[att_name] = "validation_msg_exception:invalid:#{att_val}"
           end
         elsif @errors[att_name].nil?
-          # The above prevents overwriting when validators set their own
-          # validation messages
+          # Only set a validation message if a validator hasn't already set one
           @errors[att_name] = "invalid:#{att_val}"
         end
       end
@@ -351,6 +350,12 @@ module RelaxDB
       @has_many_rels ||= []
       @has_many_rels << relationship
       
+      if RelaxDB.create_views?
+        target_class = opts[:class]
+        relationship_as_viewed_by_target = (opts[:known_as] || self.name.snake_case).to_s
+        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).save
+      end      
+      
       define_method(relationship) do
         create_or_get_proxy(HasManyProxy, relationship, opts)
       end
@@ -370,6 +375,12 @@ module RelaxDB
     def self.has_one(relationship)
       @has_one_rels ||= []
       @has_one_rels << relationship
+      
+      if RelaxDB.create_views?
+        target_class = relationship.to_s.camel_case      
+        relationship_as_viewed_by_target = self.name.snake_case      
+        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).save
+      end
       
       define_method(relationship) do      
         create_or_get_proxy(HasOneProxy, relationship).target
