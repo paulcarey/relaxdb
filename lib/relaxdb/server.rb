@@ -106,8 +106,7 @@ module RelaxDB
       @server.delete("/#{@db}/#{path}")
     end
     
-    # *ignored allows methods to invoke get or post indifferently via send
-    def get(path=nil, *ignored)
+    def get(path=nil)
       @get_count += 1
       @logger.info("GET /#{@db}/#{unesc(path)}")
       @server.get("/#{@db}/#{path}")

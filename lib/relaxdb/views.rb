@@ -9,19 +9,27 @@ module RelaxDB
           emit(doc.class, doc);
       }
       QUERY
-      
-      reduce = <<-QUERY
-      function(keys, values, rereduce) {
-        if (rereduce) {
-          return sum(values);
-        } else {
-          return values.length;
+            
+      View.new "all_by_relaxdb_class", map, sum_reduce_func      
+    end
+    
+    def self.by_att_list(class_name, *atts)
+      key = atts.map { |a| "doc.#{a}" }.join(", ")
+      key = atts.size > 1 ? key.sub(/^/, "[").sub(/$/, "]") : key
+      prop_check = atts.map { |a| "doc.#{a} !== undefined" }.join(" && ")
+    
+      map = <<-QUERY
+      function(doc) {
+        if(doc.class == "#{class_name}" && #{prop_check}) {
+          emit(#{key}, doc);
         }
       }
       QUERY
       
-      View.new "all_by_relaxdb_class", map, reduce      
+      view_name = "#{class_name}_by_" << atts.join("_and_")
+      View.new view_name, map, sum_reduce_func
     end
+    
   
     def self.has_n(target_class, relationship_to_client)
       template = <<-MAP_FUNC
@@ -48,9 +56,23 @@ module RelaxDB
       template.sub!("${target_class}", target_class).gsub!("${peers}", peers)
     end
     
+    def self.sum_reduce_func
+      <<-QUERY
+      function(keys, values, rereduce) {
+        if (rereduce) {
+          return sum(values);
+        } else {
+          return values.length;
+        }
+      }
+      QUERY
+    end    
+    
   end
   
   class View
+    
+    attr_reader :view_name
         
     def initialize view_name, map_func, reduce_func
       @view_name = view_name

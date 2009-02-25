@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
    "lib/relaxdb/references_many_proxy.rb",
    "lib/relaxdb/relaxdb.rb",
    "lib/relaxdb/server.rb",
-   "lib/relaxdb/sorted_by_view.rb",
    "lib/relaxdb/uuid_generator.rb",
    "lib/relaxdb/validators.rb",
    "lib/relaxdb/view_object.rb",

@@ -500,8 +500,7 @@ module RelaxDB
       opts = atts.last.is_a?(Hash) ? atts.pop : {}
       
       if RelaxDB.create_views?
-        view = SortedByView.new(self.name, *atts)
-        view.save
+        ViewCreator.by_att_list(self.name, *atts).save
       end
       
       by_name = "by_#{atts.join "_and_"}"
