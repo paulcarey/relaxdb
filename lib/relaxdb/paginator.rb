@@ -59,14 +59,14 @@ module RelaxDB
     end
     
     def orig_offset(view_name)
-      query = Query.new(view_name)
       if @paginate_params.order_inverted?
-        query.startkey(@orig_paginate_params.endkey).descending(!@orig_paginate_params.descending)
+        params = {:startkey => @orig_paginate_params.endkey, :descending => !@orig_paginate_params.descending}
       else
-        query.startkey(@orig_paginate_params.startkey).descending(@orig_paginate_params.descending)
+        params = {:startkey => @orig_paginate_params.startkey, :descending => @orig_paginate_params.descending}
       end
-      query.reduce(false).limit(1)
-      RelaxDB.retrieve(query.view_path).offset
+      params[:limit] = 1
+            
+      RelaxDB.view(view_name, params).offset
     end
     
   end

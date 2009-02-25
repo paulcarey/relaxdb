@@ -123,22 +123,7 @@ module RelaxDB
       
       res
     end
-    
-    # Used internally by RelaxDB
-    def retrieve(view_path, design_doc=nil, view_name=nil, map_func=nil, reduce_func=nil)
-      begin
-        resp = db.get(view_path)
-      rescue => e
-        dd = DesignDocument.get(design_doc).add_map_view(view_name, map_func)
-        dd.add_reduce_view(view_name, reduce_func) if reduce_func
-        dd.save
-        resp = db.get(view_path)
-      end
-      
-      data = JSON.parse(resp.body)
-      ViewResult.new(data)
-    end
-      
+          
     # Requests the given view from CouchDB and returns a hash.
     # This method should typically be wrapped in one of merge, instantiate, or reduce_result.
     def view(view_name, params = {})
@@ -149,7 +134,7 @@ module RelaxDB
       
       if q.raw then hash
       elsif q.reduce then reduce_result hash
-      else create_from_hash hash
+      else ViewResult.new hash
       end
       
     end
