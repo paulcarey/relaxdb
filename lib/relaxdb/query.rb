@@ -3,17 +3,7 @@ module RelaxDB
   # A Query is used to build the query string made against a view
   # All parameter values are first JSON encoded and then URL encoded
   # Nil values are set to the empty string
-  # All parameter calls return self so calls may be chained => q.startkey("foo").endkey("bar").limit(2)
   
-  #
-  # The query object is currently inconsistent with the RelaxDB object idiom. Consider
-  #   paul = User.new(:name => "paul").save; Event.new(:host=>paul).save
-  # but an event query requires
-  #   Event.all.sorted_by(:host_id) { |q| q.key(paul._id) } 
-  # rather than
-  #   Event.all.sorted_by(:host) { |q| q.key(paul) }  
-  # I feel that both forms should be supported
-  #
   class Query
     
     # If set to true RelaxDB.view will return unprocessed data

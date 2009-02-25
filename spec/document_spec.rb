@@ -1,5 +1,4 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
-require File.dirname(__FILE__) + '/spec_models.rb'
 
 describe RelaxDB::Document do
   
@@ -10,6 +9,9 @@ describe RelaxDB::Document do
   before(:each) do
     RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
     RelaxDB.use_db "relaxdb_spec_db"
+    
+    load File.dirname(__FILE__) + '/spec_models.rb'
+    
   end
       
   describe ".new" do 
@@ -295,12 +297,12 @@ describe RelaxDB::Document do
     
   end
   
-  describe ".all.sorted_by" do
+  describe "by_" do
   
     it "should sort ascending by default" do
       Post.new(:content => "b").save
       Post.new(:content => "a").save
-      posts = Post.all.sorted_by(:content)
+      posts = Post.by_content
       posts[0].content.should == "a"
       posts[1].content.should == "b"
     end
@@ -308,7 +310,7 @@ describe RelaxDB::Document do
     it "should sort desc when specified" do
       Post.new(:content => "a").save
       Post.new(:content => "b").save
-      posts = Post.all.sorted_by(:content) { |q| q.descending(true) }
+      posts = Post.by_content :descending => true
       posts[0].content.should == "b"
       posts[1].content.should == "a"
     end
@@ -317,7 +319,7 @@ describe RelaxDB::Document do
       t = Time.new
       Post.new(:viewed_at => t+1000, :content => "late").save
       Post.new(:viewed_at => t, :content => "early").save
-      posts = Post.all.sorted_by(:viewed_at)
+      posts = Post.by_viewed_at
       posts[0].content.should == "early"
       posts[1].content.should == "late"
     end
@@ -327,7 +329,7 @@ describe RelaxDB::Document do
       100.times { |i| docs << Primitives.new(:num => i) }
       RelaxDB.bulk_save(*docs)
       # Create the view
-      Primitives.all.sorted_by(:num)
+      Primitives.by_num
       count = RelaxDB.view "Primitives_by_num", :reduce => true
       count.should == 100
     end
@@ -335,39 +337,39 @@ describe RelaxDB::Document do
     describe "results" do
       
       it "should be an empty array when no docs match" do
-        Post.all.sorted_by(:subject).should == []
+        Post.by_subject.should == []
       end
 
       it "should be retrievable by exact criteria" do
         Post.new(:subject => "foo").save
         Post.new(:subject => "foo").save
         Post.new(:subject => "bar").save
-        Post.all.sorted_by(:subject) { |q| q.key("foo") }.size.should == 2
+        Post.by_subject(:key => "foo").size.should == 2
       end
 
       it "should be retrievable by relative criteria" do
         Rating.new(:stars => 1).save
         Rating.new(:stars => 5).save
-        Rating.all.sorted_by(:stars) { |q| q.endkey(3) }.size.should == 1
+        Rating.by_stars(:endkey => 3).size.should == 1
       end
 
       it "should be retrievable by combined criteria" do
         User.new(:name => "paul", :age => 28).save
         User.new(:name => "paul", :age => 72).save
         User.new(:name => "atlas", :age => 99).save
-        User.all.sorted_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+        User.by_name_and_age(:startkey => ["paul",0 ], :endkey => ["paul", 50]).size.should == 1
       end
 
       it "should be retrievable by combined criteria where not all docs contain all attributes" do
         User.new(:name => "paul", :age => 28).save
         User.new(:name => "paul", :age => 72).save
         User.new(:name => "atlas").save
-        User.all.sorted_by(:name, :age) { |q| q.startkey(["paul",0 ]).endkey(["paul", 50]) }.size.should == 1
+        User.by_name_and_age(:startkey => ["paul",0 ], :endkey => ["paul", 50]).size.should == 1
       end
       
       it "should be retrievable by a multi key post" do
         5.times { |i| Primitives.new(:num => i).save }
-        ps = Primitives.all.sorted_by(:num) { |q| q.keys([0, 4]) }
+        ps = Primitives.by_num :keys => [0, 4]
         ps.map { |p| p.num }.should == [0, 4]
       end
 

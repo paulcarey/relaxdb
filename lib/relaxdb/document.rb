@@ -420,7 +420,6 @@ module RelaxDB
         id
       end
 
-      # Allows belongs_to relationships to be used by the paginator
       define_method("#{relationship}_id") do
         instance_variable_get("@#{relationship}_id")
       end

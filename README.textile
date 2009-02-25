@@ -31,7 +31,7 @@ h3. What's New?
 * Pagination! CouchDB offers great support for retrieving a subset of data, but the housekeeping is tricky. RelaxDB takes care of it.
 ** Note that if you invoke paginate_by on an already created view, the necessary reduce function won't be automatically created. Take a look at SortedByView and create the reduce func by hand.
 * Support for multi key post
-** For example, @ Numbers.all.sorted_by(:val) { |q| q.keys([1,2,3,5]) } @
+** For example, @ Numbers.by_val :keys => [1,2,3,5]@
 * Works with CouchDB 0.9 trunk as of 2009/01/02. Note that pagination won't work correctly on trunk until issue "COUCHDB-135":http://issues.apache.org/jira/browse/COUCHDB-135 is fixed.
 
 *Note*: Current versions require CouchDB 0.9 trunk. If you're working with CouchDB 0.8 or 0.8.1, please build from commit @ a8a2d496462 @.
@@ -98,7 +98,7 @@ h3. Exploring models
   paul.ratings.size                                           # 0
 
   # Simple views are auto created
-  Rating.all.sorted_by(:thumbs_up) { |q| q.key(2).limit(1) }  # query params map directly to CouchDB
+  Rating.by_thumbs_up :key => 2, :limit => 1 # query params map directly to CouchDB
 </code>
 </pre>
 

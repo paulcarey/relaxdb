@@ -3,7 +3,7 @@
 # The following clause ensures the tests pass, but perhaps Document should raise a warning 
 # if it's loaded more than once...
 #
-unless @spec_models_loaded
+# unless @spec_models_loaded
 
   class Atom < RelaxDB::Document
   end
@@ -26,6 +26,8 @@ unless @spec_models_loaded
     property :false_bool
     property :created_at
     property :empty
+    
+    view_by :num
   
   end
 
@@ -64,6 +66,8 @@ unless @spec_models_loaded
   
     has_many :invites_received, :class => "Invite", :known_as => :recipient
     has_many :invites_sent, :class => "Invite", :known_as => :sender
+    
+    view_by :name, :age
   
   end
 
@@ -73,6 +77,10 @@ unless @spec_models_loaded
     property :content
     property :created_at
     property :viewed_at
+    
+    view_by :content
+    view_by :subject
+    view_by :viewed_at
   
   end
 
@@ -80,6 +88,8 @@ unless @spec_models_loaded
 
     property :stars, :default => 5
     belongs_to :photo
+    
+    view_by :stars
 
   end
 
@@ -141,4 +151,4 @@ unless @spec_models_loaded
 
   @spec_models_loaded = true
 
-end
+# end
