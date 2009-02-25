@@ -508,10 +508,10 @@ module RelaxDB
         
     #
     # Creates the corresponding view and stores it in CouchDB
-    # Adds by_ and paginate_by methods to the class
+    # Adds by_ and paginate_by_ methods to the class
     #
     def self.view_by *atts
-      opts = atts.pop if atts.last.is_a?(Hash)
+      opts = atts.last.is_a?(Hash) ? atts.pop : {}
       
       if RelaxDB.create_views?
         view = SortedByView.new(self.name, *atts)
@@ -522,10 +522,8 @@ module RelaxDB
       view_name = "#{self.name}_#{by_name}"
       meta_class.instance_eval do
         define_method by_name do
-          # RelaxDB.view view_name
-          res = RelaxDB.view view_name do |q| 
-            q.reduce(false)
-          end
+          params = {:reduce => false}.merge opts
+          res = RelaxDB.view view_name, params
           RelaxDB.instantiate res
         end
       end
@@ -533,7 +531,8 @@ module RelaxDB
       paginate_by_name = "paginate_by_#{atts.join "_and_"}"
       meta_class.instance_eval do
         define_method paginate_by_name do |params|
-          params = {:attributes => atts}.merge params
+          params[:attributes] = atts
+          params = opts.merge params
           RelaxDB.paginate_view view_name, params
         end    
       end
