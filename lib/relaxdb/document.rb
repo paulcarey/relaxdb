@@ -513,8 +513,10 @@ module RelaxDB
     def self.view_by *atts
       opts = atts.pop if atts.last.is_a?(Hash)
       
-      view = SortedByView.new(self.name, *atts)
-      view.save
+      if RelaxDB.create_views?
+        view = SortedByView.new(self.name, *atts)
+        view.save
+      end
       
       by_name = "by_#{atts.join "_and_"}"
       view_name = "#{self.name}_#{by_name}"

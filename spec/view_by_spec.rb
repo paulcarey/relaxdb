@@ -6,32 +6,27 @@ describe "RelaxDB Pagination" do
   before(:all) do
     RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"    
   end
-
-  before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"
-    
-    class ViewBySpec < RelaxDB::Document
-      property :foo
-      property :bar
-      view_by :foo
-      view_by :foo, :bar
-    end
-    
-  end
     
   describe "view_by" do
     
-    it "should create corresponding views" do
-      dd = RelaxDB::DesignDocument.get("spec_doc")
-      dd.data["views"]["ViewBySpec_by_foo"].should be
+    before(:each) do
+      RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
+      RelaxDB.use_db "relaxdb_spec_db"
+
+      class ViewBySpec < RelaxDB::Document
+        property :foo
+        property :bar
+        view_by :foo
+        view_by :foo, :bar
+      end
+
     end
     
-    # think production
-    it "should not create the views if a given switch is on" do
+    it "should create corresponding views" do
+      dd = RelaxDB::DesignDocument.get "spec_doc"
+      dd.data["views"]["ViewBySpec_by_foo"].should be
+    end
       
-    end    
-    
     it "should create a by_ att list method" do
       vbs = ViewBySpec.new(:foo => :bar).save!
       res = ViewBySpec.by_foo
@@ -56,6 +51,29 @@ describe "RelaxDB Pagination" do
       
     end
         
+  end
+  
+  describe "view_by no_create enabled" do
+    
+    before(:each) do
+      RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc", :create_views => false
+      
+      RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
+      RelaxDB.use_db "relaxdb_spec_db"
+
+      class ViewBySpec < RelaxDB::Document
+        property :foo
+        property :bar
+        view_by :foo
+        view_by :foo, :bar
+      end
+    end
+    
+    it "should not create the views if a given switch is on" do
+      dd = RelaxDB::DesignDocument.get "spec_doc"
+      dd.data["views"].should be_nil
+    end    
+    
   end
   
 end

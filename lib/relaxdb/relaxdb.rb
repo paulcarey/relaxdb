@@ -14,12 +14,20 @@ module RelaxDB
       
       raise "A design_doc must be provided" unless config[:design_doc]
       @dd = config[:design_doc]
+      
+      @create_views = config.key?(:create_views) ? config[:create_views] : true
     end
     
     # This is a temporary method that helps the transition as RelaxDB moves to a single 
     # design doc per application.
     def dd
       @dd
+    end
+    
+    # Set in configuration and consulted by view_by, has_many, has_one and references_many
+    # Views will be added to CouchDB iff this is true
+    def create_views?
+      @create_views
     end
   
     def db
