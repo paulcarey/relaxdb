@@ -22,8 +22,6 @@ module RelaxDB
       
       # If a client hasn't explicitly set descending, set it to the CouchDB default
       @descending = false if @descending.nil?
-      # CouchDB defaults reduce to true when a reduce func is present
-      @reduce = false
     end
   
     def update(params)

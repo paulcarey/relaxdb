@@ -14,10 +14,8 @@ module RelaxDB
     end
 
     def total_doc_count(view_name)
-      result = RelaxDB.view view_name, :startkey => @orig_paginate_params.startkey, :endkey => @orig_paginate_params.endkey,
+      RelaxDB.view view_name, :startkey => @orig_paginate_params.startkey, :endkey => @orig_paginate_params.endkey,
         :descending => @orig_paginate_params.descending, :reduce => true
-      
-      total_docs = RelaxDB.reduce_result(result)
     end
     
     def add_next_and_prev(docs, view_name, view_keys)

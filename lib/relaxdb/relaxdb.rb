@@ -142,7 +142,13 @@ module RelaxDB
       q = Query.new(view_name, params)
       
       resp = q.keys ? db.post(q.view_path, q.keys) : db.get(q.view_path)
-      JSON.parse(resp.body)      
+      hash = JSON.parse(resp.body)
+      
+      if q.raw then hash
+      elsif q.reduce then reduce_result hash
+      else create_from_hash hash
+      end
+      
     end
     
     # Should be invoked on the result of a join view

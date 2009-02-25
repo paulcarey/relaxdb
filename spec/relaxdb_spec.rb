@@ -172,25 +172,25 @@ describe RelaxDB do
       }
     >
     
-    it "should request a view and return a hash" do
+    it "should request a view and return an array" do
       RelaxDB::DesignDocument.get(RelaxDB.dd).add_view("simple", "map", map_func).save
       data = RelaxDB.view("simple")
-      data.should be_instance_of(Hash)
+      data.should be_instance_of(Array)
     end
 
-    it "may accept a block" do
+    it "may accept query params" do
       RelaxDB::DesignDocument.get(RelaxDB.dd).add_view("simple", "map", map_func).save
       RelaxDB.db.put("x", {}.to_json)      
       RelaxDB.db.put("y", {}.to_json)      
-      data = RelaxDB.view "simple", :key => "x"
-      data["rows"].size.should == 1
+      res = RelaxDB.view "simple", :key => "x"
+      res.first._id.should == "x"
     end
     
     it "should be queryable with a multi key post" do
       5.times { |i| Primitives.new(:num => i).save }
       Primitives.all.sorted_by(:num) 
-      resp = RelaxDB.view "Primitives_by_num", :keys => [0, 4], :reduce => false
-      RelaxDB.instantiate(resp).map{ |p| p.num }.should == [0, 4]
+      result = RelaxDB.view "Primitives_by_num", :keys => [0, 4], :reduce => false
+      result.map{ |p| p.num }.should == [0, 4]
     end
     
   end

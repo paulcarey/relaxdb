@@ -16,6 +16,9 @@ module RelaxDB
   #
   class Query
     
+    # If set to true RelaxDB.view will return unprocessed data
+    attr_accessor :raw
+    
     # keys is not included in the standard param as it is significantly different from the others
     @@params = %w(key startkey startkey_docid endkey endkey_docid limit update descending skip group group_level reduce include_docs)
     
@@ -33,8 +36,9 @@ module RelaxDB
     end
         
     def initialize(view_name, params = {})
-      # Default to returning the map view
-      # reduce(false)
+      # CouchDB defaults reduce to true when a reduce func is present
+      # but returning the map view is typically more useful
+      reduce(false)
       
       @view_name = view_name
       params.each { |k, v| send(k, v) }
