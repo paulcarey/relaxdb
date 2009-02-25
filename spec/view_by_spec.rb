@@ -15,9 +15,7 @@ describe "RelaxDB Pagination" do
 
       class ViewBySpec < RelaxDB::Document
         property :foo
-        property :bar
-        view_by :foo
-        view_by :foo, :bar
+        view_by :foo, :descending => true
       end
 
     end
@@ -28,23 +26,22 @@ describe "RelaxDB Pagination" do
     end
       
     it "should create a by_ att list method" do
-      vbs = ViewBySpec.new(:foo => :bar).save!
+      ViewBySpec.new(:foo => :bar).save!
       res = ViewBySpec.by_foo
       res.first.foo.should == "bar"
     end
     
     it "should create a paginate_by_ att list method" do
-      vbs = ViewBySpec.new(:foo => :bar, :bar => :foo).save!      
-      res = ViewBySpec.paginate_by_foo_and_bar :page_params => {}, :startkey => nil, :endkey => {}
+      ViewBySpec.new(:foo => :bar).save!      
+      res = ViewBySpec.paginate_by_foo :page_params => {}, :startkey => nil, :endkey => {}
       res.first.foo.should == "bar"
     end
-    
-    it "should have pagination tested thoroughly" do
-      
-    end
-    
+        
     it "should apply query defaults" do
+      ViewBySpec.new(:foo => "a").save!
+      ViewBySpec.new(:foo => "b").save!
       
+      ViewBySpec.by_foo.map{ |o| o.foo }.should == ["b", "a"]
     end
     
     it "should allow query defaults to be overridden" do
@@ -63,9 +60,7 @@ describe "RelaxDB Pagination" do
 
       class ViewBySpec < RelaxDB::Document
         property :foo
-        property :bar
         view_by :foo
-        view_by :foo, :bar
       end
     end
     

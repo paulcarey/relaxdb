@@ -182,18 +182,14 @@ describe RelaxDB do
       RelaxDB::DesignDocument.get(RelaxDB.dd).add_view("simple", "map", map_func).save
       RelaxDB.db.put("x", {}.to_json)      
       RelaxDB.db.put("y", {}.to_json)      
-      data = RelaxDB.view("simple") { |q| q.key("x") }
+      data = RelaxDB.view "simple", :key => "x"
       data["rows"].size.should == 1
     end
     
     it "should be queryable with a multi key post" do
       5.times { |i| Primitives.new(:num => i).save }
-      # Create the view
       Primitives.all.sorted_by(:num) 
-      resp = RelaxDB.view("Primitives_by_num") do |q| 
-        q.keys([0, 4])
-        q.reduce(false).group(true) # group invocation should hopefully be temporary
-      end
+      resp = RelaxDB.view "Primitives_by_num", :keys => [0, 4], :reduce => false
       RelaxDB.instantiate(resp).map{ |p| p.num }.should == [0, 4]
     end
     

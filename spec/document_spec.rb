@@ -328,7 +328,7 @@ describe RelaxDB::Document do
       RelaxDB.bulk_save(*docs)
       # Create the view
       Primitives.all.sorted_by(:num)
-      res = RelaxDB.view("Primitives_by_num") { |q| q.reduce(true) }
+      res = RelaxDB.view "Primitives_by_num", :reduce => true
       count = RelaxDB.reduce_result(res)
       count.should == 100
     end

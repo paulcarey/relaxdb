@@ -18,9 +18,7 @@ module RelaxDB
     end
     
     def initialize(params)
-      params.each do |k, v|
-        send(k, v)
-      end
+      params.each { |k, v| send(k, v) }
       
       # If a client hasn't explicitly set descending, set it to the CouchDB default
       @descending = false if @descending.nil?

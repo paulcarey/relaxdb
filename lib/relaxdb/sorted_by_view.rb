@@ -11,11 +11,12 @@ module RelaxDB
 
     def map_function
       key = @atts.map { |a| "doc.#{a}" }.join(", ")
+      prop_check = @atts.map { |a| "doc.#{a} !== undefined" }.join(" && ")
       key = @atts.size > 1 ? key.sub(/^/, "[").sub(/$/, "]") : key
     
       <<-QUERY
       function(doc) {
-        if(doc.class == "#{@class_name}") {
+        if(doc.class == "#{@class_name}" && #{prop_check}) {
           emit(#{key}, doc);
         }
       }

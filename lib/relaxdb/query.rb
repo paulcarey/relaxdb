@@ -32,8 +32,12 @@ module RelaxDB
       end
     end
         
-    def initialize(view_name)
+    def initialize(view_name, params = {})
+      # Default to returning the map view
+      # reduce(false)
+      
       @view_name = view_name
+      params.each { |k, v| send(k, v) }
     end
     
     def keys(keys=nil)
