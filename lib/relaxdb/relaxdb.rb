@@ -24,7 +24,7 @@ module RelaxDB
       @dd
     end
     
-    # Set in configuration and consulted by view_by, has_many, has_one and references_many
+    # Set in configuration and consulted by view_by, has_many, has_one, references_many and all
     # Views will be added to CouchDB iff this is true
     def create_views?
       @create_views
@@ -41,6 +41,9 @@ module RelaxDB
     # Creates the named database if it doesn't already exist
     def use_db(name)
       db.use_db name
+      
+      # TODO: Needs to be put in a better place, along with :design_doc code
+      create_all_view
     end
     
     def db_exists?(name)
@@ -151,6 +154,10 @@ module RelaxDB
       
     end
     
+    def create_all_view
+      ViewCreator.all.save if RelaxDB.create_views?
+    end    
+    
     # Should be invoked on the result of a join view
     # Merges all rows based on merge_key and returns an array of ViewOject
     def merge(data, merge_key)
@@ -163,12 +170,7 @@ module RelaxDB
       
       merged.values.map { |v| ViewObject.create(v) }
     end
-    
-    # Creates RelaxDB::Document objects from the result
-    def instantiate(data)
-      create_from_hash(data)
-    end
-    
+        
     # Returns a scalar, an object, or an Array of objects
     def reduce_result(data)
       obj = data["rows"][0] && data["rows"][0]["value"]

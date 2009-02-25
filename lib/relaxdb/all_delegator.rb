@@ -3,24 +3,19 @@ module RelaxDB
   #
   # The AllDelegator allows clients to query CouchDB in a natural way
   #   FooDoc.all - returns all docs in CouchDB of type FooDoc
-  #   FooDoc.all.sorted_by(:att1, :att2) - returns all docs in CouchDB of type FooDoc sorted by att1, then att2
-  #   FooDoc.all.sorted_by(:att1) { |q| q.key("bar") } - returns all docs of type FooDoc where att1 equals "bar"
-  #   FooDoc.all.destroy! - does what it says on the tin
   #   FooDoc.all.size - issues a query to a reduce function that returns the total number of docs for that class
+  #   FooDoc.all.destroy! - does what it says on the tin
   #
   class AllDelegator < Delegator
     
-    def initialize(class_name)
+    def initialize(class_name, params)
       super([])
       @class_name = class_name
+      @objs = RelaxDB.view "all_by_relaxdb_class", params
     end
     
     def __getobj__
-      view_name = "#{@class_name}_all"
-      view_path = "_view/#{RelaxDB.dd}/#{view_name}?reduce=false"
-      map, reduce = ViewCreator.all(@class_name)
-      
-      RelaxDB.retrieve(view_path, RelaxDB.dd, view_name, map, reduce)
+      @objs
     end
 
     def sorted_by(*atts)
@@ -32,12 +27,11 @@ module RelaxDB
       view.query(query)
     end
     
-    # Note that this method leaves the corresponding DesignDoc for the associated class intact
+    # TODO: destroy in a bulk_save if feasible
     def destroy!
-      each do |o| 
+      @objs.each do |o| 
         # A reload is required for deleting objects with a self referential references_many relationship
-        # This makes all.destroy! very slow. Given that references_many is now deprecated and will
-        # soon be removed, the required reload is no longer performed.
+        # This makes all.destroy! very slow. Change if needed
         # obj = RelaxDB.load(o._id)
         # obj.destroy!
         
@@ -45,24 +39,9 @@ module RelaxDB
       end
     end
     
-    # This is pretty ugly - this pattern is now spread over three 
-    # places (sorted_by_view, relaxdb and here)
-    # Consolidation needed
     def size
-      view_name = "#{@class_name}_all"
-      view_path = "_view/#{RelaxDB.dd}/#{view_name}"
-      map, reduce = ViewCreator.all(@class_name)
-      
-      begin
-        resp = RelaxDB.db.get(view_path)
-      rescue => e
-        DesignDocument.get(RelaxDB.dd).add_map_view(view_name, map).
-          add_reduce_view(view_name, reduce).save
-        resp = RelaxDB.db.get(view_path)
-      end
-      
-      data = JSON.parse(resp.body)
-      data["rows"][0] ? data["rows"][0]["value"] : 0
+      size = RelaxDB.view "all_by_relaxdb_class", :key => @class_name, :reduce => true
+      size || 0
     end
             
   end

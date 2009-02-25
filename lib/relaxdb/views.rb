@@ -2,14 +2,13 @@ module RelaxDB
 
   class ViewCreator
     
-    def self.all(target_class)
+    def self.all
       map = <<-QUERY
       function(doc) {
-        if(doc.class == "${target_class}")
-          emit(null, doc);
+        if(doc.class !== undefined)
+          emit(doc.class, doc);
       }
       QUERY
-      map.sub!("${target_class}", target_class.to_s)
       
       reduce = <<-QUERY
       function(keys, values, rereduce) {
@@ -21,7 +20,7 @@ module RelaxDB
       }
       QUERY
       
-      [map, reduce]  
+      View.new "all_by_relaxdb_class", map, reduce      
     end
   
     def self.has_n(target_class, relationship_to_client)
@@ -47,6 +46,23 @@ module RelaxDB
         }
       MAP_FUNC
       template.sub!("${target_class}", target_class).gsub!("${peers}", peers)
+    end
+    
+  end
+  
+  class View
+        
+    def initialize view_name, map_func, reduce_func
+      @view_name = view_name
+      @map_func = map_func
+      @reduce_func = reduce_func
+    end
+    
+    def save
+      dd = DesignDocument.get(RelaxDB.dd) 
+      dd.add_map_view(@view_name, @map_func)
+      dd.add_reduce_view(@view_name, @reduce_func)
+      dd.save
     end
     
   end

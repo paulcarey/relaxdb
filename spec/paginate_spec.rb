@@ -283,8 +283,7 @@ describe "RelaxDB Pagination" do
     
     it "should throw an error unless both startkey and endkey are specified" do
       lambda do
-        Letter.paginate_by_number :page_params => page_params,
-          :startkey => 1, :limit => 2
+        Letter.paginate_by_number :page_params => page_params, :startkey => 1, :limit => 2
       end.should raise_error
     end
     

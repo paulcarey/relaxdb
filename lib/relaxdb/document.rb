@@ -52,6 +52,15 @@ module RelaxDB
       @properties ||= [:_id, :_rev]
     end
     
+    def properties
+      self.class.properties
+    end
+    
+    # Specifying these properties here (after property method has been defined) 
+    # is kinda ugly. Consider a better solution.
+    property :_id 
+    property :_rev    
+    
     def self.create_validator(att, v)
       method_name = "validate_#{att}"
       if v.is_a? Proc
@@ -106,15 +115,6 @@ module RelaxDB
         end
       end
     end
-
-    def properties
-      self.class.properties
-    end
-    
-    # Specifying these properties here (after property method has been defined) 
-    # is kinda ugly. Consider a better solution.
-    property :_id 
-    property :_rev    
     
     def initialize(hash={})
       unless hash["_id"]
@@ -443,8 +443,9 @@ module RelaxDB
       belongs_to_rels + has_one_rels + has_many_rels + references_many_rels
     end
         
-    def self.all
-      @all_delegator ||= AllDelegator.new(self.name)
+    def self.all params = {}
+      params = {:key => self.name}.merge params
+      AllDelegator.new self.name, params
     end
                     
     # destroy! nullifies all relationships with peers and children before deleting 
@@ -505,7 +506,7 @@ module RelaxDB
         callback.is_a?(Proc) ? callback.call(self) : send(callback)
       end
     end
-        
+                    
     #
     # Creates the corresponding view and stores it in CouchDB
     # Adds by_ and paginate_by_ methods to the class
