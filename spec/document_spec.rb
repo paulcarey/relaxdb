@@ -133,43 +133,7 @@ describe RelaxDB::Document do
     end
     
   end
-  
-  describe "#save_all" do
-    
-    before(:each) do
-      # Create the underlying views
-      User.new(:items => [], :invites_received => [], :invites_sent => [])
-    end
-    
-    # it should issue a single POST
-    it "should issue no PUT requests" do
-      RelaxDB.db.put_count = 0
-      RelaxDB.db.get_count = 0
       
-      i1, i2 = Item.new(:name => "i1"), Item.new(:name => "i2")
-      u = User.new(:items => [i1, i2])
-      u.save_all!
-      
-      RelaxDB.db.put_count.should == 0
-      RelaxDB.db.get_count.should == 3
-    end
-    
-  end
-  
-  describe "#all_children" do
-    
-    it "should return an array containing all children" do
-      r = Rating.new
-      p = Photo.new(:rating => r)
-      t = Tag.new
-      t1, t2 = Tagging.new(:photo => p, :tag => t), Tagging.new(:photo => p, :tag => t)
-      p.taggings = [t1, t2]
-      p.all_children.size.should == 3
-      [r, t1, t2].each { |c| p.all_children.should include(c) }
-    end
-    
-  end
-  
   describe "user defined property reader" do
     
     it "should not effect normal operation" do

@@ -54,6 +54,8 @@
   
     property :name
     belongs_to :user
+    
+    view_by :user_id
   
   end
 

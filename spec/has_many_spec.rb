@@ -90,7 +90,7 @@ describe RelaxDB::HasManyProxy do
       it "should preserve given relationships across save/load boundary" do
         i1, i2 = Item.new(:name => "i1"), Item.new(:name => "i2")
         u = User.new(:items => [i1, i2])
-        u.save_all!
+        RelaxDB.bulk_save u, *u.items
         u = RelaxDB.load u._id
         u.items.map { |i| i.name }.sort.join.should == "i1i2"
       end

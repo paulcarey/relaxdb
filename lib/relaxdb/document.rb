@@ -230,21 +230,7 @@ module RelaxDB
         raise ValidationFailure, self.errors.to_json
       end
     end
-    
-    def save_all
-      RelaxDB.bulk_save(self, *all_children)
-    end
-
-    def save_all!
-      RelaxDB.bulk_save!(self, *all_children)
-    end
-    
-    def all_children      
-      ho = self.class.has_one_rels.map { |r| send(r) }
-      hm = self.class.has_many_rels.inject([]) { |m,r| m += send(r).children }
-      ho + hm
-    end
-    
+        
     def update_conflict?
       @update_conflict
     end
