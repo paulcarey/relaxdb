@@ -17,7 +17,11 @@ module RelaxDB
       end
     end
     
-    def initialize
+    def initialize(params)
+      params.each do |k, v|
+        send(k, v)
+      end
+      
       # If a client hasn't explicitly set descending, set it to the CouchDB default
       @descending = false if @descending.nil?
       # CouchDB defaults reduce to true when a reduce func is present
@@ -44,7 +48,6 @@ module RelaxDB
     
     def invalid?
       # Simply because allowing either to be omitted increases the complexity of the paginator
-      # This constraint may be removed in future, but don't hold your breath
       @startkey_set && @endkey_set ? nil : "Both startkey and endkey must be set"
     end
     alias error_msg invalid?

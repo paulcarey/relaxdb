@@ -59,6 +59,13 @@ module RelaxDB
       data = JSON.parse(resp.body)
       ViewResult.new(data)            
     end
+    
+    def save
+      dd = DesignDocument.get(RelaxDB.dd) 
+      dd.add_map_view(view_name, map_function)
+      dd.add_reduce_view(view_name, reduce_function)
+      dd.save
+    end
   
   end
   

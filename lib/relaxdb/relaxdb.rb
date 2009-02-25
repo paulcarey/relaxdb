@@ -162,9 +162,11 @@ module RelaxDB
       ViewObject.create(obj)      
     end
     
-    def paginate_view(page_params, design_doc, view_name, *view_keys)
-      paginate_params = PaginateParams.new
-      yield paginate_params
+    def paginate_view(view_name, atts)      
+      page_params = atts.delete :page_params
+      view_keys = atts.delete :attributes
+      
+      paginate_params = PaginateParams.new atts
       raise paginate_params.error_msg if paginate_params.invalid? 
       
       paginator = Paginator.new(paginate_params, page_params)
@@ -175,7 +177,7 @@ module RelaxDB
       docs = ViewResult.new(JSON.parse(db.get(query.view_path).body))
       docs.reverse! if paginate_params.order_inverted?
       
-      paginator.add_next_and_prev(docs, design_doc, view_name, view_keys)
+      paginator.add_next_and_prev(docs, view_name, view_keys)
       
       docs
     end

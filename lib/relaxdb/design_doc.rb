@@ -1,6 +1,8 @@
 module RelaxDB
 
   class DesignDocument
+    
+    attr_reader :data
   
     def initialize(design_doc_name, data)
       @design_doc_name = design_doc_name

@@ -11,6 +11,13 @@ describe "RelaxDB Pagination" do
     RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
     RelaxDB.use_db "relaxdb_spec_db"
     
+    class Letter < RelaxDB::Document
+      property :letter
+      property :number
+      view_by :letter, :number
+      view_by :number
+    end
+    
     Letter.new(:letter => "a", :number => 1).save # :_id => "a1",
     Letter.new(:letter => "a", :number => 2).save # :_id => "a2", 
     Letter.new(:letter => "a", :number => 3).save # :_id => "a3", 
@@ -37,9 +44,8 @@ describe "RelaxDB Pagination" do
 
     it "should navigate through a series" do
       query = lambda do |page_params|
-         Letter.paginate_by(page_params, :letter, :number) do |p|
-           p.startkey(["a"]).endkey(["a",{}]).limit(2)
-        end
+         Letter.paginate_by_letter_and_number :page_params => page_params,
+           :startkey => ["a"], :endkey => ["a",{}], :limit => 2
       end
     
       letters = query.call({})
@@ -58,9 +64,8 @@ describe "RelaxDB Pagination" do
 
     it "should navigate through b series with descending false" do
       query = lambda do |page_params|
-         Letter.paginate_by(page_params, :letter, :number) do |p|
-           p.startkey(["b"]).endkey(["b",{}]).limit(2)
-        end
+         Letter.paginate_by_letter_and_number :page_params => page_params,
+           :startkey => ["b"], :endkey => ["b",{}], :limit => 2
       end
     
       letters = query.call({})
@@ -93,12 +98,11 @@ describe "RelaxDB Pagination" do
       letters.next_params.should be
     end
 
-    it "should navigate through b series with descending true" do
+    it "should navigate through b series with descending true" do      
       query = lambda do |page_params|
-         Letter.paginate_by(page_params, :letter, :number) do |p|
-           p.startkey(["b", {}]).endkey(["b"]).descending(true).limit(2)
-        end
-      end
+         Letter.paginate_by_letter_and_number :page_params => page_params,
+           :startkey => ["b", {}], :endkey => ["b"], :descending => true, :limit => 2
+      end      
     
       letters = query.call({})
       s(letters).should == "b5, b4"
@@ -123,9 +127,8 @@ describe "RelaxDB Pagination" do
     end
   
     it "should not display pagination options for c series" do
-      letters = Letter.paginate_by({}, :letter, :number) do |p|
-        p.startkey(["c"]).endkey(["c", {}]).limit(2)
-      end
+      letters = Letter.paginate_by_letter_and_number :page_params => {},
+        :startkey => ["c"], :endkey => ["c", {}], :limit => 2      
     
       letters.next_params.should be_false
       letters.prev_params.should be_false
@@ -136,9 +139,8 @@ describe "RelaxDB Pagination" do
   describe "next_query" do
 
     it "should emit a url encoded and json encoded string with query name page_params" do
-      letters = Letter.paginate_by({:startkey => ["b", 2]}, :letter, :number) do |p|
-         p.startkey(["b"]).endkey(["b",{}]).limit(2)
-      end
+      letters = Letter.paginate_by_letter_and_number :page_params => {:startkey => ["b", 2]},
+         :startkey => ["b"], :endkey => ["b",{}],:limit => 2
       
       # unescape and parse required as param order is implementation dependent
       hash = JSON.parse(CGI.unescape(letters.next_query.split("=")[1]))
@@ -150,13 +152,12 @@ describe "RelaxDB Pagination" do
     it "should be treated as next_param by the paginator" do
       page_params = {}
       query = lambda do
-         Letter.paginate_by(page_params, :letter, :number) do |p|
-           p.startkey(["b"]).endkey(["b", {}]).limit(2)
-        end
+        Letter.paginate_by_letter_and_number :page_params => page_params,
+          :startkey => ["b"], :endkey => ["b",{}], :limit => 2        
       end
       
       letters = query.call      
-      page_params = ::CGI::unescape(letters.next_query.split("=")[1])
+      page_params = CGI::unescape(letters.next_query.split("=")[1])
       letters = query.call
       s(letters).should == "b3, b4"
     end
@@ -168,21 +169,19 @@ describe "RelaxDB Pagination" do
     it "should be treated as prev_query by the paginator" do
       page_params = {}
       query = lambda do
-         Letter.paginate_by(page_params, :letter, :number) do |p|
-           p.startkey(["b", {}]).endkey(["b"]).descending(true).limit(2)
-        end
+        Letter.paginate_by_letter_and_number :page_params => page_params,
+          :startkey => ["b", {}], :endkey => ["b"], :descending => true, :limit => 2
       end
       
       letters = query.call      
-      page_params = ::CGI::unescape(letters.next_query.split("=")[1])
+      page_params = CGI::unescape(letters.next_query.split("=")[1])
       letters = query.call
       s(letters).should == "b3, b2"
     end
     
-    it "should emit a url encoded and json encoded string with query name page_params" do
-      letters = Letter.paginate_by({:startkey => ["b", 2]}, :letter, :number) do |p|
-         p.startkey(["b"]).endkey(["b",{}]).limit(2)
-      end
+    it "should emit a url encoded and json encoded string with query name page_params" do      
+      letters = Letter.paginate_by_letter_and_number :page_params => {:startkey => ["b", 2]},
+         :startkey => ["b"], :endkey => ["b",{}],:limit => 2
       
       hash = JSON.parse(CGI.unescape(letters.prev_query.split("=")[1]))
       
@@ -196,9 +195,8 @@ describe "RelaxDB Pagination" do
     
     it "should work when descending is false" do
       query = lambda do |page_params|
-        Letter.paginate_by(page_params, :number) do |p|
-          p.startkey(1).endkey({}).limit(4)
-        end
+        Letter.paginate_by_number :page_params => page_params,
+          :startkey => 1, :endkey => {}, :limit => 4
       end
       
       numbers = query.call({})
@@ -233,9 +231,8 @@ describe "RelaxDB Pagination" do
 
     it "should work when descending is true" do
       query = lambda do |page_params|
-        Letter.paginate_by(page_params, :number) do |p|
-          p.startkey(5).endkey(nil).descending(true).limit(4)
-        end
+        Letter.paginate_by_number :page_params => page_params,
+          :startkey => 5, :endkey => nil, :descending => true, :limit => 4        
       end
       
       numbers = query.call({})
@@ -270,9 +267,8 @@ describe "RelaxDB Pagination" do
     
     it "should not get stuck when the number of keys exceeds the limit" do
       query = lambda do |page_params|
-        Letter.paginate_by(page_params, :number) do |p|
-          p.startkey(1).endkey({}).limit(2)
-        end
+        Letter.paginate_by_number :page_params => page_params,
+          :startkey => 1, :endkey => {}, :limit => 2
       end
       
       numbers = query.call({})
@@ -287,19 +283,20 @@ describe "RelaxDB Pagination" do
     
     it "should throw an error unless both startkey and endkey are specified" do
       lambda do
-        Letter.paginate_by({}, :number) { |p| p.startkey(1).descending(true) }
+        Letter.paginate_by_number :page_params => page_params,
+          :startkey => 1, :limit => 2
       end.should raise_error
     end
     
     it "should return an empty array when no documents exist" do
       Letter.all.destroy!
-      letters = Letter.paginate_by({}, :number) { |p| p.startkey(1).endkey(3) }
+      letters = Letter.paginate_by_number :page_params => {}, :startkey => 1, :endkey => 3
       letters.should be_empty
     end
 
     it "should return an array that responds negatively to next_query and prev_query when no documents exist" do
       Letter.all.destroy!
-      letters = Letter.paginate_by({}, :number) { |p| p.startkey(1).endkey(3) }
+      letters = Letter.paginate_by_number :page_params => {}, :startkey => 1, :endkey => 3
       letters.prev_query.should be_false
       letters.next_query.should be_false
     end
@@ -323,13 +320,18 @@ describe "RelaxDB Pagination" do
         }
       FUNC
       
-      view_name = "by_letter_and_number"
+      view_name = "Letter_by_letter_and_number"
       RelaxDB::DesignDocument.get(RelaxDB.dd).add_map_view(view_name, map).add_reduce_view(view_name, reduce).save
       
-      query = lambda do |page_params|
-        RelaxDB.paginate_view(page_params, "Letter", "by_letter_and_number", :letter, :number) do |p|
+      old_query = lambda do |page_params|
+        RelaxDB.paginate_view(page_params, "Letter_by_letter_and_number", :letter, :number) do |p|
           p.startkey(["b"]).endkey(["b", {}]).limit(2)
         end
+      end
+
+      query = lambda do |page_params|
+        RelaxDB.paginate_view "Letter_by_letter_and_number", :page_params => page_params,
+          :startkey => ["b"], :endkey => ["b", {}], :limit => 2, :attributes => [:letter, :number]
       end
       
       letters = query.call({})

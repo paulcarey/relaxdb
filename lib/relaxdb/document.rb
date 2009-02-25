@@ -505,25 +505,36 @@ module RelaxDB
         callback.is_a?(Proc) ? callback.call(self) : send(callback)
       end
     end
-    
-    def self.paginate_by(page_params, *view_keys)
-      paginate_params = PaginateParams.new
-      yield paginate_params
-      raise paginate_params.error_msg if paginate_params.invalid? 
+        
+    #
+    # Creates the corresponding view and stores it in CouchDB
+    # Adds by_ and paginate_by methods to the class
+    #
+    def self.view_by *atts
+      opts = atts.pop if atts.last.is_a?(Hash)
       
-      paginator = Paginator.new(paginate_params, page_params)
-                  
-      design_doc_name = self.name
-      view = SortedByView.new(design_doc_name, *view_keys)
-      query = Query.new(view.view_name)
-      query.merge(paginate_params)
+      view = SortedByView.new(self.name, *atts)
+      view.save
       
-      docs = view.query(query)
-      docs.reverse! if paginate_params.order_inverted?
+      by_name = "by_#{atts.join "_and_"}"
+      view_name = "#{self.name}_#{by_name}"
+      meta_class.instance_eval do
+        define_method by_name do
+          # RelaxDB.view view_name
+          res = RelaxDB.view view_name do |q| 
+            q.reduce(false)
+          end
+          RelaxDB.instantiate res
+        end
+      end
       
-      paginator.add_next_and_prev(docs, design_doc_name, view.view_name, view_keys)
-      
-      docs
+      paginate_by_name = "paginate_by_#{atts.join "_and_"}"
+      meta_class.instance_eval do
+        define_method paginate_by_name do |params|
+          params = {:attributes => atts}.merge params
+          RelaxDB.paginate_view view_name, params
+        end    
+      end
     end
                 
   end

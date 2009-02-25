@@ -39,13 +39,6 @@ unless @spec_models_loaded
     def val=(v); @val = v - 10; end
   end
 
-  class Letter < RelaxDB::Document
-  
-    property :letter
-    property :number
-  
-  end
-
   class Invite < RelaxDB::Document
   
     property :message
@@ -118,7 +111,7 @@ unless @spec_models_loaded
     property :relevance  
 
   end
-
+  
   class MultiWordClass < RelaxDB::Document
     has_one :multi_word_child
     has_many :multi_word_children, :class => "MultiWordChild"
