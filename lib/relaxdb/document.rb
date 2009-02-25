@@ -325,6 +325,12 @@ module RelaxDB
       @references_many_rels << relationship
      
       id_arr_sym = "@#{relationship}".to_sym
+      
+      if RelaxDB.create_views?
+        target_class = opts[:class]
+        relationship_as_viewed_by_target = opts[:known_as].to_s
+        ViewCreator.references_many(self.name, relationship, target_class, relationship_as_viewed_by_target).save
+      end            
      
       define_method(relationship) do
         instance_variable_set(id_arr_sym, []) unless instance_variable_defined? id_arr_sym

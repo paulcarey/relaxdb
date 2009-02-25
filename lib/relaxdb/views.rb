@@ -43,8 +43,8 @@ module RelaxDB
       View.new view_name, map
     end
   
-    def self.has_many_through(target_class, peers)
-      <<-QUERY
+    def self.references_many(client_class, relationship, target_class, peers)
+      map = <<-QUERY
         function(doc) {
           if(doc.class == "#{target_class}" && doc.#{peers}) {
             var i;
@@ -54,6 +54,9 @@ module RelaxDB
           }
         }
       QUERY
+      
+      view_name = "#{client_class}_#{relationship}"
+      View.new view_name, map
     end
     
     def self.sum_reduce_func
