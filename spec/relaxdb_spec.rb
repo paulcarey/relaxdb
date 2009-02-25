@@ -187,6 +187,8 @@ describe RelaxDB do
     end
     
     it "should be queryable with a multi key post" do
+      Primitives.view_by :num
+      
       5.times { |i| Primitives.new(:num => i).save }
       Primitives.by_num
       result = RelaxDB.view "Primitives_by_num", :keys => [0, 4], :reduce => false

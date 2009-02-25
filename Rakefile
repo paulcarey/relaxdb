@@ -56,3 +56,8 @@ task :atomic_bulk_save_support do |t|
   require 'lib/more/atomic_bulk_save_support.rb'
 end
 
+desc "Create base spec db"
+task :create_base_db do
+  require 'spec/spec_helper'
+  create_base_db
+end

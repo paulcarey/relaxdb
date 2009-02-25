@@ -1,17 +1,10 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
+require File.dirname(__FILE__) + '/spec_models.rb'
 
 describe RelaxDB::Document do
   
-  before(:all) do
-    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
-  end
-
   before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"
-    
-    load File.dirname(__FILE__) + '/spec_models.rb'
-    
+    setup_test_db
   end
       
   describe ".new" do 
@@ -262,7 +255,7 @@ describe RelaxDB::Document do
   end
   
   describe "by_" do
-  
+      
     it "should sort ascending by default" do
       Post.new(:content => "b").save
       Post.new(:content => "a").save

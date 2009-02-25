@@ -161,6 +161,8 @@ describe RelaxDB::HasManyProxy do
       describe "#destroy" do
 
         it "should nullify its child relationships" do
+          Item.view_by :user_id
+          
           u = User.new.save
           u.items << Item.new << Item.new    
           u.destroy!
