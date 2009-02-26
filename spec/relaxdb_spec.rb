@@ -218,6 +218,56 @@ describe RelaxDB do
         
   end
   
+  describe "create_views disabled" do
+
+    before(:each) do
+      RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc", :create_views => false
+
+      RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
+      RelaxDB.use_db "relaxdb_spec_db"
+
+      class Bar < RelaxDB::Document
+        view_by :foo
+        has_one :foo1
+        has_many :foon
+        references_many :foor
+      end
+    end
+
+    it "should not create any views" do
+      dd = RelaxDB::DesignDocument.get "spec_doc"
+      dd.data["views"].should be_nil
+    end    
+
+  end
+  
+  describe "create_views enabled" do
+
+    before(:each) do
+      RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc", :create_views => true
+
+      RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
+      RelaxDB.use_db "relaxdb_spec_db"
+
+      class Bar < RelaxDB::Document
+        view_by :foo
+        has_one :foo1
+        has_many :foon
+        references_many :foor
+      end
+    end
+
+    it "should create all views" do
+      dd = RelaxDB::DesignDocument.get "spec_doc"
+      dd.data["views"]["all_by_relaxdb_class"].should be
+      dd.data["views"]["Bar_by_foo"].should be
+      dd.data["views"]["Bar_foo1"].should be
+      dd.data["views"]["Bar_foon"].should be
+      dd.data["views"]["Bar_foor"].should be
+    end    
+
+  end
+  
   # if caching is added
   # it "should offer an example where behaviour is different with caching enabled and caching disabled"
             
