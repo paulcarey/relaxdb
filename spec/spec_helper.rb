@@ -22,6 +22,14 @@ def setup_test_db
   end
 end
 
+def create_test_db params = {}
+  defaults = {:host => "localhost", :port => 5984, :design_doc => "spec_doc"}
+  RelaxDB.configure defaults.merge(params)
+
+  RelaxDB.delete_db "relaxdb_spec" rescue "ok"
+  RelaxDB.use_db "relaxdb_spec"  
+end
+
 def create_base_db
   RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
   RelaxDB.delete_db "relaxdb_spec_base" rescue "ok"

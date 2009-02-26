@@ -83,11 +83,20 @@ module RelaxDB
       @reduce_func = reduce_func
     end
     
+    def design_doc
+      @design_doc ||= DesignDocument.get(RelaxDB.dd) 
+    end
+    
     def save
-      dd = DesignDocument.get(RelaxDB.dd) 
+      dd = design_doc
       dd.add_map_view(@view_name, @map_func)
       dd.add_reduce_view(@view_name, @reduce_func) if @reduce_func
       dd.save
+    end
+    
+    def exists?
+      dd = design_doc
+      dd.data["views"] && dd.data["views"][@view_name]
     end
     
   end

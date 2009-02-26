@@ -150,6 +150,13 @@
     property :pathological, :validator => lambda { false }
     belongs_to :dysfunctional
   end
+  
+  class Letter < RelaxDB::Document
+    property :letter
+    property :number
+    view_by :letter, :number
+    view_by :number
+  end
 
   @spec_models_loaded = true
 

@@ -3,21 +3,9 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 
 describe "RelaxDB Pagination" do
     
-  before(:all) do
-    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
-  end
-
   before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"
-    
-    class Letter < RelaxDB::Document
-      property :letter
-      property :number
-      view_by :letter, :number
-      view_by :number
-    end
-    
+    setup_test_db    
+        
     Letter.new(:letter => "a", :number => 1).save # :_id => "a1",
     Letter.new(:letter => "a", :number => 2).save # :_id => "a2", 
     Letter.new(:letter => "a", :number => 3).save # :_id => "a3", 
@@ -38,7 +26,6 @@ describe "RelaxDB Pagination" do
   def n(letters)
     letters.map { |l| "#{l.number}"}.join(", ")
   end
-  
     
   describe "functional tests" do
 

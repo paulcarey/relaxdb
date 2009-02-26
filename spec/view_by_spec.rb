@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 require File.dirname(__FILE__) + '/spec_models.rb'
 
-describe "RelaxDB Pagination" do
+describe "view_by" do
     
   before(:all) do
     RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"    

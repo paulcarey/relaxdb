@@ -41,9 +41,6 @@ module RelaxDB
     # Creates the named database if it doesn't already exist
     def use_db(name)
       db.use_db name
-      
-      # TODO: Needs to be put in a better place, along with :design_doc code
-      create_all_view
     end
     
     def db_exists?(name)
@@ -138,11 +135,7 @@ module RelaxDB
       end
       
     end
-    
-    def create_all_view
-      ViewCreator.all.save if RelaxDB.create_views?
-    end    
-    
+        
     # Should be invoked on the result of a join view
     # Merges all rows based on merge_key and returns an array of ViewOject
     def merge(data, merge_key)

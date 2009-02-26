@@ -3,13 +3,8 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 
 describe RelaxDB do
 
-  before(:all) do
-    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
-  end
-
   before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"
+    create_test_db
   end
         
   describe ".create_object" do
@@ -96,13 +91,14 @@ describe RelaxDB do
   describe ".replicate_db" do
     
     it "should replicate the named database" do
-      orig = "relaxdb_spec_db"
-      replica = "relaxdb_spec_db_replica"
-      RelaxDB.delete_db replica rescue "ok"
-      Atom.new.save # implicitly saved to orig
+      orig = "relaxdb_spec"
+      replica = "relaxdb_spec_replicate_test"
+      class ReplicaTest < RelaxDB::Document; end
+      ReplicaTest.new.save # implicitly saved to orig
       RelaxDB.replicate_db orig, replica
       RelaxDB.use_db replica
-      Atom.all.size.should == 1
+      ReplicaTest.all.size.should == 1
+      RelaxDB.delete_db replica rescue :ok
     end
     
   end
@@ -221,12 +217,9 @@ describe RelaxDB do
   describe "create_views disabled" do
 
     before(:each) do
-      RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc", :create_views => false
-
-      RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-      RelaxDB.use_db "relaxdb_spec_db"
-
-      class Bar < RelaxDB::Document
+      create_test_db :create_views => false
+      
+      class CvdBar < RelaxDB::Document
         view_by :foo
         has_one :foo1
         has_many :foon
@@ -244,12 +237,9 @@ describe RelaxDB do
   describe "create_views enabled" do
 
     before(:each) do
-      RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc", :create_views => true
+      create_test_db :create_views => true
 
-      RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-      RelaxDB.use_db "relaxdb_spec_db"
-
-      class Bar < RelaxDB::Document
+      class CveBar < RelaxDB::Document
         view_by :foo
         has_one :foo1
         has_many :foon
@@ -260,10 +250,10 @@ describe RelaxDB do
     it "should create all views" do
       dd = RelaxDB::DesignDocument.get "spec_doc"
       dd.data["views"]["all_by_relaxdb_class"].should be
-      dd.data["views"]["Bar_by_foo"].should be
-      dd.data["views"]["Bar_foo1"].should be
-      dd.data["views"]["Bar_foon"].should be
-      dd.data["views"]["Bar_foor"].should be
+      dd.data["views"]["CveBar_by_foo"].should be
+      dd.data["views"]["CveBar_foo1"].should be
+      dd.data["views"]["CveBar_foon"].should be
+      dd.data["views"]["CveBar_foor"].should be
     end    
 
   end

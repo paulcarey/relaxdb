@@ -9,7 +9,7 @@ module RelaxDB
     
     # Attribute symbols added to this list won't be validated on save
     attr_accessor :validation_skip_list
-    
+        
     # Define properties and property methods
     
     def self.property(prop, opts={})
@@ -55,11 +55,6 @@ module RelaxDB
     def properties
       self.class.properties
     end
-    
-    # Specifying these properties here (after property method has been defined) 
-    # is kinda ugly. Consider a better solution.
-    property :_id 
-    property :_rev    
     
     def self.create_validator(att, v)
       method_name = "validate_#{att}"
@@ -543,6 +538,21 @@ module RelaxDB
         end    
       end
     end
+    
+    # Create a view allowing all instances of a particular class to be retreived    
+    def self.create_all_by_class_view
+      if RelaxDB.create_views?        
+        view = ViewCreator.all
+        view.save unless view.exists?
+      end
+    end          
+    
+    def self.inherited subclass
+      create_all_by_class_view 
+    end
+    
+    property :_id 
+    property :_rev    
                 
   end
   
