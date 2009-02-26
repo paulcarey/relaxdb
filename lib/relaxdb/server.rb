@@ -68,10 +68,10 @@ module RelaxDB
         
     # Used for test instrumentation only i.e. to assert that 
     # an expected number of requests have been issued
-    attr_accessor :get_count, :put_count
+    attr_accessor :get_count, :put_count, :post_count
         
     def initialize(config)
-      @get_count, @put_count = 0, 0
+      @get_count, @post_count, @put_count = 0, 0, 0
       @server = RelaxDB::Server.new(config[:host], config[:port])
       @logger = config[:logger] ? config[:logger] : Logger.new(Tempfile.new('couchdb.log'))
     end
@@ -113,6 +113,7 @@ module RelaxDB
     end
         
     def post(path=nil, json=nil)
+      @post_count += 1
       @logger.info("POST /#{@db}/#{unesc(path)} #{json}")
       @server.post("/#{@db}/#{path}", json)
     end
