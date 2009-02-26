@@ -156,10 +156,10 @@ module RelaxDB
       merged.values.map { |v| ViewObject.create(v) }
     end
         
-    # Returns a scalar, an object, or an Array of objects
+    # Returns a RelaxDB object, an object, an Array of objects, or a scalar
     def reduce_result(data)
       obj = data["rows"][0] && data["rows"][0]["value"]
-      ViewObject.create(obj)      
+      create_object obj
     end
     
     def paginate_view(view_name, atts)      
@@ -187,13 +187,13 @@ module RelaxDB
     end
   
     def create_object(data)
-      klass = data.delete("relaxdb_class")
+      klass = data.is_a?(Hash) && data.delete("relaxdb_class")
       if klass
-        k = Module.const_get(klass)
-        k.new(data)
+        k = Module.const_get klass
+        k.new data
       else 
-        # data is not of a known class
-        ViewObject.create(data)
+        # data is a scalar or not of a known class
+        ViewObject.create data
       end
     end
         
