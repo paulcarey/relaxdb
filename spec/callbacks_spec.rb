@@ -9,8 +9,8 @@ describe RelaxDB::Document, "callbacks" do
   end
 
   before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"
+    RelaxDB.delete_db "relaxdb_spec" rescue "ok"
+    RelaxDB.use_db "relaxdb_spec"
   end
   
   describe "before_save" do

@@ -17,8 +17,8 @@ describe RelaxDB::Document, "derived properties" do
   end
 
   before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"
+    RelaxDB.delete_db "relaxdb_spec" rescue "ok"
+    RelaxDB.use_db "relaxdb_spec"
   end
   
   it "should have its value updated when the source is updated" do

@@ -4,7 +4,7 @@ require 'rubygems'
 require 'relaxdb'
 
 RelaxDB.configure :host => "localhost", :port => 5984
-RelaxDB.use_db "relaxdb_spec_db"
+RelaxDB.use_db "relaxdb_spec"
 
 class Writer < RelaxDB::Document
   property :name, :default => "anon"

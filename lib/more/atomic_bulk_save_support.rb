@@ -3,8 +3,8 @@ require 'relaxdb'
 require File.dirname(__FILE__) + '/../../spec/spec_models.rb'
 
 RelaxDB.configure :host => "localhost", :port => 5984
-RelaxDB.delete_db "relaxdb_spec_db" rescue :ok
-RelaxDB.use_db "relaxdb_spec_db"
+RelaxDB.delete_db "relaxdb_spec" rescue :ok
+RelaxDB.use_db "relaxdb_spec"
 
 a1 = Atom.new.save!
 a1_dup = a1.dup

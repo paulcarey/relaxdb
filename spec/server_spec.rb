@@ -9,21 +9,21 @@ describe RelaxDB do
   end
 
   before(:each) do
-    RelaxDB.delete_db "relaxdb_spec_db" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec_db"    
+    RelaxDB.delete_db "relaxdb_spec" rescue "ok"
+    RelaxDB.use_db "relaxdb_spec"    
   end
         
   describe "GET" do
     
     it "should raise a HTTP_404 for a non existant doc" do
       lambda do
-        @server.get "/relaxdb_spec_db/foo"
+        @server.get "/relaxdb_spec/foo"
       end.should raise_error(RelaxDB::HTTP_404)
     end
 
     it "should raise a RuntimeError for non specific errors" do
       lambda do
-        @server.get "/relaxdb_spec_db/_view?fail=true"
+        @server.get "/relaxdb_spec/_view?fail=true"
       end.should raise_error(RuntimeError)
     end
     
