@@ -44,6 +44,11 @@ describe "RelaxDB Pagination" do
       ViewByFoo.by_foo.map{ |o| o.foo }.should == ["b", "a"]
     end
     
+    it "should allow a single arg to be passed to by_" do
+      vbf = ViewByFoo.new(:foo => "a").save!
+      ViewByFoo.by_foo("a").should == vbf
+    end
+    
     it "should apply query defaults to paginate_by_" do
       ViewByFoo.new(:foo => "a").save!
       ViewByFoo.new(:foo => "b").save!
@@ -59,9 +64,10 @@ describe "RelaxDB Pagination" do
     end
     
     it "should allow query defaults to be overridden for by_" do
-      ViewByFoo.new(:foo => :bar).save!      
-      res = ViewByFoo.by_foo :key => "bar"
-      res.first.foo.should == "bar"
+      ViewByFoo.new(:foo => "a").save!
+      ViewByFoo.new(:foo => "b").save!
+      
+      ViewByFoo.by_foo(:descending => false).map{ |o| o.foo }.should == ["a", "b"]
     end
         
   end

@@ -523,10 +523,14 @@ module RelaxDB
       by_name = "by_#{atts.join "_and_"}"
       view_name = "#{self.name}_#{by_name}"
       meta_class.instance_eval do
-        define_method by_name do |*params|
-          params = params.empty? ? {} : params[0]
-          params = opts.merge params
-          res = RelaxDB.view view_name, params
+        define_method by_name do |*params|          
+          if params.empty?
+            res = RelaxDB.view view_name, opts
+          elsif params[0].is_a? Hash
+            res = RelaxDB.view view_name, opts.merge(params[0])
+          else
+            res = RelaxDB.view(view_name, :key => params[0]).first
+          end            
         end
       end
       
