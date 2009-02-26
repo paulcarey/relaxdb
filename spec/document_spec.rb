@@ -241,11 +241,14 @@ describe RelaxDB::Document do
   
   describe ".all.size" do
     
-    it "should return the total number of docs" do
+    it "should return the total number of docs in a single query" do
       docs = []
       100.times { docs << Atom.new }
       RelaxDB.bulk_save(*docs)
+      
+      RelaxDB.db.get_count = 0
       Atom.all.size.should == 100
+      RelaxDB.db.get_count.should == 1
     end
     
     it "should return 0 when no docs exist" do

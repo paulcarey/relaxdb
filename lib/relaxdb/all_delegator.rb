@@ -11,10 +11,13 @@ module RelaxDB
     def initialize(class_name, params)
       super([])
       @class_name = class_name
-      @objs = RelaxDB.view "all_by_relaxdb_class", params
+      @params = params
     end
     
     def __getobj__
+      unless @objs
+        @objs = RelaxDB.view "all_by_relaxdb_class", @params
+      end
       @objs
     end
 
@@ -25,6 +28,7 @@ module RelaxDB
     
     # TODO: destroy in a bulk_save if feasible
     def destroy!
+      __getobj__
       @objs.each do |o| 
         # A reload is required for deleting objects with a self referential references_many relationship
         # This makes all.destroy! very slow. Change if needed
