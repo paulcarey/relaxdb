@@ -14,9 +14,11 @@ module RelaxDB
       #
       def upload(filename)
         lines = File.readlines(filename)
+        dd = RelaxDB::DesignDocument.get(RelaxDB.dd)
         extract(lines) do |vn, t, f|
-          RelaxDB::DesignDocument.get(RelaxDB.dd).add_view(vn, t, f).save
+          dd.add_view(vn, t, f)
         end
+        dd.save
       end
       
       def extract(lines)
