@@ -6,9 +6,6 @@ module RelaxDB
   
   class Query
     
-    # If set to true RelaxDB.view will return unprocessed data
-    attr_accessor :raw
-    
     # keys is not included in the standard param as it is significantly different from the others
     @@params = %w(key startkey startkey_docid endkey endkey_docid limit update descending skip group group_level reduce include_docs)
     
@@ -39,6 +36,16 @@ module RelaxDB
         @keys
       else 
         @keys = { :keys => keys }.to_json
+        self
+      end
+    end
+    
+    # If set to true RelaxDB.view will return unprocessed data
+    def raw(val = nil)
+      if val.nil?
+        @raw
+      else
+        @raw = val
         self
       end
     end
