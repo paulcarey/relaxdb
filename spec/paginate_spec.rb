@@ -307,7 +307,7 @@ describe "RelaxDB Pagination" do
     it "should pass" do
       map = <<-FUNC
         function (doc) {
-          if (doc.class === "Letter") {
+          if (doc.relaxdb_class === "Letter") {
             emit([doc.letter, doc.number], doc);
           }
         }

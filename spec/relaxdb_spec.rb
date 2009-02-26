@@ -15,7 +15,7 @@ describe RelaxDB do
   describe ".create_object" do
     
     it "should return an instance of a known object if passed a hash with a class key" do
-      data = { "class" => "Item" }
+      data = { "relaxdb_class" => "Item" }
       obj = RelaxDB.create_object(data)
       obj.should be_instance_of(Item)
     end

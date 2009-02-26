@@ -188,7 +188,7 @@ module RelaxDB
   
     def create_object(data)
       # revise use of string 'class' - it's a reserved word in JavaScript
-      klass = data.delete("class")
+      klass = data.delete("relaxdb_class")
       if klass
         k = Module.const_get(klass)
         k.new(data)

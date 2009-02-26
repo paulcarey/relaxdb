@@ -24,6 +24,7 @@ end
 
 def create_base_db
   RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
+  RelaxDB.delete_db "relaxdb_spec_base" rescue "ok"
   RelaxDB.use_db "relaxdb_spec_base"
   require File.dirname(__FILE__) + '/spec_models.rb'
   puts "Created relaxdb_spec_base"
