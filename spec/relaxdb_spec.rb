@@ -191,6 +191,26 @@ describe RelaxDB do
       result.map{ |p| p.num }.should == [0, 4]
     end
     
+    it "should return nil for a reduce view with no results" do
+      Primitives.view_by :num
+      RelaxDB.view("Primitives_by_num", :reduce => true).should be_nil
+    end
+
+    it "should return a single value for a reduce view with a single result" do
+      Primitives.view_by :num
+      Primitives.new(:num => :x).save!
+      RelaxDB.view("Primitives_by_num", :reduce => true).should == 1
+    end
+
+    it "should return an array for a reduce view with multiple results" do
+      Primitives.view_by :num
+      2.times { |i| Primitives.new(:num => i).save! }
+      res = RelaxDB.view("Primitives_by_num", :reduce => true, :group => true)
+      res.should be_an_instance_of(Array)
+      res.size.should == 2
+    end
+
+    
   end
   
   describe ".merge" do

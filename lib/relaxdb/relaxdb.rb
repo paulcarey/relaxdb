@@ -121,8 +121,6 @@ module RelaxDB
       res
     end
           
-    # Requests the given view from CouchDB and returns a hash.
-    # This method should typically be wrapped in one of merge, instantiate, or reduce_result.
     def view(view_name, params = {})
       q = Query.new(view_name, params)
       
@@ -132,8 +130,7 @@ module RelaxDB
       if q.raw then hash
       elsif q.reduce then reduce_result hash
       else ViewResult.new hash
-      end
-      
+      end      
     end
         
     # Should be invoked on the result of a join view
@@ -149,10 +146,10 @@ module RelaxDB
       merged.values.map { |v| ViewObject.create(v) }
     end
         
-    # Returns a RelaxDB object, an object, an Array of objects, or a scalar
     def reduce_result(data)
-      obj = data["rows"][0] && data["rows"][0]["value"]
-      create_object obj
+      res = create_from_hash data
+      res.size == 0 ? nil :
+        res.size == 1 ? res[0] : res
     end
     
     def paginate_view(view_name, atts)      
