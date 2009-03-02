@@ -544,7 +544,7 @@ module RelaxDB
       if RelaxDB.create_views?        
         view = ViewCreator.all
         view.save unless view.exists?
-      end
+      end        
     end          
     
     def self.inherited subclass
