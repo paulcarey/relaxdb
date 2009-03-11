@@ -15,6 +15,9 @@ module RelaxDB
     class_inheritable_accessor :derived_prop_writers
     
     class_inheritable_accessor :__view_by_list__
+    self.__view_by_list__ = []
+    
+    class_inheritable_accessor :belongs_to_rels
             
     def self.property(prop, opts={})
       @properties ||= [:_id, :_rev]
@@ -425,9 +428,7 @@ module RelaxDB
       alias_method :references, :belongs_to
     end
     
-    def self.belongs_to_rels
-      @belongs_to_rels ||= {}
-    end
+    self.belongs_to_rels = {}
     
     def self.all_relationships
       belongs_to_rels + has_one_rels + has_many_rels + references_many_rels
@@ -502,9 +503,7 @@ module RelaxDB
     #
     def self.view_by *atts
       opts = atts.last.is_a?(Hash) ? atts.pop : {}
-
-      @__view_by_list__ ||= []
-      @__view_by_list__ << atts
+      __view_by_list__ << atts
       
       if RelaxDB.create_views?
         ViewCreator.by_att_list([self.name], *atts).save
@@ -565,7 +564,7 @@ module RelaxDB
 
       if RelaxDB.create_views?
         ViewCreator.all(@hierarchy).save
-        __view_by_list__ && __view_by_list__.each do |atts|
+        __view_by_list__.each do |atts|
           ViewCreator.by_att_list(@hierarchy, *atts).save
         end
       end
