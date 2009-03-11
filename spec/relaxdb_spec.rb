@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 describe RelaxDB do
 
   before(:each) do
-    create_test_db
+    setup_test_db
   end
         
   describe ".create_object" do
@@ -93,12 +93,12 @@ describe RelaxDB do
     it "should replicate the named database" do
       orig = "relaxdb_spec"
       replica = "relaxdb_spec_replicate_test"
+      RelaxDB.delete_db replica rescue :ok
       class ReplicaTest < RelaxDB::Document; end
       ReplicaTest.new.save # implicitly saved to orig
       RelaxDB.replicate_db orig, replica
       RelaxDB.use_db replica
-      ReplicaTest.all.size.should == 1
-      RelaxDB.delete_db replica rescue :ok
+      ReplicaTest.all.size.should == 1      
     end
     
   end
@@ -237,8 +237,9 @@ describe RelaxDB do
   describe "create_views disabled" do
 
     before(:each) do
-      create_test_db :create_views => false
-      
+      create_test_db 
+      RelaxDB.enable_view_creation false
+    
       class CvdBar < RelaxDB::Document
         view_by :foo
         has_one :foo1
@@ -257,7 +258,7 @@ describe RelaxDB do
   describe "create_views enabled" do
 
     before(:each) do
-      create_test_db :create_views => true
+      create_test_db
 
       class CveBar < RelaxDB::Document
         view_by :foo

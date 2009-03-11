@@ -16,13 +16,13 @@ module RelaxDB
     
     def __getobj__
       unless @objs
-        @objs = RelaxDB.view "all_by_relaxdb_class", @params
+        @objs = RelaxDB.view "#{@class_name}_all", @params
       end
       @objs
     end
 
     def size
-      size = RelaxDB.view "all_by_relaxdb_class", :key => @class_name, :reduce => true
+      size = RelaxDB.view "#{@class_name}_all", :reduce => true
       size || 0
     end
     

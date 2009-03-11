@@ -12,6 +12,7 @@ describe "view_by" do
     before(:each) do
       RelaxDB.delete_db "relaxdb_spec" rescue "ok"
       RelaxDB.use_db "relaxdb_spec"
+      RelaxDB.enable_view_creation
 
       class ViewByFoo < RelaxDB::Document
         property :foo

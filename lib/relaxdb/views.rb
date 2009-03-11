@@ -2,15 +2,21 @@ module RelaxDB
 
   class ViewCreator
     
-    def self.all
+    def self.all(*kls)
+      klass = kls[0]
+      kls_names = kls.map{ |k| %Q("#{k}") }.join(",")
       map = <<-QUERY
-      function(doc) {
-        if(doc.relaxdb_class !== undefined)
-          emit(doc.relaxdb_class, doc);
+      function(doc) {        
+        var match = [#{kls_names}].some(function (name) {
+          return doc.relaxdb_class && doc.relaxdb_class == name;
+        });
+        if (match) {
+          emit(null, doc);
+        }
       }
       QUERY
             
-      View.new "all_by_relaxdb_class", map, sum_reduce_func      
+      View.new "#{klass}_all", map, sum_reduce_func      
     end
     
     def self.by_att_list(class_name, *atts)

@@ -22,8 +22,8 @@ module RelaxDB
       @dd
     end
     
-    def create_views
-      @create_views = true
+    def enable_view_creation default=true
+      @create_views = default
     end
     
     # Set in configuration and consulted by view_by, has_many, has_one, references_many and all

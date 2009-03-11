@@ -9,6 +9,12 @@ module RelaxDB
     
     # Attribute symbols added to this list won't be validated on save
     attr_accessor :validation_skip_list
+    
+    class_inheritable_accessor :properties, :reader => true
+
+    class_inheritable_accessor :derived_prop_writers, :reader => true
+    
+    class_inheritable_accessor :_view_by_meta_data
         
     # Define properties and property methods
     
@@ -45,16 +51,19 @@ module RelaxDB
       if opts[:derived]
         add_derived_prop(prop, opts[:derived])
       end
-    end
-
-    def self.properties
-      # Ensure that classes that don't define their own properties still function as CouchDB objects
-      @properties ||= [:_id, :_rev]
-    end
+    end    
     
-    def properties
-      self.class.properties
-    end
+    property :_id 
+    property :_rev        
+
+    # def self.properties
+    #   # Ensure that classes that don't define their own properties still function as CouchDB objects
+    #   @properties ||= [:_id, :_rev]
+    # end
+    # 
+    # def properties
+    #   self.class.properties
+    # end
     
     def self.create_validator(att, v)
       method_name = "validate_#{att}"
@@ -87,9 +96,9 @@ module RelaxDB
         @derived_prop_writers[source][prop] = writer
     end
     
-    def self.derived_prop_writers
-      @derived_prop_writers ||= {}
-    end
+    # def self.derived_prop_writers
+    #   @derived_prop_writers ||= {}
+    # end
     
     #
     # The rationale for rescuing the send below is that the lambda for a derived 
@@ -98,14 +107,15 @@ module RelaxDB
     # possibility of a writer raising an exception.
     #
     def write_derived_props(source)
-      writers = self.class.derived_prop_writers[source]
+      writers = self.class.derived_prop_writers
+      writers = writers && writers[source]
       if writers 
         writers.each do |prop, writer|
           current_val = send(prop)
           begin
             send("#{prop}=", writer.call(current_val, self)) 
           rescue => e
-            RelaxDB.logger.warn "Deriving #{prop} from #{source} raised #{e}"
+            RelaxDB.logger.error "Deriving #{prop} from #{source} raised #{e}"
           end
         end
       end
@@ -441,7 +451,6 @@ module RelaxDB
     end
         
     def self.all params = {}
-      params = {:key => self.name}.merge params
       AllDelegator.new self.name, params
     end
                     
@@ -548,12 +557,30 @@ module RelaxDB
     end          
     
     def self.inherited subclass
-      create_all_by_class_view 
+      chain = subclass.up_chain
+      while k = chain.pop
+        k.create_views chain
+      end
+      
+      # subclass.up_chain.each { |k| k.recreate_views }
+      # puts chain
+      # create_all_by_class_view 
     end
     
-    property :_id 
-    property :_rev    
-                
+    def self.create_views chain
+      # puts "Creating views for #{self}: #{chain.inspect}"
+      if RelaxDB.create_views?
+        ViewCreator.all(self, *chain).save
+      end
+    end
+    
+    def self.up_chain
+      k = self
+      kls = [k]
+      kls << k while ((k = k.superclass) != RelaxDB::Document)
+      kls
+    end
+                                        
   end
   
 end

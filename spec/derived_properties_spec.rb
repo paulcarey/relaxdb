@@ -6,19 +6,17 @@ class DpInvite < RelaxDB::Document
   belongs_to :event  
 end
 
+class ChildDpInvite < DpInvite
+end
+
 class DpEvent < RelaxDB::Document
   property :name  
 end
 
 describe RelaxDB::Document, "derived properties" do
   
-  before(:all) do
-    RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"  
-  end
-
   before(:each) do
-    RelaxDB.delete_db "relaxdb_spec" rescue "ok"
-    RelaxDB.use_db "relaxdb_spec"
+    setup_test_db
   end
   
   it "should have its value updated when the source is updated" do
@@ -36,6 +34,13 @@ describe RelaxDB::Document, "derived properties" do
     i.event_name.should == "shindig"
     RelaxDB.db.get_count.should == 1
   end  
+  
+  it "should have its value persisted in inherited classes" do
+    e = DpEvent.new(:name => "shindig").save!
+    i = ChildDpInvite.new(:event => e).save!
+    
+    RelaxDB.reload(i).event_name.should == "shindig"
+  end
   
   it "should have its value updated when the source_id is updated for a saved event" do
     e = DpEvent.new(:name => "shindig").save!
