@@ -560,17 +560,17 @@ module RelaxDB
       chain = subclass.up_chain
       while k = chain.pop
         k.create_views chain
-      end
-      
-      # subclass.up_chain.each { |k| k.recreate_views }
-      # puts chain
-      # create_all_by_class_view 
+      end      
     end
     
     def self.create_views chain
-      # puts "Creating views for #{self}: #{chain.inspect}"
+      # Capture the inheritance hierarchy of this class
+      @hierarchy ||= []
+      @hierarchy += chain
+      @hierarchy.uniq!
+
       if RelaxDB.create_views?
-        ViewCreator.all(self, *chain).save
+        ViewCreator.all(self, *@hierarchy).save
       end
     end
     

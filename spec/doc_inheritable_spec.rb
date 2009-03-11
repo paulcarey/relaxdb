@@ -11,13 +11,36 @@ describe "inheritance" do
     p = PrimitivesChild.new(:num => 1).save!
     RelaxDB.reload(p).num.should == 1
   end
-  
-  it "should rewrite ancestral all views" do
-    a = Ancestor.new(:x => 0).save!
-    d = Descendant.new(:x => 1).save!
     
-    Ancestor.all.should == [a, d]
-    Descendant.all.should == [d]
+  describe "all views" do
+    
+    it "should be rewritten" do
+      a = Ancestor.new(:x => 0).save!
+      d = Descendant.new(:x => 1).save!
+
+      Ancestor.all.should == [a, d]
+      Descendant.all.should == [d]
+    end
+
+    it "should function with inheritance trees" do
+      Inh::X.new.save!
+      
+      Inh::Y.new.save!
+      Inh::Y1.new.save!
+      
+      Inh::Z.new.save!
+      Inh::Z1.new.save!
+      Inh::Z2.new.save!
+      
+      Inh::X.all.size.should == 6
+      Inh::Y.all.size.should == 2
+      Inh::Y1.all.size.should == 1
+      Inh::Z.all.size.should == 3
+      Inh::Z1.all.size.should == 1
+      Inh::Z2.all.size.should == 1
+      
+    end
+    
   end
   
   # test properties

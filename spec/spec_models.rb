@@ -163,3 +163,16 @@ end
 
 class Descendant < Ancestor
 end
+
+module Inh
+  
+  class X < RelaxDB::Document; end
+
+  class Y < X; end
+  class Y1 < Y; end
+  
+  class Z < X; end
+  class Z1 < Z; end
+  class Z2 < Z; end
+  
+end
