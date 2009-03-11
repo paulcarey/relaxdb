@@ -157,11 +157,18 @@ end
 class Ancestor < RelaxDB::Document
 
   property :x
+  property :y, :default => true,
+    :validator => lambda { |y| y },
+    :validation_msg => "Uh oh"
+    
   view_by :x
 
 end
 
 class Descendant < Ancestor
+end
+
+class SubDescendant < Descendant
 end
 
 module Inh

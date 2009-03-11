@@ -12,7 +12,7 @@ module RelaxDB
     
     class_inheritable_accessor :properties, :reader => true
 
-    class_inheritable_accessor :derived_prop_writers, :reader => true
+    class_inheritable_accessor :derived_prop_writers
     
     class_inheritable_accessor :__view_by_list__
         

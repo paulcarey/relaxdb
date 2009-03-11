@@ -1,18 +1,28 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 require File.dirname(__FILE__) + '/spec_models.rb'
 
-describe "inheritance" do
+describe "Inheritance" do
   
   before(:each) do
     setup_test_db
   end
-      
-  it "should inherit from a parent document" do
-    p = PrimitivesChild.new(:num => 1).save!
-    RelaxDB.reload(p).num.should == 1
-  end
+  
+  describe "properties" do
+
+    it "should by inherited from a parent document" do
+      d = SubDescendant.new(:x => 1).save!
+      RelaxDB.reload(d).x.should == 1
+    end
     
-  describe "all views" do
+    it "validators should behave as normal" do
+      d = SubDescendant.new(:y => false)
+      d.save.should be_false
+      d.errors[:y].should == "Uh oh"
+    end
+    
+  end      
+    
+  describe "_all views" do
     
     it "should be rewritten" do
       a = Ancestor.new(:x => 0).save!
@@ -42,9 +52,9 @@ describe "inheritance" do
     
   end
   
-  describe "by views" do
+  describe "_by views" do
     
-    it "should be rewritten" do
+    it "should be rewritten for ancestors and generated for descendants" do
       a = Ancestor.new(:x => 0).save!
       d = Descendant.new(:x => 1).save!
       
@@ -54,12 +64,13 @@ describe "inheritance" do
     
   end
   
-  # test properties
-  # test belongs to
-  # test derived properties (belongs_to only for now)
   # test all
   # test view_by
-  # test validation & validation_msg
   # test tree inheritance e.g x -> y; y -> y1 ; x -> z; z -> z1; z -> z2;
+  # test properties
+  # test validation & validation_msg
+    
+  # test belongs to
+  # test derived properties (belongs_to only for now)
   
 end
