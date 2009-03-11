@@ -161,8 +161,11 @@ class Ancestor < RelaxDB::Document
     :validator => lambda { |y| y },
     :validation_msg => "Uh oh"
     
+  references :user
+  property :user_name,
+    :derived => [:user, lambda { |p, o| o.user.name } ]
+    
   view_by :x
-
 end
 
 class Descendant < Ancestor

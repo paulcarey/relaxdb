@@ -15,12 +15,8 @@ module RelaxDB
     class_inheritable_accessor :derived_prop_writers
     
     class_inheritable_accessor :__view_by_list__
-        
-    # Define properties and property methods
-    
+            
     def self.property(prop, opts={})
-      # Class instance varibles are not inherited, so the default properties must be explicitly listed 
-      # Perhaps a better solution exists. Revise. I think extlib contains a solution for this...
       @properties ||= [:_id, :_rev]
       @properties << prop
 
@@ -55,15 +51,6 @@ module RelaxDB
     
     property :_id 
     property :_rev        
-
-    # def self.properties
-    #   # Ensure that classes that don't define their own properties still function as CouchDB objects
-    #   @properties ||= [:_id, :_rev]
-    # end
-    # 
-    # def properties
-    #   self.class.properties
-    # end
     
     def self.create_validator(att, v)
       method_name = "validate_#{att}"
@@ -95,11 +82,7 @@ module RelaxDB
         @derived_prop_writers[source] ||= {}
         @derived_prop_writers[source][prop] = writer
     end
-    
-    # def self.derived_prop_writers
-    #   @derived_prop_writers ||= {}
-    # end
-    
+        
     #
     # The rationale for rescuing the send below is that the lambda for a derived 
     # property shouldn't need to concern itself with checking the validity of

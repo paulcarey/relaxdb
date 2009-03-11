@@ -64,13 +64,26 @@ describe "Inheritance" do
     
   end
   
-  # test all
-  # test view_by
-  # test tree inheritance e.g x -> y; y -> y1 ; x -> z; z -> z1; z -> z2;
-  # test properties
-  # test validation & validation_msg
+  describe "derived properties" do
     
-  # test belongs to
-  # test derived properties (belongs_to only for now)
-  
+    it "should be stored" do
+      u = User.new(:name => "u").save!
+      d = SubDescendant.new(:user => u).save!
+      
+      RelaxDB.reload(d).user_name.should == "u"
+    end
+    
+  end
+
+  describe "references" do
+    
+    it "should function as normal" do
+      u = User.new(:name => "u").save!
+      d = SubDescendant.new(:user => u).save!
+      
+      RelaxDB.reload(d).user.name.should == "u"
+    end
+    
+  end
+    
 end
