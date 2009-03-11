@@ -14,7 +14,7 @@ module RelaxDB
 
     class_inheritable_accessor :derived_prop_writers, :reader => true
     
-    class_inheritable_accessor :_view_by_meta_data
+    class_inheritable_accessor :__view_by_list__
         
     # Define properties and property methods
     
@@ -519,15 +519,18 @@ module RelaxDB
     #
     def self.view_by *atts
       opts = atts.last.is_a?(Hash) ? atts.pop : {}
+
+      @__view_by_list__ ||= []
+      @__view_by_list__ << atts
       
       if RelaxDB.create_views?
-        ViewCreator.by_att_list(self.name, *atts).save
+        ViewCreator.by_att_list([self.name], *atts).save
       end
       
       by_name = "by_#{atts.join "_and_"}"
-      view_name = "#{self.name}_#{by_name}"
       meta_class.instance_eval do
-        define_method by_name do |*params|          
+        define_method by_name do |*params|
+          view_name = "#{self.name}_#{by_name}"
           if params.empty?
             res = RelaxDB.view view_name, opts
           elsif params[0].is_a? Hash
@@ -541,6 +544,7 @@ module RelaxDB
       paginate_by_name = "paginate_by_#{atts.join "_and_"}"
       meta_class.instance_eval do
         define_method paginate_by_name do |params|
+          view_name = "#{self.name}_#{by_name}"
           params[:attributes] = atts
           params = opts.merge params
           RelaxDB.paginate_view view_name, params
@@ -563,24 +567,27 @@ module RelaxDB
       end      
     end
     
-    def self.create_views chain
-      # Capture the inheritance hierarchy of this class
-      @hierarchy ||= []
-      @hierarchy += chain
-      @hierarchy.uniq!
-
-      if RelaxDB.create_views?
-        ViewCreator.all(self, *@hierarchy).save
-      end
-    end
-    
     def self.up_chain
       k = self
       kls = [k]
       kls << k while ((k = k.superclass) != RelaxDB::Document)
       kls
     end
-                                        
+    
+    def self.create_views chain
+      # Capture the inheritance hierarchy of this class
+      @hierarchy ||= [self]
+      @hierarchy += chain
+      @hierarchy.uniq!
+
+      if RelaxDB.create_views?
+        ViewCreator.all(@hierarchy).save
+        __view_by_list__ && __view_by_list__.each do |atts|
+          ViewCreator.by_att_list(@hierarchy, *atts).save
+        end
+      end
+    end
+                                            
   end
   
 end

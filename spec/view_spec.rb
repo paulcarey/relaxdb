@@ -10,12 +10,12 @@ describe RelaxDB::View do
     end
     
     it "should return nil if a view doesnt exist" do
-      RelaxDB::ViewCreator.all.should_not be_exists
+      RelaxDB::ViewCreator.all([Atom]).should_not be_exists
     end
     
     it "should return the view if it exits" do
-      RelaxDB::ViewCreator.all.save
-      RelaxDB::ViewCreator.all.should be_exists
+      RelaxDB::ViewCreator.all([Atom]).save
+      RelaxDB::ViewCreator.all([Atom]).should be_exists
     end
 
   end

@@ -38,7 +38,18 @@ describe "inheritance" do
       Inh::Z.all.size.should == 3
       Inh::Z1.all.size.should == 1
       Inh::Z2.all.size.should == 1
+    end
+    
+  end
+  
+  describe "by views" do
+    
+    it "should be rewritten" do
+      a = Ancestor.new(:x => 0).save!
+      d = Descendant.new(:x => 1).save!
       
+      Ancestor.by_x.should == [a, d]
+      Descendant.by_x.should == [d]
     end
     
   end

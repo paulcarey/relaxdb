@@ -2,31 +2,30 @@ module RelaxDB
 
   class ViewCreator
     
-    def self.all(*kls)
-      klass = kls[0]
-      kls_names = kls.map{ |k| %Q("#{k}") }.join(",")
+    def self.all(kls)
+      class_name = kls[0]
       map = <<-QUERY
       function(doc) {        
-        var match = [#{kls_names}].some(function (name) {
-          return doc.relaxdb_class && doc.relaxdb_class == name;
-        });
-        if (match) {
+        var class_match = #{kls_check kls}
+        if (class_match) {
           emit(null, doc);
         }
       }
       QUERY
             
-      View.new "#{klass}_all", map, sum_reduce_func      
+      View.new "#{class_name}_all", map, sum_reduce_func      
     end
     
-    def self.by_att_list(class_name, *atts)
+    def self.by_att_list(kls, *atts)
+      class_name = kls[0]
       key = atts.map { |a| "doc.#{a}" }.join(", ")
       key = atts.size > 1 ? key.sub(/^/, "[").sub(/$/, "]") : key
       prop_check = atts.map { |a| "doc.#{a} !== undefined" }.join(" && ")
     
       map = <<-QUERY
       function(doc) {
-        if(doc.relaxdb_class == "#{class_name}" && #{prop_check}) {
+        var class_match = #{kls_check kls}
+        if(class_match && #{prop_check}) {
           emit(#{key}, doc);
         }
       }
@@ -63,6 +62,15 @@ module RelaxDB
       
       view_name = "#{client_class}_#{relationship}"
       View.new view_name, map
+    end
+    
+    def self.kls_check kls
+      kls_names = kls.map{ |k| %Q("#{k}") }.join(",")
+      "[#{kls_names}].some(
+          function (name) {
+            return doc.relaxdb_class && doc.relaxdb_class == name;
+          }
+        );"
     end
     
     def self.sum_reduce_func

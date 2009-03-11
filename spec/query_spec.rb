@@ -10,12 +10,12 @@ describe RelaxDB::Query do
   describe "#view_name" do
 
     it "should match a single key attribute" do
-      q = RelaxDB::ViewCreator.by_att_list "bar", :foo
+      q = RelaxDB::ViewCreator.by_att_list ["bar"], :foo
       q.view_name.should == "bar_by_foo"
     end
     
     it "should match key attributes" do
-      q = RelaxDB::ViewCreator.by_att_list "bar", :foo, :bar
+      q = RelaxDB::ViewCreator.by_att_list ["bar"], :foo, :bar
       q.view_name.should == "bar_by_foo_and_bar"
     end
   end
