@@ -12,7 +12,7 @@ describe "inheritance" do
     RelaxDB.reload(p).num.should == 1
   end
   
-  it "should rewrite ancestor view_by views" do
+  it "should rewrite ancestral all views" do
     a = Ancestor.new(:x => 0).save!
     d = Descendant.new(:x => 1).save!
     

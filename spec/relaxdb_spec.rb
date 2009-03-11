@@ -270,7 +270,7 @@ describe RelaxDB do
 
     it "should create all views" do
       dd = RelaxDB::DesignDocument.get "spec_doc"
-      dd.data["views"]["all_by_relaxdb_class"].should be
+      dd.data["views"]["CveBar_all"].should be
       dd.data["views"]["CveBar_by_foo"].should be
       dd.data["views"]["CveBar_foo1"].should be
       dd.data["views"]["CveBar_foon"].should be

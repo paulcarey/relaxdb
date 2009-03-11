@@ -181,7 +181,7 @@ module RelaxDB
     def create_object(data)
       klass = data.is_a?(Hash) && data.delete("relaxdb_class")
       if klass
-        k = Module.const_get klass
+        k = klass.split("::").inject(Object) { |x, y| x.const_get y }
         k.new data
       else 
         # data is a scalar or not of a known class
