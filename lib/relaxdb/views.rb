@@ -66,11 +66,7 @@ module RelaxDB
     
     def self.kls_check kls
       kls_names = kls.map{ |k| %Q("#{k}") }.join(",")
-      "[#{kls_names}].some(
-          function (name) {
-            return doc.relaxdb_class && doc.relaxdb_class == name;
-          }
-        );"
+      "[#{kls_names}].indexOf(doc.relaxdb_class) >= 0;"
     end
     
     def self.sum_reduce_func
