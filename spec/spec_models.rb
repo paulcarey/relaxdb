@@ -174,6 +174,14 @@ end
 class SubDescendant < Descendant
 end
 
+class RichDescendant < Descendant
+  property :foo
+  
+  references :ukulele
+  property :ukulele_name,
+    :derived => [:ukulele, lambda { |p, o| o.user.name } ]
+end
+
 module Inh
   
   class X < RelaxDB::Document; end

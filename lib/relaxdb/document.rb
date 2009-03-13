@@ -11,17 +11,19 @@ module RelaxDB
     attr_accessor :validation_skip_list
     
     class_inheritable_accessor :properties, :reader => true
+    self.properties = [:_id, :_rev]
 
     class_inheritable_accessor :derived_prop_writers
+    self.derived_prop_writers = {}
     
     class_inheritable_accessor :__view_by_list__
     self.__view_by_list__ = []
     
-    class_inheritable_accessor :belongs_to_rels
+    class_inheritable_accessor :belongs_to_rels, :reder => true
+    self.belongs_to_rels = {}
             
     def self.property(prop, opts={})
-      @properties ||= [:_id, :_rev]
-      @properties << prop
+      properties << prop
 
       define_method(prop) do
         instance_variable_get("@#{prop}".to_sym)        
@@ -81,9 +83,8 @@ module RelaxDB
     # See derived_properties_spec.rb for usage
     def self.add_derived_prop(prop, deriver)
         source, writer = deriver[0], deriver[1]
-        @derived_prop_writers ||= {}
-        @derived_prop_writers[source] ||= {}
-        @derived_prop_writers[source][prop] = writer
+        derived_prop_writers[source] ||= {}
+        derived_prop_writers[source][prop] = writer
     end
         
     #
@@ -395,8 +396,7 @@ module RelaxDB
     end
             
     def self.belongs_to(relationship, opts={})
-      @belongs_to_rels ||= {}
-      @belongs_to_rels[relationship] = opts
+      belongs_to_rels[relationship] = opts
 
       define_method(relationship) do
         create_or_get_proxy(BelongsToProxy, relationship).target

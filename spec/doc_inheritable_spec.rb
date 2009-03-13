@@ -68,9 +68,12 @@ describe "Inheritance" do
     
     it "should be stored" do
       u = User.new(:name => "u").save!
-      d = SubDescendant.new(:user => u).save!
+      s = SubDescendant.new(:user => u).save!
+      r = RichDescendant.new(:user => u, :ukulele => u).save!
       
-      RelaxDB.reload(d).user_name.should == "u"
+      RelaxDB.reload(s).user_name.should == "u"
+      RelaxDB.reload(r).user_name.should == "u"
+      RelaxDB.reload(r).ukulele_name.should == "u"
     end
     
   end
@@ -79,9 +82,11 @@ describe "Inheritance" do
     
     it "should function as normal" do
       u = User.new(:name => "u").save!
-      d = SubDescendant.new(:user => u).save!
+      s = SubDescendant.new(:user => u).save!
+      r = RichDescendant.new(:user => u).save!
       
-      RelaxDB.reload(d).user.name.should == "u"
+      RelaxDB.reload(s).user.name.should == "u"
+      RelaxDB.reload(r).user.name.should == "u"
     end
     
   end
