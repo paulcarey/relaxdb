@@ -7,6 +7,11 @@ module RelaxDB
     # Used to store validation messages
     attr_accessor :errors
     
+    # A call issued to save_all will save this object and the
+    # contents of the save_list. This allows secondary object to
+    # be saved at the same time as this object.
+    attr_accessor :save_list
+    
     # Attribute symbols added to this list won't be validated on save
     attr_accessor :validation_skip_list
     
@@ -114,6 +119,7 @@ module RelaxDB
       end
       
       @errors = Errors.new
+      @save_list = []
       @validation_skip_list = []
 
       # Set default properties if this object isn't being loaded from CouchDB
@@ -157,6 +163,7 @@ module RelaxDB
         s << ", #{relationship}_id: #{id}" if id
       end
       s << ", errors: #{errors.inspect}" unless errors.empty?
+      s << ", save_list: #{save_list.map { |o| o.inspect }.join ", " }" unless save_list.empty?
       s << ">"
     end
     
@@ -211,6 +218,15 @@ module RelaxDB
     
     def post_save
       after_save
+    end
+    
+    # save_all and save_all! are untested
+    def save_all
+      RelaxDB.bulk_save self, *save_list
+    end
+    
+    def save_all!
+      RelaxDB.bulk_save! self, *save_list
     end
     
     def save!
