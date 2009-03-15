@@ -14,6 +14,12 @@ describe "Inheritance" do
       RelaxDB.reload(d).x.should == 1
     end
     
+    it "should store its own properties" do
+      r = RichDescendant.new(:x => 1, :foo => :bar).save!
+      RelaxDB.reload(r).x.should == 1
+      RelaxDB.reload(r).foo.should == "bar"
+    end
+    
     it "validators should behave as normal" do
       d = SubDescendant.new(:y => false)
       d.save.should be_false
