@@ -72,7 +72,7 @@ module RelaxDB
         resp = db.post("_bulk_docs", { "docs" => objs }.to_json )
         data = JSON.parse(resp.body)
     
-        data["new_revs"].each do |new_rev|
+        data.each do |new_rev|
           obj = docs[ new_rev["id"] ]
           obj._rev = new_rev["rev"]
           obj.post_save

@@ -18,8 +18,9 @@ def setup_test_db
   begin
     RelaxDB.replicate_db "relaxdb_spec_base", "relaxdb_spec"
     RelaxDB.enable_view_creation
-  rescue
-    puts "Run rake create_base_db before the first spec run"
+  rescue => e
+    puts "\n===== Run rake create_base_db before the first spec run ====="
+    puts
     exit!
   end
 end
