@@ -51,7 +51,6 @@ module RelaxDB
     end
     
     def view_path
-      uri = "_view/#{RelaxDB.dd}/#{@view_name}"
       uri = "_design/#{RelaxDB.dd}/_view/#{@view_name}"
       
       query = ""

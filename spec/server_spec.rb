@@ -23,7 +23,7 @@ describe RelaxDB do
 
     it "should raise a RuntimeError for non specific errors" do
       lambda do
-        @server.get "/relaxdb_spec/_view?fail=true"
+        @server.get "/relaxdb_spec/_design/spec_doc/_view?fail=true"
       end.should raise_error(RuntimeError)
     end
     
