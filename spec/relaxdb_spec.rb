@@ -81,9 +81,9 @@ describe RelaxDB do
       lambda { RelaxDB.bulk_save!(c.new) }.should raise_error(RelaxDB::ValidationFailure)
     end
     
-    it "should raise an exception if a document update conflict occurs on save" do
+    it "will not raise an exception if a document update conflict occurs on save" do
       Atom.new(:_id => "a1").save!
-      lambda { RelaxDB.bulk_save! Atom.new(:_id => "a1") }.should raise_error(RelaxDB::UpdateConflict)
+      RelaxDB.bulk_save! Atom.new(:_id => "a1")
     end
     
   end

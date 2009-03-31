@@ -4,7 +4,7 @@ require 'spec/rake/spectask'
 
 PLUGIN = "relaxdb"
 NAME = "relaxdb"
-GEM_VERSION = "0.2.8"
+GEM_VERSION = "0.3.0"
 AUTHOR = "Paul Carey"
 EMAIL = "paul.p.carey@gmail.com"
 HOMEPAGE = "http://github.com/paulcarey/relaxdb/"
@@ -28,7 +28,7 @@ spec = Gem::Specification.new do |s|
   
   s.require_path = 'lib'
   s.autorequire = PLUGIN
-  s.files = %w(LICENSE README.textile Rakefile) + Dir.glob("{docs,lib,spec}/**/*")
+  s.files = %w(LICENSE README.textile readme.rb Rakefile) + Dir.glob("{docs,lib,spec}/**/*")
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|

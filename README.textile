@@ -1,44 +1,12 @@
 h3. What's New?
 
-* 02/02/09 - mostly fixes and tweaks for CouchDB trunk (tested against revision 0.9.0a740000). This includes a couple of breaking API changes - count became limit, 409 rather than 412 is returned on document update conflict, and '/' in design docs is treated differently.
+RelaxDB 0.3 released - compatible with CouchDB 0.9. 
 
-* Potentially breaking change. Skipping validations is now done by adding attribute symbols to an object's list rather than passing them to @save@. For example @my_obj.validation_skip_list << :foo@. This offers per object granularity over validations when working with bulk_save.
-
-* Potentially breaking change. @load@ now returns an array if passed an array of size one. Previously it would have returned a single object.
-
-* Update conflict hook and property
-
-* Semantic consistency for bulk_save and bulk_save! wrt to save and save!
-
-* Multiple exception handling improvements
-
-* @save_all@ that issues a bulk_save for an object and its has_one and has_many children
-
-* assignment of @has_many@ relationships
-
-* Validations may be skipped by passing the attribute symbol(s) to @save@ or @save!@.
-
-* Denormalisation via derived properties. Examples in spec/derived_properties_spec.rb.
-
-* Semantic changes for @ has_many#<< @. The parent object is now assigned to the child object *prior* to validation. This potentially breaking change was made to allow child objects to derive properties from a parent object.
-
-* Semantic consistency for load, load!, save and save!. The bang versions raise an exception when their more relaxed siblings would simply return nil.
-
-* Minimal support for CouchDB validation 
-
-* Time storage changes. All Time objects are now converted to UTC and formatted as @ %Y/%m/%d %H:%M:%S +0000 @. Storing all Times as UTC should have been happening anyway. Formatting Times as above (as opposed to ISO 8601 as was done prior to 0.2.3) allows the Time strings to be passed directly to Date.new in a JavaScript interpreter. 
-
-* Pagination! CouchDB offers great support for retrieving a subset of data, but the housekeeping is tricky. RelaxDB takes care of it.
-** Note that if you invoke paginate_by on an already created view, the necessary reduce function won't be automatically created. Take a look at SortedByView and create the reduce func by hand.
-* Support for multi key post
-** For example, @ Numbers.by_val :keys => [1,2,3,5]@
-* Works with CouchDB 0.9 trunk as of 2009/01/02. Note that pagination won't work correctly on trunk until issue "COUCHDB-135":http://issues.apache.org/jira/browse/COUCHDB-135 is fixed.
-
-*Note*: Current versions require CouchDB 0.9 trunk. If you're working with CouchDB 0.8 or 0.8.1, please build from commit @ a8a2d496462 @.
+Version 0.3 includes many breaking changes. Most notable are simplified view syntax changes and the requirement that a design doc be specified up front.
 
 h2. Overview
 
-RelaxDB provides a Ruby interface to CouchDB. It offers a simple idiom for specifying object relationships. The underlying objects are persisted to the mighty CouchDB. Combined with the schema free nature of CouchDB, RelaxDB's current strength lies in quick prototyping of object models.
+RelaxDB provides a Ruby interface to CouchDB. It offers a simple idiom for specifying object relationships. The underlying objects are persisted to CouchDB and are retreived using CouchDB idioms.
 
 A few facilities are provided including pretty printing of GET requests and uploading of JavaScript views.
 
@@ -46,14 +14,21 @@ A basic merb plugin, "merb_relaxdb":http://github.com/paulcarey/merb_relaxdb/tre
 
 For more complete documentation take a look at docs/spec_results.html and the corresponding specs.
 
-h2. Details 
+*Note*: While RelaxDB 0.3 is explicitly compatible with CouchDB 0.9, HEAD typically tracks CouchDB HEAD.
+
+h2. Details
 
 h3. Getting started
 
 <pre>
 <code>
-  RelaxDB.configure :host => "localhost", :port => 5984
-  RelaxDB.use_db "scratch"
+  require 'rubygems'
+  require 'relaxdb'
+
+  RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "app"
+  RelaxDB.use_db "relaxdb_scratch"
+  
+  RelaxDB.enable_view_creation # creates views when class definition is executed
 </code>
 </pre>
 
@@ -61,27 +36,37 @@ h3. Defining models
 
 <pre>
 <code>
-  class Writer < RelaxDB::Document
-    property :name, :default => "anon"
-    
-    has_many :posts, :class => "Post"
-    has_many :ratings, :class => "Post", :known_as => :critic
-  end
 
-  class Post < RelaxDB::Document
-    property :created_at
-    property :contents
+class User < RelaxDB::Document
+  property :name
+end
+
+class Invite < RelaxDB::Document
   
-    belongs_to :writer  
-    has_many :ratings, :class => "Rating"
+  property :created_at
+  
+  property :event_name
+  
+  property :state, :default => "awaiting_response",
+    :validator => lambda { |s| %w(accepted rejected awaiting_response).include? s }
+  
+  references :sender, :validator => :required
+  
+  references :recipient, :validator => :required
+  
+  property :sender_name,
+   :derived => [:sender, lambda { |p, o| o.sender.name } ]
+  
+  view_by :sender_name
+  view_by :sender_id
+  view_by :recipient_id, :created_at, :descending => true
+  
+  def on_update_conflict
+    puts "conflict!"
   end
+  
+end
 
-  class Rating < RelaxDB::Document
-    property :thumbs_up, :validator => lambda { |tu| tu >= 0 && tu < 3 }, :validation_msg => "No no"
-
-    belongs_to :post
-    belongs_to :critic
-  end
 </code>
 </pre>
 
@@ -89,16 +74,46 @@ h3. Exploring models
 
 <pre>
 <code>
-  paul = Writer.new(:name => "paul").save
+# Saving objects
 
-  post = Post.new(:contents => "foo")
-  paul.posts << post                                          # post writer is set and post is saved
-  post.created_at                                             # right now
-  paul.ratings << Rating.new(:thumbs_up => 3, :post => post)  # returns false as rating fails validation
-  paul.ratings.size                                           # 0
+sofa = User.new(:name => "sofa").save!
+futon = User.new(:name => "futon").save!
 
-  # Simple views are auto created
-  Rating.by_thumbs_up :key => 2, :limit => 1 # query params map directly to CouchDB
+i = Invite.new :sender => sofa, :recipient => futon, :event_name => "CouchCamp"
+i.save!
+
+# Loading and querying
+
+il = RelaxDB.load i._id
+puts i == il # true
+
+ir = Invite.by_sender_name "sofa"
+puts i == ir # true
+
+ix = Invite.by_sender_name(:key => "sofa").first
+puts i == ix # true
+
+# Denormalization
+
+puts ix.sender_name # prints sofa, no requests to CouchDB made
+puts ix.sender.name # prints sofa, a single CouchDB request made
+
+# Saving with conflicts
+
+idup = i.dup
+i.save!
+idup.save # conflict printed
+
+# Saving with and without validations
+
+i = Invite.new :sender => sofa, :name => "daily show"
+i.save! rescue :ok # save! throws an exception on validation failure or conflict
+i.save # returns false rather than throwing an exception
+puts i.errors.inspect # {:recipient=>"invalid:"}
+
+i.validation_skip_list << :recipient # Any and all validations may be skipped
+i.save # succeeds
+
 </code>
 </pre>
 
@@ -106,72 +121,57 @@ h3. Paginating models
 
 <pre>
 <code>
-  # Controller (merb-action-args used for extracting view_params)
+  # Controller
 
-  def action(page_params={})
-    u_id = @user._id
-
-    @posts = Post.paginate_by(page_params, :writer_id, :created_at) do |p|
-      p.startkey([u_id, {}]).endkey([u_id]).descending(true).limit(5)
-    end
+  def show(page_params={})
+    uid = @user._id
+    @invites = Invite.paginate_by_sender_name :startkey => [uid, {}], 
+        :endkey => [uid], :descending => true, :limit => 5, :page_params => page_params
     render
   end
   
   # In your view
   
-  <% @posts.each do |p| %>
-    <%= p.contents %>
+  <% @invites.each do |i| %>
+    <%= i.event_name %>
   <% end %>
   
-  <%= link_to "prev", "/posts/?#{@posts.prev_query}" if @posts.prev_query %>
-  <%= link_to "next", "/posts/?#{@posts.next_query}" if @posts.next_query %>  
+  <%= link_to "prev", "/invites/?#{@invites.prev_query}" if @invites.prev_query %>
+  <%= link_to "next", "/invites/?#{@invites.next_query}" if @invites.next_query %>  
 </code>
 </pre>
 
-h3. Paginating over your own views
-
-<pre>
-<code>
-
-RelaxDB.paginate_view(page_params, "Letter", "by_letter_and_number", :letter, :number) do |p|
-  p.startkey(["b"]).endkey(["b", {}]).limit(2)
-end
-
-</code>
-</pre>
-
-A more illustrative example is listed in the .paginate_view spec in spec/paginate_spec.rb
+More illustrative examples are listed in the .paginate_view spec in spec/paginate_spec.rb
 
 h3. Creating views by hand
 
 <pre>
 <code>
   $ cat view.js 
-  function Writer-allnames-map(doc) {
-    if(doc.class == "Writer")
-      emit(null, doc.name);
+  function Invites_by_state-map(doc) {
+    if(doc.relaxdb_class === "Invite")
+      emit(doc.state, doc);
   }
 
-  function Writer-allnames-reduce(keys, values) {
-    var allnames = "";
-    for(var i = 0; i < values.length; i++)
-      allnames += values[i];
-    return allnames;
+  function Invites_by_state-reduce(keys, values, rereduce) {
+    if (rereduce) {
+      return sum(values);
+    } else {
+      return values.length;
+    }
   }
   $
 
   RelaxDB::ViewUploader.upload("view.js")
-  RelaxDB.view("Writer", "allnames")                          # paul
+  RelaxDB.view "Invites_by_state", :key => "accepted", :reduce => true
 </code>
 </pre>
 
 h3. Visualise
 
-The GraphCreator has been superceded by "fuschia":http://github.com/paulcarey/fuschia/tree/master.
+"Fuschia":http://github.com/paulcarey/fuschia/tree/master offers a web front end for visualising inter-document relationships.
 
 h2. Incomplete list of limitations
 
 * Destroying an object results in non transactional nullification of child/peer references
-* Objects can talk to only one database at a time
-* No caching is used. Although adding an LRU cache would be fairly straightforward, this hasn't been done as it's not yet clear what caching strategies will be most effective. 
-
+* Objects can talk to only one database at a time. Similarly for design docs.

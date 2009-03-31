@@ -16,7 +16,7 @@ module RelaxDB
     attr_accessor :validation_skip_list
     
     class_inheritable_accessor :properties, :reader => true
-    self.properties = [:_id, :_rev]
+    self.properties = []
 
     class_inheritable_accessor :derived_prop_writers
     self.derived_prop_writers = {}
@@ -58,7 +58,7 @@ module RelaxDB
         add_derived_prop(prop, opts[:derived])
       end
     end    
-    
+  
     property :_id 
     property :_rev        
     
