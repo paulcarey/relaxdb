@@ -66,14 +66,15 @@ puts ix.sender.name # prints sofa, a single CouchDB request made
 
 idup = i.dup
 i.save!
-idup.save # conflict printed
+idup.save     # conflict printed
 
 # Saving with and without validations
 
-i = Invite.new :sender => sofa, :name => "daily show"
-i.save! rescue :ok # save! throws an exception on validation failure or conflict
-i.save # returns false rather than throwing an exception
-puts i.errors.inspect # {:recipient=>"invalid:"}
+i = Invite.new :sender => sofa, :event_name => "CouchCamp"
 
-i.validation_skip_list << :recipient # Any and all validations may be skipped
-i.save # succeeds
+i.save! rescue :ok        # save! throws an exception on validation failure or conflict
+i.save                    # returns false rather than throwing an exception
+puts i.errors.inspect     # prints {:recipient=>"invalid:"}
+
+i.validation_skip_list << :recipient  # Any and all validations may be skipped
+i.save                                # succeeds
