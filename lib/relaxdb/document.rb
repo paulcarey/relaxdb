@@ -210,7 +210,7 @@ module RelaxDB
     end
     
     def pre_save
-      set_created_at if new_document?
+      set_timestamps
       return false unless validates?
       return false unless before_save            
       true 
@@ -300,11 +300,13 @@ module RelaxDB
     end
     alias_method :id, :to_param
     
-    def set_created_at
-      if methods.include? "created_at"
+    def set_timestamps
+      if new_document? && respond_to?(:created_at)
         # Don't override it if it's already been set
         @created_at = Time.now if @created_at.nil?
       end
+      
+      @updated_at = Time.now if respond_to?(:updated_at)
     end
        
     def create_or_get_proxy(klass, relationship, opts=nil)

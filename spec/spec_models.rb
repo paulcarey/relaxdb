@@ -18,6 +18,7 @@ class Primitives < RelaxDB::Document
   property :true_bool
   property :false_bool
   property :created_at
+  property :updated_at
   property :empty
   
   view_by :num
