@@ -1,6 +1,8 @@
 h3. What's New?
 
-* 2009-04-19 Defaults to taf2-curb, falling back to Net/HTTP if it taf2-curb can't be loaded. Thanks to "Fred Cheung":http://www.spacevatican.org/2009/4/13/fun-with-ruby-http-clients.
+* 2009-04-19 
+ * Defaults to taf2-curb, falling back to Net/HTTP if it taf2-curb can't be loaded. Thanks to "Fred Cheung":http://www.spacevatican.org/2009/4/13/fun-with-ruby-http-clients.
+ * For those interested in using RelaxDB with an ETag based cache, "look here":http://github.com/fcheung/relaxdb/commit/1d9acfd5f6b3c23da0d275252b6a6e064865440e
 
 RelaxDB 0.3 released - compatible with CouchDB 0.9. 
 
