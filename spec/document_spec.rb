@@ -185,7 +185,7 @@ describe RelaxDB::Document do
 
     it "should prevent the object from being resaved" do
       p = Atom.new.save.destroy!
-    # Exepcted failure - see http://issues.apache.org/jira/browse/COUCHDB-292      
+      # Exepcted failure - see http://issues.apache.org/jira/browse/COUCHDB-292      
       lambda { p.save! }.should raise_error
     end
     

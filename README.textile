@@ -1,5 +1,7 @@
 h3. What's New?
 
+* 2009-04-19 Defaults to taf2-curb, falling back to Net/HTTP if it taf2-curb can't be loaded. Thanks to "Fred Cheung":http://www.spacevatican.org/2009/4/13/fun-with-ruby-http-clients.
+
 RelaxDB 0.3 released - compatible with CouchDB 0.9. 
 
 Version 0.3 includes many breaking changes. Most notable are simplified view syntax changes and the requirement that a design doc be specified up front.

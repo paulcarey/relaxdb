@@ -15,6 +15,14 @@ $:.unshift(File.dirname(__FILE__)) unless
 
 require 'relaxdb/validators'
 
+begin
+  gem 'taf2-curb'
+  require 'curb'
+  require 'relaxdb/taf2_curb_server'
+rescue LoadError
+  require 'relaxdb/net_http_server'
+end
+
 require 'relaxdb/all_delegator'
 require 'relaxdb/belongs_to_proxy'
 require 'relaxdb/design_doc'
