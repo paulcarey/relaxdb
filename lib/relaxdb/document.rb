@@ -141,7 +141,7 @@ module RelaxDB
         # Only set instance variables on creation - object references are resolved on demand
 
         # If the variable name ends in _at, _on or _date try to convert it to a Time
-        if [/_at$/, /_on$/, /_date$/].inject(nil) { |i, r| i ||= (key =~ r) }
+        if [/_at$/, /_on$/, /_date$/, /_time$/].inject(nil) { |i, r| i ||= (key =~ r) }
             val = Time.parse(val).utc rescue val
         end
         
