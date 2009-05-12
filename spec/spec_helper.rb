@@ -42,3 +42,20 @@ def create_base_db
   require File.dirname(__FILE__) + '/spec_models.rb'
   puts "Created relaxdb_spec_base"
 end
+
+def roll_clock_forward(distance)
+  Time.meta_class.instance_eval do
+    define_method(:future_now) do
+      standard_now + distance
+    end
+    alias_method :standard_now, :now
+    alias_method :now, :future_now
+    begin
+      yield
+    rescue => e
+      raise e
+    ensure
+      alias_method :now, :standard_now
+    end
+  end
+end
