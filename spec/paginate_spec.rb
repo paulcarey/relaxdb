@@ -5,17 +5,14 @@ describe "RelaxDB Pagination" do
     
   before(:each) do
     setup_test_db    
-        
-    Letter.new(:letter => "a", :number => 1).save # :_id => "a1",
-    Letter.new(:letter => "a", :number => 2).save # :_id => "a2", 
-    Letter.new(:letter => "a", :number => 3).save # :_id => "a3", 
-    Letter.new(:letter => "b", :number => 1).save # :_id => "b1", 
-    Letter.new(:letter => "b", :number => 2).save # :_id => "b2", 
-    Letter.new(:letter => "b", :number => 3).save # :_id => "b3", 
-    Letter.new(:letter => "b", :number => 4).save # :_id => "b4", 
-    Letter.new(:letter => "b", :number => 5).save # :_id => "b5", 
-    Letter.new(:letter => "c", :number => 1).save # :_id => "c1", 
-    Letter.new(:letter => "c", :number => 2).save # :_id => "c2",    
+    
+    letters = [ 
+      ["a", 1], ["a", 2], ["a", 3],
+      ["b", 1], ["b", 2], ["b", 3], ["b", 4], ["b", 5], 
+      ["c", 1], ["c", 2] 
+    ].map { |o| Letter.new :letter => o[0], :number => o[1], :_id => "#{o[0]}#{o[1]}" }
+
+    RelaxDB.bulk_save *letters        
   end
 
   # helper function
@@ -291,35 +288,7 @@ describe "RelaxDB Pagination" do
   
   describe ".paginate_view functional tests" do
     
-    it "should pass" do
-      map = <<-FUNC
-        function (doc) {
-          if (doc.relaxdb_class === "Letter") {
-            emit([doc.letter, doc.number], doc);
-          }
-        }
-      FUNC
-      
-      reduce = <<-FUNC
-        function (keys, values, combine) {
-          return values.length;
-        }
-      FUNC
-      
-      view_name = "Letter_by_letter_and_number"
-      RelaxDB::DesignDocument.get(RelaxDB.dd).add_map_view(view_name, map).add_reduce_view(view_name, reduce).save
-      
-      old_query = lambda do |page_params|
-        RelaxDB.paginate_view(page_params, "Letter_by_letter_and_number", :letter, :number) do |p|
-          p.startkey(["b"]).endkey(["b", {}]).limit(2)
-        end
-      end
-
-      query = lambda do |page_params|
-        RelaxDB.paginate_view "Letter_by_letter_and_number", :page_params => page_params,
-          :startkey => ["b"], :endkey => ["b", {}], :limit => 2, :attributes => [:letter, :number]
-      end
-      
+    def navigate_b_series(query)
       letters = query.call({})
       s(letters).should == "b1, b2"
       letters.prev_params.should be_false
@@ -340,6 +309,41 @@ describe "RelaxDB Pagination" do
       s(letters).should == "b1, b2"
       letters.next_params.should be
       letters.prev_params.should be_false      
+    end
+    
+    before(:each) do
+      map = <<-FUNC
+        function (doc) {
+          if (doc.relaxdb_class === "Letter") {
+            emit([doc.letter, doc.number], doc);
+          }
+        }
+      FUNC
+      
+      reduce = <<-FUNC
+        function (keys, values, combine) {
+          return values.length;
+        }
+      FUNC
+      
+      view_name = "Letter_by_letter_and_number"
+      RelaxDB::DesignDocument.get(RelaxDB.dd).add_map_view(view_name, map).add_reduce_view(view_name, reduce).save      
+    end
+    
+    it "should pass using symbols as view_keys" do
+      query = lambda do |page_params|
+        RelaxDB.paginate_view "Letter_by_letter_and_number", :page_params => page_params,
+          :startkey => ["b"], :endkey => ["b", {}], :limit => 2, :attributes => [:letter, :number]
+      end
+      navigate_b_series query
+    end
+
+    it "should pass using symbols and values as view_keys" do
+      query = lambda do |page_params|
+        RelaxDB.paginate_view "Letter_by_letter_and_number", :page_params => page_params,
+          :startkey => ["b"], :endkey => ["b", {}], :limit => 2, :attributes => ["b", :number]
+      end
+      navigate_b_series query
     end
     
   end

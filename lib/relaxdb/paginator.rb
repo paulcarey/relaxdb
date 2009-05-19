@@ -18,6 +18,11 @@ module RelaxDB
         :descending => @orig_paginate_params.descending, :reduce => true
     end
     
+    #
+    # view_keys are used to determine the params for the prev and next links. If a view_key is a symbol
+    # the key value will be the result of invoking the method named by the symbol on the first / last 
+    # element in the result set. If a view_key is not a symbol, its value will be used directly.
+    #
     def add_next_and_prev(docs, view_name, view_keys)
       unless docs.empty?
         no_docs = docs.size
@@ -45,14 +50,14 @@ module RelaxDB
     end
     
     def create_next(doc, view_keys)
-      next_key = view_keys.map { |a| doc.send(a) }
+      next_key = view_keys.map { |a| a.is_a?(Symbol) ? doc.send(a) : a }
       next_key = next_key.length == 1 ? next_key[0] : next_key
       next_key_docid = doc._id
       { :startkey => next_key, :startkey_docid => next_key_docid, :descending => @orig_paginate_params.descending }
     end
     
     def create_prev(doc, view_keys)
-      prev_key = view_keys.map { |a| doc.send(a) }
+      prev_key = view_keys.map { |a| a.is_a?(Symbol) ? doc.send(a) : a }
       prev_key = prev_key.length == 1 ? prev_key[0] : prev_key
       prev_key_docid = doc._id
       prev_params = { :startkey => prev_key, :startkey_docid => prev_key_docid, :descending => !@orig_paginate_params.descending }

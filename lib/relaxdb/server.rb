@@ -27,6 +27,7 @@ module RelaxDB
       @server.get("/#{name}") rescue false
     end
     
+    # URL encode slashes e.g. RelaxDB.delete_db "foo%2Fbar"
     def delete_db(name)
       @logger.info("Deleting database #{name}")
       @server.delete("/#{name}")
