@@ -69,6 +69,12 @@ describe RelaxDB::Query do
       q.view_path.should == "_design//_view/?endkey_docid=foo&reduce=false"
     end
     
+    it "should not include design or view if it starts with a _" do
+      q = RelaxDB::Query.new "_"
+      # q.view_path.should == "_"
+      q.view_path.should == "_?reduce=false"
+    end
+    
   end  
   
   describe "#keys" do

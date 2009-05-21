@@ -49,6 +49,11 @@ module RelaxDB
       db.db_exists? name
     end
     
+    def db_info
+      data = JSON.parse db.get.body
+      create_object data
+    end
+    
     def delete_db(name)
       db.delete_db name
     end

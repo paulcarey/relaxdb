@@ -88,6 +88,12 @@ describe RelaxDB do
     
   end
   
+  describe ".db_info" do
+    it "should return db info" do
+      RelaxDB.db_info.doc_count.should == 1
+    end
+  end
+  
   describe ".replicate_db" do
     
     it "should replicate the named database" do
