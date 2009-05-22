@@ -84,6 +84,14 @@ module RelaxDB
     def name=(name)
       @db = name
     end
+    
+    def req_count
+      get_count + put_count + post_count
+    end
+    
+    def reset_req_count
+      @get_count = @put_count = @post_count = 0
+    end
         
     private
     

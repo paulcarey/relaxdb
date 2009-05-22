@@ -83,19 +83,19 @@ module RelaxDB
       resp = db.post("_bulk_docs", data.to_json )
       data = JSON.parse(resp.body)
   
-      conflicted = false
+      conflicted = []
       data.each do |new_rev|
         obj = docs[ new_rev["id"] ]
         if new_rev["rev"]
           obj._rev = new_rev["rev"]
           obj.post_save
         else
-          conflicted = true
+          conflicted << obj._id
           obj.conflicted
         end
       end
   
-      raise UpdateConflict if conflicted    
+      raise UpdateConflict, conflicted.inspect unless conflicted.empty?
       objs
     end
     

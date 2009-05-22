@@ -79,8 +79,13 @@ describe RelaxDB do
       p2._rev.should =~ /2-/
     end
     
-    # The spec is as much a verification of my understanding of
+    #
+    # This spec is as much a verification of my understanding of
     # bulk_save semantics as it is a test of RelaxDB
+    #
+    # See http://mail-archives.apache.org/mod_mbox/couchdb-dev/200905.mbox/%3CF476A3D8-8F50-40A0-8668-C00D72196FBA@apache.org%3E
+    # for an explanation of the final section 
+    #
     describe "all-or-nothing" do
       it "should save non conflicting and conflicting docs" do
         p1, p2 = Primitives.new(:num => 1).save!, Primitives.new(:num => 2).save!
@@ -93,20 +98,30 @@ describe RelaxDB do
         p2._rev.should =~ /2-/
         
         p1 = RelaxDB.load p1._id, :conflicts => true
-        p1.num.should == 11
+        p1n1 = p1.num
         p1 = RelaxDB.load p1._id, :rev => p1._conflicts[0]
-        p1.num.should == 6
+        p1n2 = p1.num
+        if p1n1 == 11
+          p1n2.should == 6
+        else
+          p1n1.should == 6 && p1n2.should == 11
+        end
       end
       
-      it "non-deterministic winner" do
-        p = Primitives.new(:num => 1).save!
-        pd = p.dup
-        p.num = 2
-        p.save!
-        pd.num = 3
-        RelaxDB.bulk_save :all_or_nothing, pd
-        RelaxDB.reload(p).num.should == 2
-      end
+      #
+      # Test behind 
+      # http://mail-archives.apache.org/mod_mbox/couchdb-dev/200905.mbox/%3CF476A3D8-8F50-40A0-8668-C00D72196FBA@apache.org%3E
+      # Effectively defunct
+      # 
+      # it "non-deterministic winner" do
+      #   p = Primitives.new(:num => 1).save!
+      #   pd = p.dup
+      #   p.num = 2
+      #   p.save!
+      #   pd.num = 3
+      #   RelaxDB.bulk_save :all_or_nothing, pd
+      #   RelaxDB.reload(p).num.should == 2
+      # end
     end
         
   end
