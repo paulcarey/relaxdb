@@ -67,25 +67,35 @@ module RelaxDB
     end
     
     def bulk_save!(*objs)
+      if objs[0].equal? :all_or_nothing
+        objs.shift
+        all_or_nothing = true
+      end
+      
       pre_save_success = objs.inject(true) { |s, o| s &= o.pre_save }
       raise ValidationFailure, objs unless pre_save_success
       
       docs = {}
       objs.each { |o| docs[o._id] = o }
       
-      begin
-        resp = db.post("_bulk_docs", { "docs" => objs }.to_json )
-        data = JSON.parse(resp.body)
-    
-        data.each do |new_rev|
-          obj = docs[ new_rev["id"] ]
+      data = { "docs" => objs }
+      data[:all_or_nothing] = true if all_or_nothing
+      resp = db.post("_bulk_docs", data.to_json )
+      data = JSON.parse(resp.body)
+  
+      conflicted = false
+      data.each do |new_rev|
+        obj = docs[ new_rev["id"] ]
+        if new_rev["rev"]
           obj._rev = new_rev["rev"]
           obj.post_save
+        else
+          conflicted = true
+          obj.conflicted
         end
-      rescue HTTP_409
-        raise UpdateConflict, objs
       end
-    
+  
+      raise UpdateConflict if conflicted    
       objs
     end
     
@@ -101,7 +111,12 @@ module RelaxDB
       load(obj._id)
     end
   
-    def load(ids)
+    #
+    # Examples:
+    #   RelaxDB.load "foo", :conflicts => true
+    #   RelaxDB.load ["foo", "bar"]
+    #
+    def load(ids, atts={})
       # RelaxDB.logger.debug(caller.inject("#{db.name}/#{ids}\n") { |a, i| a += "#{i}\n" })
       
       if ids.is_a? Array
@@ -110,9 +125,11 @@ module RelaxDB
         data["rows"].map { |row| row["doc"] ? create_object(row["doc"]) : nil }
       else
         begin
-          resp = db.get(ids)
-          data = JSON.parse(resp.body)
-          create_object(data)
+          qs = atts.map{ |k, v| "#{k}=#{v}" }.join("&")
+          qs = atts.empty? ? ids : "#{ids}?#{qs}"
+          resp = db.get qs
+          data = JSON.parse resp.body
+          create_object data
         rescue HTTP_404
           nil
         end

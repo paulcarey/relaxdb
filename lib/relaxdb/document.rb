@@ -61,6 +61,7 @@ module RelaxDB
   
     property :_id 
     property :_rev        
+    property :_conflicts        
     
     def self.create_validator(att, v)
       method_name = "validate_#{att}"
@@ -198,16 +199,24 @@ module RelaxDB
         resp = RelaxDB.db.put(_id, to_json)
         self._rev = JSON.parse(resp.body)["rev"]
       rescue HTTP_409
-        on_update_conflict
-        @update_conflict = true
+        conflicted
         return false
       end      
     end
+    
+    def conflicted
+      @update_conflict = true
+      on_update_conflict
+    end    
     
     def on_update_conflict
       # override with any behaviour you want to happen when
       # CouchDB returns DocumentConflict on an attempt to save
     end
+    
+    def update_conflict?
+      @update_conflict
+    end    
     
     def pre_save
       set_timestamps
@@ -238,11 +247,7 @@ module RelaxDB
         raise ValidationFailure, self.errors.to_json
       end
     end
-        
-    def update_conflict?
-      @update_conflict
-    end
-    
+            
     def validates?
       props = properties - validation_skip_list
       prop_vals = props.map { |prop| instance_variable_get("@#{prop}") }

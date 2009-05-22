@@ -15,7 +15,7 @@ module RelaxDB
     def initialize(config)
       @get_count, @post_count, @put_count = 0, 0, 0
       @server = RelaxDB::Server.new(config[:host], config[:port])
-      @logger = config[:logger] ? config[:logger] : Logger.new(Tempfile.new('couchdb.log'))
+      @logger = config[:logger] ? config[:logger] : Logger.new(Tempfile.new('relaxdb.log'))
     end
     
     def use_db(name)

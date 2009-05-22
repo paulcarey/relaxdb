@@ -73,7 +73,7 @@ describe "Inheritance" do
   describe "derived properties" do
     
     it "should be stored" do
-      u = User.new(:name => "u").save!
+      u = User.new(:_id => "foo", :name => "u").save!
       s = SubDescendant.new(:user => u).save!
       r = RichDescendant.new(:user => u, :ukulele => u).save!
       

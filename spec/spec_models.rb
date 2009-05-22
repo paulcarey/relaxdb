@@ -180,7 +180,7 @@ class RichDescendant < Descendant
   
   references :ukulele
   property :ukulele_name,
-    :derived => [:ukulele, lambda { |p, o| o.user.name } ]
+    :derived => [:ukulele, lambda { |p, o| o.ukulele.name } ]
 end
 
 module Inh

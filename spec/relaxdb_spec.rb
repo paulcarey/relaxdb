@@ -70,6 +70,45 @@ describe RelaxDB do
       RelaxDB.bulk_save(x).first.foo.should == :bar
     end
     
+    it "should save non conflicting docs and mark conflicting docs" do
+      p1, p2 = Atom.new.save!, Atom.new.save!
+      p1.dup.save!
+      RelaxDB.bulk_save p1, p2
+      p1._rev.should =~ /1-/
+      p1.should be_update_conflict
+      p2._rev.should =~ /2-/
+    end
+    
+    # The spec is as much a verification of my understanding of
+    # bulk_save semantics as it is a test of RelaxDB
+    describe "all-or-nothing" do
+      it "should save non conflicting and conflicting docs" do
+        p1, p2 = Primitives.new(:num => 1).save!, Primitives.new(:num => 2).save!
+        p1d = p1.dup
+        p1d.num = 11
+        p1d.save!
+        p1.num = 6
+        RelaxDB.bulk_save :all_or_nothing, p1, p2
+        p1._rev.should =~ /2-/
+        p2._rev.should =~ /2-/
+        
+        p1 = RelaxDB.load p1._id, :conflicts => true
+        p1.num.should == 11
+        p1 = RelaxDB.load p1._id, :rev => p1._conflicts[0]
+        p1.num.should == 6
+      end
+      
+      it "non-deterministic winner" do
+        p = Primitives.new(:num => 1).save!
+        pd = p.dup
+        p.num = 2
+        p.save!
+        pd.num = 3
+        RelaxDB.bulk_save :all_or_nothing, pd
+        RelaxDB.reload(p).num.should == 2
+      end
+    end
+        
   end
   
   describe ".bulk_save!" do
@@ -81,9 +120,11 @@ describe RelaxDB do
       lambda { RelaxDB.bulk_save!(c.new) }.should raise_error(RelaxDB::ValidationFailure)
     end
     
-    it "will not raise an exception if a document update conflict occurs on save" do
-      Atom.new(:_id => "a1").save!
-      RelaxDB.bulk_save! Atom.new(:_id => "a1")
+    it "should raise an exception on document conflict after all docs have been processed" do
+      p1, p2 = Atom.new.save!, Atom.new.save!
+      p1.dup.save!
+      lambda { RelaxDB.bulk_save!(p1, p2) }.should raise_error(RelaxDB::UpdateConflict)
+      p2._rev.should =~ /2-/
     end
     
   end
