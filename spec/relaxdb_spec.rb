@@ -207,6 +207,16 @@ describe RelaxDB do
       ar2.should == a2
     end
     
+    it "should load multiple documents in order" do
+      ns = (0...100).map { rand(1_000_000_000).to_s }
+      objs = ns.map { |n| Primitives.new :_id => n }
+      RelaxDB.bulk_save! *objs
+      objs = RelaxDB.load! ns
+      (0...100).each do |i|
+        ns[i].should == objs[i]._id
+      end
+    end
+    
     it "should throw an exception if given a single id for a non-existant doc" do
       lambda do
         RelaxDB.load! "nothere"
