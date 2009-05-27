@@ -8,7 +8,7 @@ module RelaxDB
       function(doc) {        
         var class_match = #{kls_check kls}
         if (class_match) {
-          emit(null, doc);
+          emit(doc._id, doc);
         }
       }
       QUERY

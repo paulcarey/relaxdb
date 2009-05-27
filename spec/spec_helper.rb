@@ -9,8 +9,12 @@ end
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 require 'relaxdb'
 
+class RdbFormatter; def call(sv, time, progname, msg); puts msg; end; end
+
 def setup_test_db
   # RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc", :logger => Logger.new(STDOUT)
+  # RelaxDB.logger.formatter = RdbFormatter.new
+  
   RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"
   
   RelaxDB.delete_db "relaxdb_spec" rescue "ok"

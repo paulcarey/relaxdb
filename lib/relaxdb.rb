@@ -30,6 +30,7 @@ require 'relaxdb/document'
 require 'relaxdb/extlib'
 require 'relaxdb/has_many_proxy'
 require 'relaxdb/has_one_proxy'
+require 'relaxdb/migration'
 require 'relaxdb/paginate_params'
 require 'relaxdb/paginator'
 require 'relaxdb/query'
@@ -42,6 +43,8 @@ require 'relaxdb/view_result'
 require 'relaxdb/view_uploader'
 require 'relaxdb/views'
 require 'more/grapher.rb'
+
+require 'relaxdb/migration_version'
 
 module RelaxDB
 end

@@ -1,5 +1,7 @@
 h3. What's New?
 
+* 2009-05-27
+** Added minimal support for data migrations. Although CouchDB's nature removes the necessity for migrations, certain knowledge that all objects possess a particular property can simplify client logic. This desire for simplification is the rationale behind this change.
 * 2009-04-19 
 ** Defaults to taf2-curb, falling back to Net/HTTP if it taf2-curb can't be loaded. Thanks to "Fred Cheung":http://www.spacevatican.org/2009/4/13/fun-with-ruby-http-clients.
 ** For those interested in using RelaxDB with an ETag based cache, "look here":http://github.com/fcheung/relaxdb/commit/1d9acfd5f6b3c23da0d275252b6a6e064865440e
@@ -168,6 +170,20 @@ h3. Creating views by hand
 
   RelaxDB::ViewUploader.upload("view.js")
   RelaxDB.view "Invites_by_state", :key => "accepted", :reduce => true
+</code>
+</pre>
+
+h3. Migrations
+
+<pre>
+<code>
+  $ cat 001_double.rb
+  RelaxDB::Migration.run Primitives do |p| 
+    p.num *= 2 
+    p
+  end
+  
+  $ ruby -e 'RelaxDB::Migration.run_all Dir["./*.rb"]'
 </code>
 </pre>
 

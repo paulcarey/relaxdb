@@ -4,7 +4,7 @@ require 'spec/rake/spectask'
 
 PLUGIN = "relaxdb"
 NAME = "relaxdb"
-GEM_VERSION = "0.3.2"
+GEM_VERSION = "0.3.3"
 AUTHOR = "Paul Carey"
 EMAIL = "paul.p.carey@gmail.com"
 HOMEPAGE = "http://github.com/paulcarey/relaxdb/"

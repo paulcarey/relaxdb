@@ -39,11 +39,7 @@ describe RelaxDB do
       ta.should == t1
       tb.should == t2
     end
-    
-    it "should succeed when passed no args" do
-      RelaxDB.bulk_save
-    end
-    
+        
     it "should return false on failure" do
       c = Class.new(RelaxDB::Document) do
         property :foo, :validator => lambda { false }
@@ -127,6 +123,16 @@ describe RelaxDB do
   end
   
   describe ".bulk_save!" do
+    
+    it "should succeed when passed no args" do
+      RelaxDB.bulk_save!
+    end
+    
+    it "should raise when passed a nil value" do
+      lambda do
+        RelaxDB.bulk_save! *[nil]
+      end.should raise_error
+    end
     
     it "should raise an exception if a obj fails validation" do
       c = Class.new(RelaxDB::Document) do

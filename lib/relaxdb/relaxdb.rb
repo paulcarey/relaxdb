@@ -73,7 +73,7 @@ module RelaxDB
       end
       
       pre_save_success = objs.inject(true) { |s, o| s &= o.pre_save }
-      raise ValidationFailure, objs unless pre_save_success
+      raise ValidationFailure, objs.inspect unless pre_save_success
       
       docs = {}
       objs.each { |o| docs[o._id] = o }
