@@ -24,7 +24,7 @@ module RelaxDB
     class_inheritable_accessor :__view_by_list__
     self.__view_by_list__ = []
     
-    class_inheritable_accessor :belongs_to_rels, :reder => true
+    class_inheritable_accessor :belongs_to_rels, :reader => true
     self.belongs_to_rels = {}
             
     def self.property(prop, opts={})
