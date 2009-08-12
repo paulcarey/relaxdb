@@ -16,7 +16,7 @@ module RelaxDB
     
     def __getobj__
       unless @objs
-        @objs = RelaxDB.view "#{@class_name}_all", @params
+        @objs = RelaxDB.view "#{@class_name}_all", @params.merge(:reduce => false)
       end
       @objs
     end
