@@ -1,5 +1,6 @@
 class Errors < Hash
   alias_method :on, :[]
+  alias_method :count, :size
 end
 
 class Time
