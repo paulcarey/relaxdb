@@ -217,8 +217,9 @@ describe RelaxDB do
       ns = (0...100).map { rand(1_000_000_000).to_s }
       objs = ns.map { |n| Primitives.new :_id => n }
       RelaxDB.bulk_save! *objs
+      ns = ns.reverse
       objs = RelaxDB.load! ns
-      (0...100).each do |i|
+      99.downto(0) do |i|
         ns[i].should == objs[i]._id
       end
     end
@@ -249,7 +250,7 @@ describe RelaxDB do
     it "should request a view and return an array" do
       RelaxDB::DesignDocument.get(RelaxDB.dd).add_view("simple", "map", map_func).save
       data = RelaxDB.view("simple")
-      data.should be_instance_of(Array)
+      data.should == []
     end
 
     it "may accept query params" do

@@ -114,6 +114,7 @@ module RelaxDB
     #
     # Examples:
     #   RelaxDB.load "foo", :conflicts => true
+    #   RelaxDB.load "foo", :revs => true
     #   RelaxDB.load ["foo", "bar"]
     #
     def load(ids, atts={})

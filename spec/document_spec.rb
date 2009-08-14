@@ -165,10 +165,18 @@ describe RelaxDB::Document do
 
   describe "user defined property writer" do
     
-    it "should not be used" do
+    it "should not be used to modify state" do
       o = BespokeWriter.new(:val => 101).save
       o = RelaxDB.load o._id
       o.val.should == 81
+    end
+    
+    it "may be used if effectively idempotent" do
+      o = BespokeWriter.new(:tt => "2009/04/01").save
+      RelaxDB.reload(o).tt.should == Time.parse("2009/04/01")
+      
+      o = BespokeWriter.new(:tt => Time.now).save
+      RelaxDB.reload(o).tt.should be_close(Time.now, 1)
     end
         
   end
@@ -254,8 +262,7 @@ describe RelaxDB::Document do
     end
   
     it "should return an empty array when no instances exist" do
-      Atom.all.should be_an_instance_of(Array)
-      Atom.all.should be_empty
+      Atom.all.should == []
     end
     
   end

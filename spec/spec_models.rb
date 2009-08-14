@@ -35,7 +35,9 @@ end
 
 class BespokeWriter < RelaxDB::Document
   property :val
+  property :tt
   def val=(v); @val = v - 10; end
+  def tt=(t); @tt = t.is_a?(String) ? Time.parse(t) : t; end
 end
 
 class Invite < RelaxDB::Document
