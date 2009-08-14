@@ -346,6 +346,15 @@ describe "RelaxDB Pagination" do
       navigate_b_series query
     end
     
+    it "should pass using lambdas as view_keys" do
+      query = lambda do |page_params|
+        RelaxDB.paginate_view "Letter_by_letter_and_number", :page_params => page_params,
+          :startkey => ["b"], :endkey => ["b", {}], :limit => 2, 
+          :attributes => ["b", lambda { |l| l.number } ]
+      end
+      navigate_b_series query
+    end    
+    
   end
     
 end

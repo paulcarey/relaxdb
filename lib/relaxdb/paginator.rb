@@ -50,17 +50,26 @@ module RelaxDB
     end
     
     def create_next(doc, view_keys)
-      next_key = view_keys.map { |a| a.is_a?(Symbol) ? doc.send(a) : a }
+      next_key = view_keys_to_vals doc, view_keys
       next_key = next_key.length == 1 ? next_key[0] : next_key
       next_key_docid = doc._id
       { :startkey => next_key, :startkey_docid => next_key_docid, :descending => @orig_paginate_params.descending }
     end
     
     def create_prev(doc, view_keys)
-      prev_key = view_keys.map { |a| a.is_a?(Symbol) ? doc.send(a) : a }
+      prev_key = view_keys_to_vals doc, view_keys
       prev_key = prev_key.length == 1 ? prev_key[0] : prev_key
       prev_key_docid = doc._id
       prev_params = { :startkey => prev_key, :startkey_docid => prev_key_docid, :descending => !@orig_paginate_params.descending }
+    end
+    
+    def view_keys_to_vals doc, view_keys
+      view_keys.map do |k|
+        if k.is_a?(Symbol) then doc.send(k)
+        elsif k.is_a?(Proc) then k.call(doc)
+        else k
+        end
+      end
     end
     
     def orig_offset(view_name)
