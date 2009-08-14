@@ -306,12 +306,13 @@ module RelaxDB
     alias_method :id, :to_param
     
     def set_timestamps
+      now = Time.now
       if new_document? && respond_to?(:created_at)
         # Don't override it if it's already been set
-        @created_at = Time.now if @created_at.nil?
+        @created_at = now if @created_at.nil?
       end
       
-      @updated_at = Time.now if respond_to?(:updated_at)
+      @updated_at = now if respond_to?(:updated_at)
     end
        
     def create_or_get_proxy(klass, relationship, opts=nil)
