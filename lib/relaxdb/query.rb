@@ -22,16 +22,9 @@ module RelaxDB
       end
     end
         
-    def initialize(view_name, params = {})
-      # CouchDB defaults reduce to true when a reduce func is present
-      # but returning the map view is typically more useful
-      # only adding the reduce parameter if explicitly required
-      # since views with no reduce function give an error if the reduce param is set, see
-      #  http://mail-archives.apache.org/mod_mbox/couchdb-dev/200906.mbox/%3C189019856.1245587047338.JavaMail.jira@brutus%3E
-      reduce(params[:reduce]) unless params[:reduce].nil?
-      
+    def initialize view_name, params = {}      
       @view_name = view_name
-      params.each { |k, v| send(k, v) }
+      params.each { |k, v| send k, v }
     end
     
     def keys(keys=nil)

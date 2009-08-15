@@ -373,7 +373,7 @@ module RelaxDB
       @has_many_rels << relationship
       
       if RelaxDB.create_views?
-        target_class = opts[:class]
+        target_class = opts[:class] || relationship.to_s.singularize.camel_case
         relationship_as_viewed_by_target = (opts[:known_as] || self.name.snake_case).to_s
         ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).save
       end      
@@ -538,11 +538,11 @@ module RelaxDB
         define_method by_name do |*params|
           view_name = "#{self.name}_#{by_name}"
           if params.empty?
-            res = RelaxDB.view view_name, opts.merge(:reduce => false)
+            res = RelaxDB.rf_view view_name, opts
           elsif params[0].is_a? Hash
-            res = RelaxDB.view view_name, opts.merge(params[0].merge(:reduce => false))
+            res = RelaxDB.rf_view view_name, opts.merge(params[0])
           else
-            res = RelaxDB.view(view_name, :key => params[0], :reduce => false).first
+            res = RelaxDB.rf_view(view_name, :key => params[0]).first
           end            
         end
       end
