@@ -12,35 +12,29 @@ describe RelaxDB::HasManyProxy do
 
     describe "target_class in the generated view" do
       it "should infer the class name from the relationship if not supplied" do
-        view = mock(:view)
+        view = mock(:view).as_null_object
         RelaxDB::ViewCreator.should_receive(:has_n).with(
-          "",       # client_class
-          :foos,    # relationship          
-          "Foo",    # target_class
-          ""        # relationship_to_client
-        ).and_return( view )
-        view.should_receive(:save)        
+          "",           # client_class
+          :foo_bars,    # relationship          
+          "FooBar",     # target_class
+          ""            # relationship_to_client
+        ).and_return view
         klass = Class.new(RelaxDB::Document) do
-          has_many :foos
+          has_many :foo_bars
         end
-        o = klass.new()
-        o.foos rescue nil # rescue 405 due to anonymous class name in URL
       end 
 
       it "should use the class name if supplied" do
-        view = mock(:view)
+        view = mock(:view).as_null_object
         RelaxDB::ViewCreator.should_receive(:has_n).with(
-          "",       # client_class
-          :foos,    # relationship          
-          "Boat",    # target_class
-          ""        # relationship_to_client
-        ).and_return( view )
-        view.should_receive(:save)        
+          "",         # client_class
+          :foo_bars,  # relationship          
+          "Bar",     # target_class
+          ""          # relationship_to_client
+        ).and_return view
         klass = Class.new(RelaxDB::Document) do
-          has_many :foos, :class => "Boat"
+          has_many :foo_bars, :class => "Bar"
         end
-        o = klass.new() 
-        o.foos rescue nil # rescue 405 due to anonymous class name in URL        
       end 
     end    
     
