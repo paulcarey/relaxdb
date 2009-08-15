@@ -1,5 +1,7 @@
 h3. What's New?
 
+* 2009-08-15
+** A few minor tweaks and patches push the version to 0.3.4, compatible with CouchDB 0.9.1.
 * 2009-05-27
 ** Added minimal support for data migrations. Although CouchDB's nature removes the necessity for migrations, certain knowledge that all objects possess a particular property can simplify client logic. This desire for simplification is the rationale behind this change.
 * 2009-04-19 
