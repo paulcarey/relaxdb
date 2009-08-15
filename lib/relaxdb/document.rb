@@ -538,11 +538,11 @@ module RelaxDB
         define_method by_name do |*params|
           view_name = "#{self.name}_#{by_name}"
           if params.empty?
-            res = RelaxDB.view view_name, opts
+            res = RelaxDB.rf_view view_name, opts
           elsif params[0].is_a? Hash
-            res = RelaxDB.view view_name, opts.merge(params[0])
+            res = RelaxDB.rf_view view_name, opts.merge(params[0])
           else
-            res = RelaxDB.view(view_name, :key => params[0]).first
+            res = RelaxDB.rf_view(view_name, :key => params[0]).first
           end            
         end
       end

@@ -22,13 +22,9 @@ module RelaxDB
       end
     end
         
-    def initialize(view_name, params = {})
-      # CouchDB defaults reduce to true when a reduce func is present
-      # but returning the map view is typically more useful
-      reduce(false)
-      
+    def initialize view_name, params = {}      
       @view_name = view_name
-      params.each { |k, v| send(k, v) }
+      params.each { |k, v| send k, v }
     end
     
     def keys(keys=nil)

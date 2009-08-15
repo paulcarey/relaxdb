@@ -80,7 +80,7 @@ module RelaxDB
       end
       params[:limit] = 1
             
-      RelaxDB.view(view_name, params).offset
+      RelaxDB.rf_view(view_name, params).offset
     end
     
   end

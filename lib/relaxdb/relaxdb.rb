@@ -145,6 +145,22 @@ module RelaxDB
       
       res
     end
+    
+    #
+    # CouchDB defaults reduce to true when a reduce func is present.
+    # RelaxDB used to indiscriminately set reduce=false, allowing clients to override
+    # if desired. However, as of CouchDB 0.10, such behaviour results in 
+    #   {"error":"query_parse_error","reason":"Invalid URL parameter `reduce` for map view."} 
+    # View https://issues.apache.org/jira/browse/COUCHDB-383#action_12722350
+    # 
+    # This method is an internal workaround for this change to CouchDB and may
+    # be removed if a future change allows for a better solution e.g. map=true 
+    # or a _map endpoint
+    #
+    def rf_view view_name, params
+      params[:reduce] = false
+      view view_name, params
+    end
           
     def view(view_name, params = {})
       q = Query.new(view_name, params)
@@ -185,7 +201,8 @@ module RelaxDB
       raise paginate_params.error_msg if paginate_params.invalid? 
       
       paginator = Paginator.new(paginate_params, page_params)
-                  
+
+      atts[:reduce] = false
       query = Query.new(view_name, atts)
       query.merge(paginate_params)
       
