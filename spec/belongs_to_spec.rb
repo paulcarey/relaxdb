@@ -8,7 +8,7 @@ describe RelaxDB::BelongsToProxy do
   end
 
   describe "belongs_to" do
-    
+  
     it "should return nil when accessed before assignment" do
       r = Rating.new
       r.photo.should == nil

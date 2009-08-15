@@ -8,6 +8,35 @@ describe RelaxDB::HasManyProxy do
   end
 
   describe "has_many" do
+
+
+    describe "target_class in the generated view" do
+      it "should infer the class name from the relationship if not supplied" do
+        view = mock(:view).as_null_object
+        RelaxDB::ViewCreator.should_receive(:has_n).with(
+          "",           # client_class
+          :foo_bars,    # relationship          
+          "FooBar",     # target_class
+          ""            # relationship_to_client
+        ).and_return view
+        klass = Class.new(RelaxDB::Document) do
+          has_many :foo_bars
+        end
+      end 
+
+      it "should use the class name if supplied" do
+        view = mock(:view).as_null_object
+        RelaxDB::ViewCreator.should_receive(:has_n).with(
+          "",         # client_class
+          :foo_bars,  # relationship          
+          "Bar",     # target_class
+          ""          # relationship_to_client
+        ).and_return view
+        klass = Class.new(RelaxDB::Document) do
+          has_many :foo_bars, :class => "Bar"
+        end
+      end 
+    end    
     
     it "should be considered enumerable" do
       u = User.new.save
