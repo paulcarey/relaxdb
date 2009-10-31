@@ -1,5 +1,7 @@
 h3. What's New?
 
+* 2009-10-31
+** Confirmed that the test suite passes against CouchDB 0.10.0
 * 2009-08-15
 ** A few tweaks, patches and fixes push the version to 0.3.5, compatible with CouchDB 0.9.1 and the 0.10 branch.
 ** The Rails error_messages_for helper is now supported. Thanks to "Balint Erdi":http://github.com/balinterdi.

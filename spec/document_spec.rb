@@ -102,7 +102,7 @@ describe RelaxDB::Document do
       
       roll_clock_forward(60) do
         updated_at = p.save.updated_at
-        updated_at.should be_close(Time.at(ts.to_i + 60), 1)  
+        updated_at.should be_close(Time.at(ts.to_i + 60), 2)  
       end      
     end
         
@@ -176,7 +176,7 @@ describe RelaxDB::Document do
       RelaxDB.reload(o).tt.should == Time.parse("2009/04/01")
       
       o = BespokeWriter.new(:tt => Time.now).save
-      RelaxDB.reload(o).tt.should be_close(Time.now, 1)
+      RelaxDB.reload(o).tt.should be_close(Time.now, 2)
     end
         
   end

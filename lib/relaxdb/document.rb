@@ -180,6 +180,7 @@ module RelaxDB
         prop_val = instance_variable_get("@#{prop}".to_sym)
         data["#{prop}"] = prop_val if prop_val
       end
+      data["errors"] = errors unless errors.empty?
       data["relaxdb_class"] = self.class.name
       data.to_json      
     end
