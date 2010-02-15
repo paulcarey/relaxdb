@@ -60,6 +60,11 @@ describe RelaxDB::Document do
       json = RelaxDB.get(p._id)
       json["created_at"].should == "1970/01/01 00:00:00 +0000"
     end
+
+    it "should allow to be called with an options argument, to be compatible with ActiveSupport" do
+      s = Time.at(0)
+      lambda { s.to_json( :active_support => 'love' ) }.should_not raise_error(ArgumentError)
+    end
     
   end
   
