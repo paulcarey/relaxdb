@@ -8,9 +8,23 @@ module RelaxDB
       @paginate_params = paginate_params
       @orig_paginate_params = @paginate_params.clone
       
-      page_params = page_params.is_a?(String) ? JSON.parse(page_params).to_mash : page_params
+      @page_params = page_params.is_a?(String) ? JSON.parse(page_params).to_mash : page_params
       # Where the magic happens - the original params are updated with the page specific params
-      @paginate_params.update(page_params)
+      @paginate_params.update(@page_params)
+    end
+    
+    def add_q_next_and_prev docs, view_name, view_keys    
+      if docs.empty?        
+        next_exists = prev_exists = false
+      else
+        next_exists = docs.size >= @paginate_params.limit
+        next_params = next_exists ? create_next(docs.last, view_keys) : false
+      
+        prev_exists = !@page_params.empty?
+        prev_params = prev_exists ? create_prev(docs.first, view_keys) : false        
+      end
+            
+      add_next_and_prev_meths docs, next_params, prev_params
     end
 
     def total_doc_count(view_name)
@@ -31,22 +45,16 @@ module RelaxDB
         total_doc_count = total_doc_count(view_name)      
       
         next_exists = !@paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : true
-        next_params = create_next(docs.last, view_keys) if next_exists
+        next_params = next_exists ? create_next(docs.last, view_keys) : false
     
         prev_exists = @paginate_params.order_inverted? ? (offset - orig_offset + no_docs < total_doc_count) : 
           (offset - orig_offset == 0 ? false : true)
-        prev_params = create_prev(docs.first, view_keys) if prev_exists
+        prev_params = prev_exists ? create_prev(docs.first, view_keys) : false
       else
         next_exists = prev_exists = false
       end
       
-      docs.meta_class.instance_eval do        
-        define_method(:next_params) { next_exists ? next_params : false }
-        define_method(:next_query) { next_exists ? "page_params=#{::CGI::escape(next_params.to_json)}" : false }
-        
-        define_method(:prev_params) { prev_exists ? prev_params : false }
-        define_method(:prev_query) { prev_exists ? "page_params=#{::CGI::escape(prev_params.to_json)}" : false }
-      end      
+      add_next_and_prev_meths docs, next_params, prev_params      
     end
     
     def create_next(doc, view_keys)
@@ -82,6 +90,17 @@ module RelaxDB
             
       RelaxDB.rf_view(view_name, params).offset
     end
+    
+    def add_next_and_prev_meths docs, next_params, prev_params
+      docs.meta_class.instance_eval do        
+        define_method(:next_params) { next_params }
+        define_method(:next_query) { next_params ? "page_params=#{::CGI::escape(next_params.to_json)}" : false }
+      
+        define_method(:prev_params) { prev_params }
+        define_method(:prev_query) { prev_params ? "page_params=#{::CGI::escape(prev_params.to_json)}" : false }
+      end      
+    end
+    
     
   end
   

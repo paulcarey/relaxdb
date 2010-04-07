@@ -196,6 +196,7 @@ module RelaxDB
     def paginate_view(view_name, atts)      
       page_params = atts.delete :page_params
       view_keys = atts.delete :attributes
+      qpaginate = atts.delete :qpaginate
       
       paginate_params = PaginateParams.new atts
       raise paginate_params.error_msg if paginate_params.invalid? 
@@ -209,9 +210,33 @@ module RelaxDB
       docs = ViewResult.new(JSON.parse(db.get(query.view_path).body))
       docs.reverse! if paginate_params.order_inverted?
       
-      paginator.add_next_and_prev(docs, view_name, view_keys)
+      if qpaginate
+        paginator.add_q_next_and_prev docs, view_name, view_keys
+      else
+        paginator.add_next_and_prev(docs, view_name, view_keys)
+      end
       
       docs
+    end
+    
+    #
+    # The paginate_view method only populates next and prev links if they exist.
+    # However, its implementation uses three queries to determine if the links
+    # should exist.
+    #
+    # It may be possible to determine if the links should exist with just
+    # a single query (by using a 1 doc offset on either side of the docs to be 
+    # displayed).
+    #
+    # This method makes a small change to paginate_view, dispensing with knowledge
+    # of when to create prev and next links but only requiring a single query.
+    #
+    # Indiscrimate display of prev links makes this method more suited
+    # to forward navigation only.
+    #
+    def qpaginate_view view_name, atts
+      atts[:qpaginate] = true
+      paginate_view view_name, atts
     end
         
     def create_from_hash(data)
