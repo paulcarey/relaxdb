@@ -41,7 +41,6 @@ Gem::Specification.new do |s|
    "lib/relaxdb/views.rb",
    "lib/more/grapher.rb",
    "lib/relaxdb.rb",
-   "lib/more/atomic_bulk_save_support.rb",
    "spec/belongs_to_spec.rb",
    "spec/callbacks_spec.rb",
    "spec/derived_properties_spec.rb",
