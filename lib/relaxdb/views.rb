@@ -8,12 +8,12 @@ module RelaxDB
       function(doc) {        
         var class_match = #{kls_check kls}
         if (class_match) {
-          emit(doc._id, doc);
+          emit(doc._id, 1);
         }
       }
       QUERY
             
-      View.new "#{class_name}_all", map, sum_reduce_func      
+      View.new "#{class_name}_all", map, "_sum"
     end
     
     def self.by_att_list(kls, *atts)
