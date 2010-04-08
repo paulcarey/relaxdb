@@ -18,7 +18,7 @@ module RelaxDB
       unless @ids
         params = {:raw => true}.merge @params
         result = RelaxDB.rf_view "#{@class_name}_all", params
-        @ids = result["rows"].map { |h| h["id"] }
+        @ids = RelaxDB.ids_from_view result
       end
       @ids
     end
