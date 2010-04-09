@@ -32,7 +32,7 @@ module RelaxDB
       QUERY
       
       view_name = "#{class_name}_by_" << atts.join("_and_")
-      View.new view_name, map, sum_reduce_func
+      View.new view_name, map, "_count"
     end
     
   
@@ -68,18 +68,6 @@ module RelaxDB
       kls_names = kls.map{ |k| %Q("#{k}") }.join(",")
       "[#{kls_names}].indexOf(doc.relaxdb_class) >= 0;"
     end
-    
-    def self.sum_reduce_func
-      <<-QUERY
-      function(keys, values, rereduce) {
-        if (rereduce) {
-          return sum(values);
-        } else {
-          return values.length;
-        }
-      }
-      QUERY
-    end    
     
   end
   

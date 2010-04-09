@@ -45,6 +45,13 @@ describe "view_by" do
       ViewByFoo.by_foo.map{ |o| o.foo }.should == ["b", "a"]
     end
     
+    it "should return the right count size" do
+      docs = (1..101).map { |i| ViewByFoo.new :foo => i }
+      RelaxDB.bulk_save! *docs
+      count = RelaxDB.view "ViewByFoo_by_foo", :reduce => true
+      count.should == 101
+    end
+    
     it "should allow a single arg to be passed to by_" do
       vbf = ViewByFoo.new(:foo => "a").save!
       ViewByFoo.by_foo("a").should == vbf
