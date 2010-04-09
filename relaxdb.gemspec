@@ -60,7 +60,7 @@ Gem::Specification.new do |s|
    "spec/spec.opts",
    "spec/spec_helper.rb",
    "spec/spec_models.rb",
-   "spec/view_by_spec.rb",
+   "spec/view_docs_by_spec.rb",
    "spec/view_object_spec.rb",
    "spec/view_spec.rb"]
   s.bindir = "bin"

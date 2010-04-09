@@ -16,7 +16,7 @@ module RelaxDB
       View.new "#{class_name}_all", map, "_sum"
     end
     
-    def self.by_att_list(kls, *atts)
+    def self.docs_by_att_list(kls, *atts)
       class_name = kls[0]
       key = atts.map { |a| "doc.#{a}" }.join(", ")
       key = atts.size > 1 ? key.sub(/^/, "[").sub(/$/, "]") : key

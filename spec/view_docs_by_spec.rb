@@ -1,13 +1,13 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
 require File.dirname(__FILE__) + '/spec_models.rb'
 
-describe "view_by" do
+describe "view_docs_by" do
     
   before(:all) do
     RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "spec_doc"    
   end
     
-  describe "view_by" do
+  describe "view_docs_by" do
     
     before(:each) do
       RelaxDB.delete_db "relaxdb_spec" rescue "ok"
@@ -16,7 +16,7 @@ describe "view_by" do
 
       class ViewByFoo < RelaxDB::Document
         property :foo
-        view_by :foo, :descending => true
+        view_docs_by :foo, :descending => true
       end
       
       RelaxDB::View.design_doc.save

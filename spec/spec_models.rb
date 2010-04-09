@@ -21,7 +21,7 @@ class Primitives < RelaxDB::Document
   property :updated_at
   property :empty
   
-  view_by :num
+  view_docs_by :num
 
 end
 
@@ -54,7 +54,7 @@ class Item < RelaxDB::Document
   property :name
   belongs_to :user
   
-  view_by :user_id
+  view_docs_by :user_id
 
 end
 
@@ -68,7 +68,7 @@ class User < RelaxDB::Document
   has_many :invites_received, :class => "Invite", :known_as => :recipient
   has_many :invites_sent, :class => "Invite", :known_as => :sender
   
-  view_by :name, :age
+  view_docs_by :name, :age
 
 end
 
@@ -79,9 +79,9 @@ class Post < RelaxDB::Document
   property :created_at
   property :viewed_at
   
-  view_by :content
-  view_by :subject
-  view_by :viewed_at
+  view_docs_by :content
+  view_docs_by :subject
+  view_docs_by :viewed_at
 
 end
 
@@ -90,7 +90,7 @@ class Rating < RelaxDB::Document
   property :stars, :default => 5
   belongs_to :photo
   
-  view_by :stars
+  view_docs_by :stars
 
 end
 
@@ -153,8 +153,8 @@ end
 class Letter < RelaxDB::Document
   property :letter
   property :number
-  view_by :letter, :number
-  view_by :number
+  view_docs_by :letter, :number
+  view_docs_by :number
 end
 
 class Ancestor < RelaxDB::Document
@@ -168,7 +168,7 @@ class Ancestor < RelaxDB::Document
   property :user_name,
     :derived => [:user, lambda { |p, o| o.user.name } ]
     
-  view_by :x
+  view_docs_by :x
 end
 
 class Descendant < Ancestor

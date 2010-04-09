@@ -67,9 +67,9 @@ class Invite < RelaxDB::Document
   property :sender_name,
    :derived => [:sender, lambda { |p, o| o.sender.name } ]
   
-  view_by :sender_name
-  view_by :sender_id
-  view_by :recipient_id, :created_at, :descending => true
+  view_docs_by :sender_name
+  view_docs_by :sender_id
+  view_docs_by :recipient_id, :created_at, :descending => true
   
   def on_update_conflict
     puts "conflict!"

@@ -21,8 +21,8 @@ module RelaxDB
     class_inheritable_accessor :derived_prop_writers
     self.derived_prop_writers = {}
     
-    class_inheritable_accessor :__view_by_list__
-    self.__view_by_list__ = []
+    class_inheritable_accessor :__view_docs_by_list__
+    self.__view_docs_by_list__ = []
     
     class_inheritable_accessor :belongs_to_rels, :reader => true
     self.belongs_to_rels = {}
@@ -526,12 +526,12 @@ module RelaxDB
     # Creates the corresponding view and stores it in CouchDB
     # Adds by_ and paginate_by_ methods to the class
     #
-    def self.view_by *atts
+    def self.view_docs_by *atts
       opts = atts.last.is_a?(Hash) ? atts.pop : {}
-      __view_by_list__ << atts
+      __view_docs_by_list__ << atts
       
       if RelaxDB.create_views?
-        ViewCreator.by_att_list([self.name], *atts).add_to_design_doc
+        ViewCreator.docs_by_att_list([self.name], *atts).add_to_design_doc
       end
       
       by_name = "by_#{atts.join "_and_"}"
@@ -586,8 +586,8 @@ module RelaxDB
 
       if RelaxDB.create_views?
         ViewCreator.all(@hierarchy).add_to_design_doc
-        __view_by_list__.each do |atts|
-          ViewCreator.by_att_list(@hierarchy, *atts).add_to_design_doc
+        __view_docs_by_list__.each do |atts|
+          ViewCreator.docs_by_att_list(@hierarchy, *atts).add_to_design_doc
         end
       end
     end

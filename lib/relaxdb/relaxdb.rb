@@ -27,7 +27,7 @@ module RelaxDB
       @create_views = default
     end
     
-    # Set in configuration and consulted by view_by, has_many, has_one, references_many and all
+    # Set in configuration and consulted by view_docs_by, has_many, has_one, references_many and all
     # Views will be added to CouchDB iff this is true
     def create_views?
       @create_views
