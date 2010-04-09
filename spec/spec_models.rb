@@ -22,6 +22,8 @@ class Primitives < RelaxDB::Document
   property :empty
   
   view_docs_by :num
+  
+  view_by :str
 
 end
 

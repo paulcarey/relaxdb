@@ -24,6 +24,9 @@ module RelaxDB
     class_inheritable_accessor :__view_docs_by_list__
     self.__view_docs_by_list__ = []
     
+    class_inheritable_accessor :__view_by_list__
+    self.__view_by_list__ = []    
+    
     class_inheritable_accessor :belongs_to_rels, :reader => true
     self.belongs_to_rels = {}
             
@@ -523,7 +526,7 @@ module RelaxDB
     end
                     
     #
-    # Creates the corresponding view and stores it in CouchDB
+    # Creates the corresponding view, emitting the doc as the val
     # Adds by_ and paginate_by_ methods to the class
     #
     def self.view_docs_by *atts
@@ -539,11 +542,11 @@ module RelaxDB
         define_method by_name do |*params|
           view_name = "#{self.name}_#{by_name}"
           if params.empty?
-            res = RelaxDB.rf_view view_name, opts
+            RelaxDB.rf_view view_name, opts
           elsif params[0].is_a? Hash
-            res = RelaxDB.rf_view view_name, opts.merge(params[0])
+            RelaxDB.rf_view view_name, opts.merge(params[0])
           else
-            res = RelaxDB.rf_view(view_name, :key => params[0]).first
+            RelaxDB.rf_view(view_name, :key => params[0]).first
           end            
         end
       end
@@ -559,6 +562,37 @@ module RelaxDB
       end
     end
     
+    
+    #
+    # Creates the corresponding view, emitting 1 as the val
+    # Adds a by_ method to this class, but does not add a 
+    # paginate method.
+    #
+    def self.view_by *atts
+      opts = atts.last.is_a?(Hash) ? atts.pop : {}
+      opts = opts.merge :raw => true, :reduce => false 
+      __view_by_list__ << atts
+      
+      if RelaxDB.create_views?
+        ViewCreator.by_att_list([self.name], *atts).add_to_design_doc
+      end
+      
+      by_name = "by_#{atts.join "_and_"}"
+      meta_class.instance_eval do
+        define_method by_name do |*params|
+          view_name = "#{self.name}_#{by_name}"
+          if params.empty?
+            ViewByDelegator.new(RelaxDB.doc_ids(view_name, opts))
+          elsif params[0].is_a? Hash
+            ViewByDelegator.new(RelaxDB.doc_ids(view_name, opts.merge(params[0])))
+          else
+            ViewByDelegator.new(
+              RelaxDB.doc_ids(view_name, opts.merge(:key => params[0]))).load!.first
+          end            
+        end
+      end      
+    end
+        
     # Create a view allowing all instances of a particular class to be retreived    
     def self.create_all_by_class_view
       ViewCreator.all.add_to_design_doc if RelaxDB.create_views?        
@@ -589,6 +623,10 @@ module RelaxDB
         __view_docs_by_list__.each do |atts|
           ViewCreator.docs_by_att_list(@hierarchy, *atts).add_to_design_doc
         end
+        
+        __view_by_list__.each do |atts|
+          ViewCreator.by_att_list(@hierarchy, *atts).add_to_design_doc
+        end        
       end
     end
                                             

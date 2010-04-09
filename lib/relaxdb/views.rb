@@ -17,6 +17,14 @@ module RelaxDB
     end
     
     def self.docs_by_att_list(kls, *atts)
+      create_by_att_list "doc", "_count", kls, *atts
+    end
+    
+    def self.by_att_list(kls, *atts)
+      create_by_att_list 1, "_sum", kls, *atts
+    end
+    
+    def self.create_by_att_list emit_val, reduce_func, kls, *atts
       class_name = kls[0]
       key = atts.map { |a| "doc.#{a}" }.join(", ")
       key = atts.size > 1 ? key.sub(/^/, "[").sub(/$/, "]") : key
@@ -26,15 +34,14 @@ module RelaxDB
       function(doc) {
         var class_match = #{kls_check kls}
         if (class_match && #{prop_check}) {
-          emit(#{key}, doc);
+          emit(#{key}, #{emit_val});
         }
       }
       QUERY
       
       view_name = "#{class_name}_by_" << atts.join("_and_")
-      View.new view_name, map, "_count"
+      View.new view_name, map, reduce_func      
     end
-    
   
     def self.has_n(client_class, relationship, target_class, relationship_to_client)
       map = <<-QUERY

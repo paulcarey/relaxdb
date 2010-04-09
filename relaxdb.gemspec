@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
    "lib/relaxdb/uuid_generator.rb",
    "lib/relaxdb/taf2_curb_server.rb",
    "lib/relaxdb/validators.rb",
+   "lib/relaxdb/view_by_delegator",
    "lib/relaxdb/view_object.rb",
    "lib/relaxdb/view_result.rb",
    "lib/relaxdb/view_uploader.rb",
@@ -61,8 +62,7 @@ Gem::Specification.new do |s|
    "spec/spec_helper.rb",
    "spec/spec_models.rb",
    "spec/view_docs_by_spec.rb",
-   "spec/view_object_spec.rb",
-   "spec/view_spec.rb"]
+   "spec/view_object_spec.rb"]
   s.bindir = "bin"
   s.autorequire = "relaxdb"
   s.add_dependency "extlib", ">= 0.9.4" # removed ", runtime" as was failing locally
