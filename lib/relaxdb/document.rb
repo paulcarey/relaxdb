@@ -346,7 +346,7 @@ module RelaxDB
       if RelaxDB.create_views?
         target_class = opts[:class]
         relationship_as_viewed_by_target = opts[:known_as].to_s
-        ViewCreator.references_many(self.name, relationship, target_class, relationship_as_viewed_by_target).save
+        ViewCreator.references_many(self.name, relationship, target_class, relationship_as_viewed_by_target).add_to_design_doc
       end            
      
       define_method(relationship) do
@@ -376,7 +376,7 @@ module RelaxDB
       if RelaxDB.create_views?
         target_class = opts[:class] || relationship.to_s.singularize.camel_case
         relationship_as_viewed_by_target = (opts[:known_as] || self.name.snake_case).to_s
-        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).save
+        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).add_to_design_doc
       end      
       
       define_method(relationship) do
@@ -402,7 +402,7 @@ module RelaxDB
       if RelaxDB.create_views?
         target_class = relationship.to_s.camel_case      
         relationship_as_viewed_by_target = self.name.snake_case      
-        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).save
+        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).add_to_design_doc
       end
       
       define_method(relationship) do      
@@ -531,7 +531,7 @@ module RelaxDB
       __view_by_list__ << atts
       
       if RelaxDB.create_views?
-        ViewCreator.by_att_list([self.name], *atts).save
+        ViewCreator.by_att_list([self.name], *atts).add_to_design_doc
       end
       
       by_name = "by_#{atts.join "_and_"}"
@@ -561,10 +561,7 @@ module RelaxDB
     
     # Create a view allowing all instances of a particular class to be retreived    
     def self.create_all_by_class_view
-      if RelaxDB.create_views?        
-        view = ViewCreator.all
-        view.save unless view.exists?
-      end        
+      ViewCreator.all.add_to_design_doc if RelaxDB.create_views?        
     end          
     
     def self.inherited subclass
@@ -588,9 +585,9 @@ module RelaxDB
       @hierarchy.uniq!
 
       if RelaxDB.create_views?
-        ViewCreator.all(@hierarchy).save
+        ViewCreator.all(@hierarchy).add_to_design_doc
         __view_by_list__.each do |atts|
-          ViewCreator.by_att_list(@hierarchy, *atts).save
+          ViewCreator.by_att_list(@hierarchy, *atts).add_to_design_doc
         end
       end
     end

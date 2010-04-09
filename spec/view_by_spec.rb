@@ -18,7 +18,9 @@ describe "view_by" do
         property :foo
         view_by :foo, :descending => true
       end
-
+      
+      RelaxDB::View.design_doc.save
+      
     end
     
     it "should create corresponding views" do

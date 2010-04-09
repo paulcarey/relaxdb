@@ -120,6 +120,7 @@ describe RelaxDB::HasManyProxy do
       end
       
       it "should invoke the derived properties writer" do
+        RelaxDB.enable_view_creation
         class HmsdParent < RelaxDB::Document
           property :foo, :derived => [:zongs, lambda {|f, o| o.zongs.first.z / 2 }]
           has_many :zongs, :class => "HmsdChild"
@@ -128,6 +129,8 @@ describe RelaxDB::HasManyProxy do
           property :z
           belongs_to :hmsd_parent
         end
+        RelaxDB::View.design_doc.save
+        
         oz = HmsdChild.new(:z => 10)
         op = HmsdParent.new(:zongs => [oz])
         op.foo.should == 5

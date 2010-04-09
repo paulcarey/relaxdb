@@ -44,6 +44,7 @@ def create_base_db
   RelaxDB.use_db "relaxdb_spec_base"
   RelaxDB.enable_view_creation
   require File.dirname(__FILE__) + '/spec_models.rb'
+  RelaxDB::View.design_doc.save
   puts "Created relaxdb_spec_base"
 end
 

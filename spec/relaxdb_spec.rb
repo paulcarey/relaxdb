@@ -162,7 +162,11 @@ describe RelaxDB do
       orig = "relaxdb_spec"
       replica = "relaxdb_spec_replicate_test"
       RelaxDB.delete_db replica rescue :ok
+      
+      RelaxDB.enable_view_creation
       class ReplicaTest < RelaxDB::Document; end
+      RelaxDB::View.design_doc.save
+      
       ReplicaTest.new.save # implicitly saved to orig
       RelaxDB.replicate_db orig, replica
       RelaxDB.use_db replica
@@ -339,12 +343,16 @@ describe RelaxDB do
     before(:each) do
       create_test_db
 
+      RelaxDB.enable_view_creation
+      
       class CveBar < RelaxDB::Document
         view_by :foo
         has_one :foo1
         has_many :foon
         references_many :foor
       end
+      
+      RelaxDB::View.design_doc.save
     end
 
     it "should create all views" do

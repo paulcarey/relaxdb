@@ -23,6 +23,7 @@ module RelaxDB
     end
     
     def enable_view_creation default=true
+      View.reset
       @create_views = default
     end
     

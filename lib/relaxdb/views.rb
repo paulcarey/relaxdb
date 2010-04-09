@@ -81,21 +81,28 @@ module RelaxDB
       @reduce_func = reduce_func
     end
     
-    def design_doc
+    def self.design_doc
       @design_doc ||= DesignDocument.get(RelaxDB.dd) 
     end
     
-    def save
-      dd = design_doc
+    #
+    # A convenience for tests that create their own views
+    #
+    def self.reset
+      @design_doc = nil
+    end
+        
+    def add_to_design_doc
+      dd = View.design_doc
       dd.add_map_view(@view_name, @map_func)
       dd.add_reduce_view(@view_name, @reduce_func) if @reduce_func
-      dd.save
+      # dd.save
     end
     
-    def exists?
-      dd = design_doc
-      dd.data["views"] && dd.data["views"][@view_name]
-    end
+    # def exists?
+    #   dd = design_doc
+    #   dd.data["views"] && dd.data["views"][@view_name]
+    # end
     
   end
 
