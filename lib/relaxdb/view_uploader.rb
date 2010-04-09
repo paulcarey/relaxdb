@@ -7,10 +7,16 @@ module RelaxDB
       # Methods must start and finish on different lines
       # The function declaration must start at the beginning of a line
       # As '-' is used as a delimiter, the view name may not contain '-'
-      # Exepcted function declaration form is 
+      # Expected function declaration form is 
       #   function funcname-functype(doc) {
       # For example 
       #   function Users_followers-map(doc) {
+      #
+      # Builtin Erlang views may be specified by listing a one-line function
+      # that contains only the builtin name. For example:
+      #  function Users_followers-reduce() {
+      #    _sum
+      #  }
       #
       def upload(filename)
         lines = File.readlines(filename)
@@ -37,7 +43,15 @@ module RelaxDB
           declr =~ /(\w)+-(\w)+/
           declr.sub!($&, '')
           view_name, type = $&.split('-')
-          func = lines[m[i]...m[i+1]].join
+          func = lines[m[i]...m[i+1]]
+          
+          # Cater for erlang view shortcuts e.g. _sum, _count etc.
+          if func[1] =~ /\s*_\w+\s*$/
+            func = func[1].strip
+          else
+            func = func.join
+          end
+          
           yield view_name, type, func
         end
       end

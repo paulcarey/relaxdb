@@ -54,23 +54,18 @@ describe "RelaxDB Pagination" do
       map = <<-FUNC
         function (doc) {
           if (doc.relaxdb_class === "Letter") {
-            emit([doc.letter, doc.number], 1);
+            emit([doc.letter, doc.number], null);
           }
         }
       FUNC
       
-      # We don't care about a reduce func but paginate_views sets reduce to 
-      # false so a reduce is required. If this wasn't the case, null rather
-      # than 1 would be emitted as the view val.
-      reduce = "_sum"
-      
-      view_name = "Letter_by_letter_and_number"
-      RelaxDB::DesignDocument.get(RelaxDB.dd).add_map_view(view_name, map).add_reduce_view(view_name, reduce).save      
+      view_name = "Letter_by_letter_and_number_v2"
+      RelaxDB::DesignDocument.get(RelaxDB.dd).add_map_view(view_name, map).save      
     end
     
     it "should navigate through a series when 1 emitted as val" do
       query = lambda do |page_params|
-        RelaxDB.qpaginate_docs "Letter_by_letter_and_number", :page_params => page_params,
+        RelaxDB.qpaginate_docs "Letter_by_letter_and_number_v2", :page_params => page_params,
            :startkey => ["a"], :endkey => ["a",{}], :limit => 2,
            :attributes => [:letter, :number]
       end

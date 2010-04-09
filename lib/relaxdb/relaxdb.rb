@@ -267,11 +267,9 @@ module RelaxDB
       view_keys = atts.delete :attributes      
       
       paginate_params = PaginateParams.new atts
-      raise paginate_params.error_msg if paginate_params.invalid? 
-      
+      raise paginate_params.error_msg if paginate_params.invalid?       
       paginator = Paginator.new(paginate_params, page_params)
 
-      atts[:reduce] = false
       atts[:raw] = true
       query = Query.new(view_name, atts)
       query.merge(paginate_params)
