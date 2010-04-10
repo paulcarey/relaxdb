@@ -7,7 +7,7 @@ module RelaxDB
       hash.each do |k, v|
 
         if k.to_s =~ /_at$/
-          v = Time.local(*ParseDate.parsedate(v)) rescue v
+          v = Time.parse(v).utc rescue v
         end
 
         instance_variable_set("@#{k}", v)

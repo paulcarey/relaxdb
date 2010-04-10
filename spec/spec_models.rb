@@ -1,3 +1,11 @@
+class FooBar < RelaxDB::Document
+  references :bf
+end
+
+class BarFoo < RelaxDB::Document
+  references :fb
+end
+
 class Atom < RelaxDB::Document
 end
 

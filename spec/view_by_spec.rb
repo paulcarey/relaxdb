@@ -25,6 +25,12 @@ describe "view_by" do
     docs.size.should == 10
   end
   
+  it "should return arrays that behave normally" do
+    p1 = Primitives.by_str :key => "1"
+    p2 = Primitives.by_str :key => "2"
+    RelaxDB.load!(p1 + p2).map { |p| p.str }.join.should == "12" 
+  end
+  
   describe "delegator" do
     
     it "should load the returned doc ids" do

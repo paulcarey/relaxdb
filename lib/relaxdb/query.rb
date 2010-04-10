@@ -67,7 +67,7 @@ module RelaxDB
       paginate_params.instance_variables.each do |pp|
         val = paginate_params.instance_variable_get(pp)
         method_name = pp[1, pp.length]
-        send(method_name, val) if methods.include? method_name
+        send(method_name, val) if @@params.include? method_name
       end
     end
         

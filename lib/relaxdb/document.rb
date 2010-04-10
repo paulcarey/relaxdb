@@ -42,7 +42,7 @@ module RelaxDB
       end
       
       if opts[:default]
-        define_method("set_default_#{prop}") do
+        define_method("__set_default_#{prop}__") do
           default = opts[:default]
           default = default.is_a?(Proc) ? default.call : default
           instance_variable_set("@#{prop}".to_sym, default)
@@ -72,11 +72,15 @@ module RelaxDB
         v.arity == 1 ?
           define_method(method_name) { |att_val| v.call(att_val) } :
           define_method(method_name) { |att_val| v.call(att_val, self) }
-      elsif instance_methods.include? "validator_#{v}"
-        define_method(method_name) { |att_val| send("validator_#{v}", att_val, self) }
       else
-        define_method(method_name) { |att_val| send(v, att_val) }
-      end          
+        v_meths = instance_methods.select { |m| m =~ /validator_/ }
+        v_meths.map! { |m| m.to_sym } if RUBY_VERSION.to_f < 1.9
+        if v_meths.include? "validator_#{v}".to_sym
+          define_method(method_name) { |att_val| send("validator_#{v}", att_val, self) }
+        else
+          define_method(method_name) { |att_val| send(v, att_val) }
+        end          
+      end
     end
     
     def self.create_validation_msg(att, validation_msg)
@@ -85,7 +89,7 @@ module RelaxDB
           define_method("#{att}_validation_msg") { |att_val| validation_msg.call(att_val) } :
           define_method("#{att}_validation_msg") { |att_val| validation_msg.call(att_val, self) } 
       else  
-        define_method("#{att}_validation_msg") { validation_msg } 
+        define_method("#{att}_validation_msg") { |att_val| validation_msg } 
       end
     end
     
@@ -125,12 +129,14 @@ module RelaxDB
       @errors = Errors.new
       @save_list = []
       @validation_skip_list = []
-
+      
       # Set default properties if this object isn't being loaded from CouchDB
       unless hash["_rev"]
+        default_methods = methods.select { |m| m =~ /__set_default/ }
+        default_methods.map! { |m| m.to_sym } if RUBY_VERSION.to_f < 1.9
         properties.each do |prop|
-         if methods.include?("set_default_#{prop}")
-           send("set_default_#{prop}")
+         if default_methods.include? "__set_default_#{prop}__".to_sym
+           send("__set_default_#{prop}__")
          end
         end
       end
@@ -149,10 +155,7 @@ module RelaxDB
             val = Time.parse(val).utc rescue val
         end
         
-        # Ignore param keys that don't have a corresponding writer
-        # This allows us to comfortably accept a hash containing superflous data 
-        # such as a params hash in a controller 
-        send("#{key}=".to_sym, val) if methods.include? "#{key}="
+        send("#{key}=".to_sym, val)         
       end
     end  
             
@@ -262,10 +265,12 @@ module RelaxDB
       att_names = props + rels
       att_vals =  prop_vals + rel_vals
       
-      total_success = true      
+      total_success = true
+      validate_methods = methods.select { |m| m =~ /validate_/ }
+      validate_methods.map! { |m| m.to_sym } if RUBY_VERSION.to_f < 1.9
       att_names.each_index do |i|
         att_name, att_val = att_names[i], att_vals[i]
-        if methods.include? "validate_#{att_name}"
+        if validate_methods.include? "validate_#{att_name}".to_sym
           total_success &= validate_att(att_name, att_val)
         end
       end
@@ -283,10 +288,13 @@ module RelaxDB
       end
 
       unless success
-        if methods.include? "#{att_name}_validation_msg"
+        v_msg_meths = methods.select { |m | m =~ /_validation_msg/ }
+        v_msg_meths.map! { |m| m.to_sym } if RUBY_VERSION.to_f < 1.9
+        if v_msg_meths.include? "#{att_name}_validation_msg".to_sym
           begin
             @errors[att_name] = send("#{att_name}_validation_msg", att_val)
           rescue => e
+            puts "#{e.backtrace[0, 5].join("\n")}"
             RelaxDB.logger.warn "Validation_msg for #{att_name} with #{att_val} raised #{e}"
             @errors[att_name] = "validation_msg_exception:invalid:#{att_val}"
           end

@@ -6,7 +6,7 @@ require 'uuid'
 require 'cgi'
 require 'net/http'
 require 'logger'
-require 'parsedate'
+require 'parsedate' if RUBY_VERSION.to_f < 1.9
 require 'pp'
 require 'tempfile'
 

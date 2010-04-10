@@ -14,7 +14,7 @@ describe "view_docs_by" do
       RelaxDB.use_db "relaxdb_spec"
       RelaxDB.enable_view_creation
 
-      class ViewByFoo < RelaxDB::Document
+      class ::ViewByFoo < RelaxDB::Document
         property :foo
         view_docs_by :foo, :descending => true
       end

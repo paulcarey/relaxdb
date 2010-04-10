@@ -71,24 +71,18 @@ describe RelaxDB::BelongsToProxy do
     end    
     
     it "may be used reciprocally" do
-      C1 = Class.new(RelaxDB::Document) do
-        belongs_to :c2
-      end
-      C2 = Class.new(RelaxDB::Document) do
-        belongs_to :c1
-      end
-      i1, i2 = C1.new, C2.new
+      fb, bf = FooBar.new, BarFoo.new
 
-      i1.c2 = i2
-      i1.save!
-      i2.c1 = i1
-      i2.save!
+      fb.bf = bf
+      fb.save!
+      bf.fb = fb
+      bf.save!
       
-      i1 = RelaxDB.load i1._id
-      i1.c2.should == i2
+      fb = RelaxDB.load fb._id
+      fb.bf.should == bf
       
-      i2 = RelaxDB.load i2._id
-      i2.c1.should == i1
+      bf = RelaxDB.load bf._id
+      bf.fb.should == fb
     end
     
     describe "validator" do

@@ -23,6 +23,10 @@ module RelaxDB
       @ids
     end
     
+    def __setobj__ obj
+      # Intentionally empty
+    end
+    
     def load
       __getobj__
       @objs = RelaxDB.load! @ids

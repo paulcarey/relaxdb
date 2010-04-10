@@ -26,14 +26,14 @@ describe RelaxDB::Document, "callbacks" do
     
     it "should prevent the object from being saved if it returns false" do
       c = Class.new(RelaxDB::Document) do
-        before_save lambda { false }
+        before_save lambda { |o| false }
       end
       c.new.save.should == false
     end
     
     it "should add a description to errors when false is returned" do
       c = Class.new(RelaxDB::Document) do
-        before_save lambda { false }
+        before_save lambda { |o| false }
       end
       x = c.new
       x.save
@@ -42,14 +42,14 @@ describe RelaxDB::Document, "callbacks" do
 
     it "should not prevent the object from being saved if it returns nil" do
       c = Class.new(RelaxDB::Document) do
-        before_save lambda { nil }
+        before_save lambda { |o| nil }
       end
       c.new.save!
     end
     
     it "may be a proc" do
       c = Class.new(RelaxDB::Document) do
-        before_save lambda { false }
+        before_save lambda { |o| false }
       end
       c.new.save.should == false      
     end

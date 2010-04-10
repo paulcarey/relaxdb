@@ -67,7 +67,7 @@ describe RelaxDB::Migration do
   describe ".run_all" do
     
     it "should save the version after each successful migration" do
-      @mig.run_all "a/b/1_", lambda {}
+      @mig.run_all ["a/b/1_"], lambda { |o| }
       RelaxDB::MigrationVersion.version.should == 1
     end
 
@@ -75,7 +75,7 @@ describe RelaxDB::Migration do
       v = RelaxDB::MigrationVersion.retrieve
       v.version = 2
       v.save!
-      @mig.run_all "3_", lambda {}
+      @mig.run_all ["3_"], lambda { |o| }
       RelaxDB::MigrationVersion.version.should == 3
     end
     
@@ -83,13 +83,13 @@ describe RelaxDB::Migration do
       v = RelaxDB::MigrationVersion.retrieve
       v.version = 2
       v.save!
-      @mig.run_all "1_foo", lambda {}
+      @mig.run_all ["1_foo"], lambda { |o| }
       RelaxDB::MigrationVersion.version.should == 2
     end
     
     it "should raise an exception on failure" do
       lambda do
-        @mig.run_all "1_foo", lambda { raise "Expected" }
+        @mig.run_all ["1_foo"], lambda { |o| raise "Expected" }
       end.should raise_error(RuntimeError, "Expected")
     end
     

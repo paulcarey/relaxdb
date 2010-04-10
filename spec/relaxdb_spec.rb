@@ -164,7 +164,7 @@ describe RelaxDB do
       RelaxDB.delete_db replica rescue :ok
       
       RelaxDB.enable_view_creation
-      class ReplicaTest < RelaxDB::Document; end
+      class ::ReplicaTest < RelaxDB::Document; end
       RelaxDB::View.design_doc.save
       
       ReplicaTest.new.save # implicitly saved to orig
@@ -345,7 +345,7 @@ describe RelaxDB do
 
       RelaxDB.enable_view_creation
       
-      class CveBar < RelaxDB::Document
+      class ::CveBar < RelaxDB::Document
         view_docs_by :foo
         has_one :foo1
         has_many :foon
