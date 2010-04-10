@@ -1,18 +1,15 @@
 h3. What's New?
 
-* 2009-10-31
-** Confirmed that the test suite passes against CouchDB 0.10.0
-* 2009-08-15
-** A few tweaks, patches and fixes push the version to 0.3.5, compatible with CouchDB 0.9.1 and the 0.10 branch.
-** The Rails error_messages_for helper is now supported. Thanks to "Balint Erdi":http://github.com/balinterdi.
-* 2009-05-27
-** Added minimal support for data migrations. Although CouchDB's nature removes the necessity for migrations, certain knowledge that all objects possess a particular property can simplify client logic. This desire for simplification is the rationale behind this change.
-* 2009-04-19 
-** Defaults to taf2-curb, falling back to Net/HTTP if it taf2-curb can't be loaded. Thanks to "Fred Cheung":http://www.spacevatican.org/2009/4/13/fun-with-ruby-http-clients.
-** For those interested in using RelaxDB with an ETag based cache, "look here":http://github.com/fcheung/relaxdb/commit/1d9acfd5f6b3c23da0d275252b6a6e064865440e
+* 2010-04-10
+** RelaxDB 0.4 released. Supports Ruby 1.9.1 and CouchDB 0.11.0.
+** Auto-generated views no longer emit the document as a value by default 
+** Erlang view shorthand supported e.g. _sum and _count
+** Added single query pagination
+** Performance improvements
+** Time.to_json fix. Thanks to "Karmi":http://github.com/karmi
+** *Note*: This release includes a number of breaking changes. Please see the "release notes":http://github.com/paulcarey/relaxdb/blob/master/RELEASE_NOTES.textile for upgrading notes.
 
-* 2009-03-31
-** RelaxDB 0.3 released - compatible with CouchDB 0.9. 
+For those interested in using RelaxDB with an ETag based cache, please see "Fred Cheung's work":http://github.com/fcheung/relaxdb/commit/1d9acfd5f6b3c23da0d275252b6a6e064865440e
 
 h2. Overview
 
@@ -23,8 +20,6 @@ A few facilities are provided including pretty printing of GET requests and uplo
 A basic merb plugin, "merb_relaxdb":http://github.com/paulcarey/merb_relaxdb/tree/master is also available.
 
 For more complete documentation take a look at docs/spec_results.html and the corresponding specs.
-
-*Note*: While RelaxDB 0.3 is explicitly compatible with CouchDB 0.9, HEAD typically tracks CouchDB HEAD.
 
 h2. Details
 
@@ -38,7 +33,9 @@ h3. Getting started
   RelaxDB.configure :host => "localhost", :port => 5984, :design_doc => "app"
   RelaxDB.use_db "relaxdb_scratch"
   
-  RelaxDB.enable_view_creation # creates views when class definition is executed
+  RelaxDB.enable_view_creation  # creates views when class definition is executed
+  
+  RelaxDB::View.design_doc.save # save views to CouchDB after executing class definitions
 </code>
 </pre>
 
@@ -67,9 +64,10 @@ class Invite < RelaxDB::Document
   property :sender_name,
    :derived => [:sender, lambda { |p, o| o.sender.name } ]
   
-  view_docs_by :sender_name
-  view_docs_by :sender_id
-  view_docs_by :recipient_id, :created_at, :descending => true
+  view_by :sender_name        # Emits 1 as the map value
+  view_docs_by :sender_id     # Emits the doc as the map value
+  
+  view_by :recipient_id, :created_at, :descending => true
   
   def on_update_conflict
     puts "conflict!"
@@ -97,10 +95,11 @@ i.save!
 il = RelaxDB.load i._id
 puts i == il # true
 
-ir = Invite.by_sender_name "sofa"
+ir = Invite.by_sender_name "sofa" 
 puts i == ir # true
 
-ix = Invite.by_sender_name(:key => "sofa").first
+ix_ids = Invite.by_sender_name :key => "sofa"
+ix = ix_ids.load!.first
 puts i == ix # true
 
 # Denormalization
@@ -164,12 +163,9 @@ h3. Creating views by hand
       emit(doc.state, doc);
   }
 
+  // Uses the CouchDB builtin to invoke an Erlang reduce fun
   function Invites_by_state-reduce(keys, values, rereduce) {
-    if (rereduce) {
-      return sum(values);
-    } else {
-      return values.length;
-    }
+    _count
   }
   $
 

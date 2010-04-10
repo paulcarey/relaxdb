@@ -3,8 +3,8 @@
 
 Gem::Specification.new do |s|
   s.name = "relaxdb"
-  s.version = "0.3.5"
-  s.date = "2009-08-15"
+  s.version = "0.4"
+  s.date = "2010-04-10"
   s.summary = "RelaxDB provides a simple interface to CouchDB"
   s.email = "paul.p.carey@gmail.com"
   s.homepage = "http://github.com/paulcarey/relaxdb/"
