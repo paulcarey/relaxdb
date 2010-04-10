@@ -27,7 +27,7 @@ module RelaxDB
       # Intentionally empty
     end
     
-    def load
+    def load!
       __getobj__
       @objs = RelaxDB.load! @ids
     end
@@ -39,7 +39,7 @@ module RelaxDB
     
     # TODO: destroy in a bulk_save if feasible
     def destroy!
-      load
+      load!
       @objs.each do |o| 
         # A reload is required for deleting objects with a self referential references_many relationship
         # This makes all.destroy! very slow. Change if needed

@@ -34,8 +34,8 @@ describe "Inheritance" do
       a = Ancestor.new(:x => 0).save!
       d = Descendant.new(:x => 1).save!
 
-      Ancestor.all.load.should == [a, d]
-      Descendant.all.load.should == [d]
+      Ancestor.all.load!.should == [a, d]
+      Descendant.all.load!.should == [d]
     end
 
     it "should function with inheritance trees" do
