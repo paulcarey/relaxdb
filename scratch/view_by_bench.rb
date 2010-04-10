@@ -69,3 +69,14 @@ end
 # Conclusion - if a penalty exists for using a delegator, it's minimal
 # The simplification offered by a delegator to client code is well worth it
 #
+
+# Ruby 1.8.7 with performance improvements
+#      user     system      total        real
+# delegator  6.450000   0.320000   6.770000 ( 10.544567)
+
+# Ruby 1.9.1 with performance enhancements
+#       user     system      total        real
+# delegator  6.870000   1.250000   8.120000 ( 11.528884)
+
+
+
