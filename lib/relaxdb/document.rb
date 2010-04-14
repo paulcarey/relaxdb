@@ -2,6 +2,8 @@ module RelaxDB
     
   class Document
     
+    TIME_REGEXP = /_at$|_on$|_date$|_time$/ 
+    
     include RelaxDB::Validators
     
     # Used to store validation messages
@@ -151,11 +153,15 @@ module RelaxDB
         # Only set instance variables on creation - object references are resolved on demand
 
         # If the variable name ends in _at, _on or _date try to convert it to a Time
-        if [/_at$/, /_on$/, /_date$/, /_time$/].inject(nil) { |i, r| i ||= (key =~ r) }
-            val = Time.parse(val).utc rescue val
+        if TIME_REGEXP =~ key
+          val = Time.parse(val).utc rescue val
         end
         
-        send("#{key}=".to_sym, val)         
+        if @set_derived_props
+          send("#{key}=".to_sym, val)
+        else
+          instance_variable_set("@#{key}", val)
+        end     
       end
     end  
             
