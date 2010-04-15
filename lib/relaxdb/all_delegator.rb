@@ -37,20 +37,10 @@ module RelaxDB
       size || 0
     end
     
-    #
-    # TODO - needs updating
-    #
-    # TODO: destroy in a bulk_save if feasible
     def destroy!
       load!
-      @objs.each do |o| 
-        # A reload is required for deleting objects with a self referential references_many relationship
-        # This makes all.destroy! very slow. Change if needed
-        # obj = RelaxDB.load(o._id)
-        # obj.destroy!
-        
-        o.destroy!
-      end
+      @objs.each { |o| o.data["_deleted"] = true }
+      RelaxDB.bulk_save! *@objs
     end    
             
   end
