@@ -68,6 +68,13 @@ module RelaxDB
       @server.put("/#{@db}/#{path}", json)
     end
     
+    def uuids(count=1)
+      @get_count += 1
+      uri = "/_uuids?count=#{count}"
+      @logger.info "GET #{uri}"
+      @server.get uri
+    end
+    
     def unesc(path)
       # path
       path ? ::CGI::unescape(path) : ""
