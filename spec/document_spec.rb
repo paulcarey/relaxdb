@@ -117,12 +117,11 @@ describe RelaxDB::Document do
       p.created_at.should be_close(back_then, 1)
     end
     
-    it "should set document conflict state on conflicting save" do
-      a1 = Atom.new
-      a2 = a1.dup
+    it "should set document conflict state on conflicting save" do      
+      a1, a2 = Atom.new(:_id => "a1"), Atom.new(:_id => "a1")
       a1.save!
       a2.save
-      a2.should be_update_conflict
+      a2.should be_update_conflict      
     end
         
   end
@@ -144,14 +143,14 @@ describe RelaxDB::Document do
     end   
     
     it "should raise UpdateConflict on an update conflict" do
-      a1 = Atom.new
-      a2 = a1.dup
+      a1, a2 = Atom.new(:_id => "a1"), Atom.new(:_id => "a1")
       a1.save!
       lambda { a2.save! }.should raise_error(RelaxDB::UpdateConflict)      
     end
     
   end
       
+  # This has always been dodgy - no longer supported
   describe "user defined property reader" do
     
     it "should not effect normal operation" do
@@ -168,6 +167,7 @@ describe RelaxDB::Document do
             
   end
 
+  # This has always been dodgy - no longer supported
   describe "user defined property writer" do
     
     it "should not be used to modify state" do

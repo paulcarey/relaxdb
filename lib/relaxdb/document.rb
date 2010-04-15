@@ -17,6 +17,11 @@ module RelaxDB
     # Attribute symbols added to this list won't be validated on save
     attr_accessor :validation_skip_list
     
+    # Should not be used by clients - private API only
+    # TODO - cunrrently used to get around shallow copy of dup for tests
+    # might not be needed, other ways around
+    attr_accessor :data
+    
     class_inheritable_accessor :properties, :reader => true
     self.properties = []
 
@@ -35,19 +40,35 @@ module RelaxDB
     def self.property(prop, opts={})
       properties << prop
 
-      define_method(prop) do
-        instance_variable_get("@#{prop}".to_sym)        
+      define_method(prop) do                
+        val = @data[prop.to_s]
+
+        # Consider calling out to a method here - might be faster
+        # than having it in each define_method - in fact, probably is
+        
+        # TODO: consider freezing prop names - more upto json - nothing for me to do
+        if TIME_REGEXP =~ prop.to_s
+          val = Time.parse(val).utc rescue val
+        end
+        
+        val
+        
+        # instance_variable_get("@#{prop}".to_sym)        
       end
 
       define_method("#{prop}=") do |val|
-        instance_variable_set("@#{prop}".to_sym, val)
+        # instance_variable_set("@#{prop}".to_sym, val)
+        @data[prop.to_s] = val
       end
       
       if opts[:default]
         define_method("__set_default_#{prop}__") do
-          default = opts[:default]
-          default = default.is_a?(Proc) ? default.call : default
-          instance_variable_set("@#{prop}".to_sym, default)
+          if @data[prop.to_s].nil?
+            default = opts[:default]
+            val = default.is_a?(Proc) ? default.call : default
+            @data[prop.to_s] = val
+          end
+          # instance_variable_set("@#{prop}".to_sym, default)
         end
       end
       
@@ -123,29 +144,44 @@ module RelaxDB
       end
     end
     
-    def initialize(hash={})
-      unless hash["_id"]
-        self._id = UuidGenerator.uuid 
-      end
-      
+    # Lots of tests pass in hash with symbols - we want strings only. or maybe not.
+    def initialize(hash={})      
       @errors = Errors.new
       @save_list = []
       @validation_skip_list = []
       
+      if hash["_rev"].nil?
+        # If there's no rev, it's a new document. Clients may use symbols
+        # as keys so convert all to string first. 
+        # The data keys are String as this is what JSON.parse gives us.
+        # Using symbols as keys is mostly swimming uphill
+        @data = hash.map { |k,v| [k.to_s, v] }.to_hash
+      else
+        @data = hash
+      end
+      
+      unless @data["_id"]
+        @data["_id"] = UuidGenerator.uuid
+      end      
+      
       # Set default properties if this object isn't being loaded from CouchDB
-      unless hash["_rev"]
+      unless @data["_rev"]
         default_methods = methods.select { |m| m =~ /__set_default/ }
         default_methods.map! { |m| m.to_sym } if RUBY_VERSION.to_f < 1.9
         properties.each do |prop|
-         if default_methods.include? "__set_default_#{prop}__".to_sym
-           send("__set_default_#{prop}__")
-         end
+          if default_methods.include? "__set_default_#{prop}__".to_sym
+            send("__set_default_#{prop}__")
+          end
+        end
+        
+        # This may become redundant as all items are served only
+        # from the underlying hash - if we ever set, we always want to derive
+        @set_derived_props = true
+        
+        @data.each do |key, val|
+          send("#{key}=".to_sym, val)
         end
       end
-            
-      @set_derived_props = hash["_rev"] ? false : true
-      set_attributes(hash)
-      @set_derived_props = true
     end
     
     def set_attributes(data)
@@ -178,23 +214,25 @@ module RelaxDB
       s << ", errors: #{errors.inspect}" unless errors.empty?
       s << ", save_list: #{save_list.map { |o| o.inspect }.join ", " }" unless save_list.empty?
       s << ">"
+      
+      to_json.gsub("\"", "")
     end
     
     alias_method :to_s, :inspect
             
     def to_json
-      data = {}
-      self.class.belongs_to_rels.each do |relationship, opts|
-        id = instance_variable_get("@#{relationship}_id".to_sym)
-        data["#{relationship}_id"] = id if id
-      end
-      properties.each do |prop|
-        prop_val = instance_variable_get("@#{prop}".to_sym)
-        data["#{prop}"] = prop_val if prop_val
-      end
-      data["errors"] = errors unless errors.empty?
-      data["relaxdb_class"] = self.class.name
-      data.to_json      
+      # data = {}
+      # self.class.belongs_to_rels.each do |relationship, opts|
+      #   id = instance_variable_get("@#{relationship}_id".to_sym)
+      #   data["#{relationship}_id"] = id if id
+      # end
+      # properties.each do |prop|
+      #   prop_val = instance_variable_get("@#{prop}".to_sym)
+      #   data["#{prop}"] = prop_val if prop_val
+      # end
+      @data["errors"] = errors unless errors.empty?
+      @data["relaxdb_class"] = self.class.name
+      @data.to_json      
     end
             
     # Not yet sure of final implemention for hooks - may lean more towards DM than AR
@@ -263,10 +301,10 @@ module RelaxDB
             
     def validates?
       props = properties - validation_skip_list
-      prop_vals = props.map { |prop| instance_variable_get("@#{prop}") }
+      prop_vals = props.map { |prop| @data[prop.to_s] }
       
       rels = self.class.belongs_to_rels.keys - validation_skip_list
-      rel_vals = rels.map { |rel| instance_variable_get("@#{rel}_id") }
+      rel_vals = rels.map { |rel| @data[rel.to_s] }
       
       att_names = props + rels
       att_vals =  prop_vals + rel_vals
@@ -313,7 +351,7 @@ module RelaxDB
     end
             
     def new_document?
-      @_rev.nil?
+      self._rev.nil?
     end
     alias_method :new_record?, :new_document?
     alias_method :unsaved?, :new_document?
@@ -327,10 +365,10 @@ module RelaxDB
       now = Time.now
       if new_document? && respond_to?(:created_at)
         # Don't override it if it's already been set
-        @created_at = now if @created_at.nil?
+        @data["created_at"] = now if @data["created_at"].nil?
       end
       
-      @updated_at = now if respond_to?(:updated_at)
+      @data["updated_at"] = now if respond_to?(:updated_at)
     end
        
     def create_or_get_proxy(klass, relationship, opts=nil)
