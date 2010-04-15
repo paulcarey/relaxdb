@@ -2,8 +2,6 @@ module RelaxDB
     
   class Document
     
-    TIME_REGEXP = /_at$|_on$|_date$|_time$/ 
-    
     include RelaxDB::Validators
     
     # Used to store validation messages
@@ -35,22 +33,20 @@ module RelaxDB
     class_inheritable_accessor :references_rels, :reader => true
     self.references_rels = {}    
             
+    # TODO: consider freezing prop names - more upto json - nothing for me to do  
     def self.property(prop, opts={})
       properties << prop
-
-      define_method(prop) do                
-        val = @data[prop.to_s]
-
-        # Consider calling out to a method here - might be faster
-        # than having it in each define_method - in fact, probably is
-        
-        # TODO: consider freezing prop names - more upto json - nothing for me to do
-        if TIME_REGEXP =~ prop.to_s
-          val = Time.parse(val).utc rescue val
+      
+      if prop.to_s =~ /_at$|_on$|_date$|_time$/ 
+        define_method(prop) do                
+          val = @data[prop.to_s]
+          Time.parse(val).utc rescue val
         end
-        
-        val
-      end
+      else
+        define_method(prop) do                
+          @data[prop.to_s]
+        end
+      end        
 
       define_method("#{prop}=") do |val|
         @data[prop.to_s] = val
