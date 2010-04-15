@@ -42,17 +42,18 @@ describe RelaxDB::Migration do
       RelaxDB.db.reset_req_count
     end
     
-    # Note: three requests per migration loop, plus two for the final loop
-    # where no migration actually occurs
+    # Note: three requests per migration loop, plus one for the final loop
+    # where no migration actually occurs. (It would be two for the final
+    # loop except a request isn't isn't the id array passed to load is empty)
     it "should operate on a doc set of the given size aka limit" do
       @mig.run(Primitives, 1) { |p| p.num *= p.num; p }
-      RelaxDB.db.req_count.should == 5 * 3 + 2
+      RelaxDB.db.req_count.should == 5 * 3 + 1
       Primitives.by_num.map { |p| p.num }.should == [1, 4, 9, 16, 25]      
     end
 
     it "should operate on a doc set of default size" do
       @mig.run(Primitives) { |p| p.num *= p.num; p }
-      RelaxDB.db.req_count.should == 1 * 3 + 2
+      RelaxDB.db.req_count.should == 1 * 3 + 1
       Primitives.by_num.map { |p| p.num }.should == [1, 4, 9, 16, 25]      
     end
   

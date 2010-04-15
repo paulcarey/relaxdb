@@ -122,6 +122,8 @@ module RelaxDB
       # RelaxDB.logger.debug(caller.inject("#{db.name}/#{ids}\n") { |a, i| a += "#{i}\n" })
       
       if ids.is_a? Array
+        return [] if ids.empty?
+        
         resp = db.post("_all_docs?include_docs=true", {:keys => ids}.to_json)
         data = JSON.parse(resp.body)
         data["rows"].map { |row| row["doc"] ? create_obj_from_doc(row["doc"]) : nil }
