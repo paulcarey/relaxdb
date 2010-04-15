@@ -17,9 +17,7 @@ module RelaxDB
     # Attribute symbols added to this list won't be validated on save
     attr_accessor :validation_skip_list
     
-    # Should not be used by clients - private API only
-    # TODO - cunrrently used to get around shallow copy of dup for tests
-    # might not be needed, other ways around
+    # Not part of the public API - should only be used by clients with caution
     attr_accessor :data
     
     class_inheritable_accessor :properties, :reader => true
@@ -52,12 +50,9 @@ module RelaxDB
         end
         
         val
-        
-        # instance_variable_get("@#{prop}".to_sym)        
       end
 
       define_method("#{prop}=") do |val|
-        # instance_variable_set("@#{prop}".to_sym, val)
         @data[prop.to_s] = val
       end
       
@@ -68,7 +63,6 @@ module RelaxDB
             val = default.is_a?(Proc) ? default.call : default
             @data[prop.to_s] = val
           end
-          # instance_variable_set("@#{prop}".to_sym, default)
         end
       end
       
@@ -175,34 +169,12 @@ module RelaxDB
           end
         end
         
-        # This may become redundant as all items are served only
-        # from the underlying hash - if we ever set, we always want to derive
-        # @set_derived_props = true
-        
         @data.each do |key, val|
           send("#{key}=".to_sym, val)
         end
       end
     end
     
-    # TODO - delete
-    def set_attributes(data)
-      data.each do |key, val|
-        # Only set instance variables on creation - object references are resolved on demand
-
-        # If the variable name ends in _at, _on or _date try to convert it to a Time
-        if TIME_REGEXP =~ key
-          val = Time.parse(val).utc rescue val
-        end
-        
-        if @set_derived_props
-          send("#{key}=".to_sym, val)
-        else
-          instance_variable_set("@#{key}", val)
-        end     
-      end
-    end  
-            
     def inspect
       s = "#<#{self.class}:#{self.object_id}"
       properties.each do |prop|
@@ -340,7 +312,6 @@ module RelaxDB
           begin
             @errors[att_name] = send("#{att_name}_validation_msg", att_val)
           rescue => e
-            puts "#{e.backtrace[0, 5].join("\n")}"
             RelaxDB.logger.warn "Validation_msg for #{att_name} with #{att_val} raised #{e}"
             @errors[att_name] = "validation_msg_exception:invalid:#{att_val}"
           end
@@ -397,13 +368,13 @@ module RelaxDB
       
       define_method("#{relationship}=") do |new_target|
         create_or_get_proxy(ReferencesProxy, relationship).target = new_target
-        write_derived_props(relationship) # if @set_derived_props
+        write_derived_props(relationship)
       end
       
       # Allows all writers to be invoked from the hash passed to initialize 
       define_method("#{relationship}_id=") do |id|
         @data["#{relationship}_id"] = id
-        write_derived_props(relationship) # if @set_derived_props
+        write_derived_props(relationship)
         id
       end
 
@@ -417,11 +388,6 @@ module RelaxDB
       create_validation_msg(relationship, opts[:validation_msg]) if opts[:validation_msg]
     end
   
-    # TODO : check for other refs and delete
-    def self.all_relationships
-      references_rels + has_one_rels + has_many_rels + references_many_rels
-    end
-        
     def self.all params = {}
       AllDelegator.new self.name, params
     end
@@ -503,7 +469,6 @@ module RelaxDB
         end    
       end
     end
-    
     
     #
     # Creates the corresponding view, emitting 1 as the val
