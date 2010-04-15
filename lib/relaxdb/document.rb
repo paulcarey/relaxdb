@@ -461,7 +461,7 @@ module RelaxDB
     #
     def self.view_by *atts
       opts = atts.last.is_a?(Hash) ? atts.pop : {}
-      opts = opts.merge :raw => true, :reduce => false 
+      opts = opts.merge :reduce => false 
       __view_by_list__ << atts
       
       if RelaxDB.create_views?
@@ -473,12 +473,11 @@ module RelaxDB
         define_method by_name do |*params|
           view_name = "#{self.name}_#{by_name}"
           if params.empty?
-            ViewByDelegator.new(RelaxDB.doc_ids(view_name, opts))
+            ViewByDelegator.new(view_name, opts)
           elsif params[0].is_a? Hash
-            ViewByDelegator.new(RelaxDB.doc_ids(view_name, opts.merge(params[0])))
+            ViewByDelegator.new(view_name, opts.merge(params[0]))
           else
-            ViewByDelegator.new(
-              RelaxDB.doc_ids(view_name, opts.merge(:key => params[0]))).load!.first
+            ViewByDelegator.new(view_name, opts.merge(:key => params[0])).load!.first
           end            
         end
       end      

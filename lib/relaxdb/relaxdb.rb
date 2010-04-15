@@ -150,12 +150,13 @@ module RelaxDB
     end
     
     #
-    # Queries a view that doesn't emit the underlying doc as a val
-    # and loads the underlying docs in a separate query.
+    # Queries a view that doesn't emit the underlying doc as a val.
     #
     def docs view_name, params
-      ids = doc_ids view_name, params
-      ids.empty? ? [] : RelaxDB.load!(ids)
+      params[:raw] = true
+      params[:include_docs] = true
+      hash = view view_name, params
+      hash["rows"].map { |row| row["doc"] ? create_obj_from_doc(row["doc"]) : nil }
     end
     
     def doc_ids view_name, params

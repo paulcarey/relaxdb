@@ -37,6 +37,9 @@ module RelaxDB
       size || 0
     end
     
+    #
+    # TODO - needs updating
+    #
     # TODO: destroy in a bulk_save if feasible
     def destroy!
       load!

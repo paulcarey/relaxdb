@@ -47,6 +47,37 @@ describe "view_by" do
       docs = Primitives.by_str.load!
       docs.map { |d| d.str }.join.length.should == 11
     end
+        
+  end
+  
+  describe "request count" do
+    
+    before(:each) do
+      RelaxDB.db.reset_req_count
+    end
+    
+    it "should not issue any requests before accessingn the delegator" do
+      doc_ids = Primitives.by_str 
+      RelaxDB.db.req_count.should == 0
+    end
+        
+    it "should issue a single request when retrieving ids only" do
+      doc_ids = Primitives.by_str 
+      doc_ids[0]
+      RelaxDB.db.req_count.should == 1
+    end
+    
+    it "should make two requests when loading docs after touching ids" do
+      doc_ids = Primitives.by_str 
+      doc_ids[0].should == "id1"
+      doc_ids.load!
+      RelaxDB.db.req_count.should == 2
+    end
+    
+    it "should issue a single request when retrieving docs directly" do
+      Primitives.by_str.load!
+      RelaxDB.db.req_count.should == 1
+    end    
     
   end
     
