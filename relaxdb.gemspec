@@ -3,7 +3,7 @@
 
 Gem::Specification.new do |s|
   s.name = "relaxdb"
-  s.version = "0.4"
+  s.version = "0.5"
   s.date = "2010-04-10"
   s.summary = "RelaxDB provides a simple interface to CouchDB"
   s.email = "paul.p.carey@gmail.com"
@@ -17,19 +17,16 @@ Gem::Specification.new do |s|
    "docs/spec_results.html",
    "lib/relaxdb",
    "lib/relaxdb/all_delegator.rb",
-   "lib/relaxdb/belongs_to_proxy.rb",
    "lib/relaxdb/design_doc.rb",
    "lib/relaxdb/document.rb",
    "lib/relaxdb/extlib.rb",
-   "lib/relaxdb/has_many_proxy.rb",
-   "lib/relaxdb/has_one_proxy.rb",
    "lib/relaxdb/net_http_server.rb",
    "lib/relaxdb/migration.rb",
    "lib/relaxdb/migration_version.rb",
    "lib/relaxdb/paginate_params.rb",
    "lib/relaxdb/paginator.rb",
    "lib/relaxdb/query.rb",
-   "lib/relaxdb/references_many_proxy.rb",
+   "lib/relaxdb/references_proxy.rb",   
    "lib/relaxdb/relaxdb.rb",
    "lib/relaxdb/server.rb",
    "lib/relaxdb/uuid_generator.rb",
@@ -42,20 +39,18 @@ Gem::Specification.new do |s|
    "lib/relaxdb/views.rb",
    "lib/more/grapher.rb",
    "lib/relaxdb.rb",
-   "spec/belongs_to_spec.rb",
+   "spec/references_spec.rb",
    "spec/callbacks_spec.rb",
    "spec/derived_properties_spec.rb",
    "spec/design_doc_spec.rb",
    "spec/doc_inheritable_spec.rb",
    "spec/document_spec.rb",
-   "spec/has_many_spec.rb",
-   "spec/has_one_spec.rb",
    "spec/migration_spec.rb",
    "spec/migration_version_spec.rb",
    "spec/paginate_params_spec.rb",
    "spec/paginate_spec.rb",
    "spec/query_spec.rb",
-   "spec/references_many_spec.rb",
+   "spec/references_spec.rb",
    "spec/relaxdb_spec.rb",
    "spec/server_spec.rb",
    "spec/spec.opts",

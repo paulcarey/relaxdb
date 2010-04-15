@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/spec_models.rb'
 
 class DpInvite < RelaxDB::Document
   property :event_name, :derived => [:event, lambda { |en, i| i.event.name }]
-  belongs_to :event  
+  references :event  
 end
 
 class DpEvent < RelaxDB::Document
@@ -46,7 +46,7 @@ describe RelaxDB::Document, "derived properties" do
   it "should only be updated for registered properties" do
     invite = Class.new(RelaxDB::Document) do
       property :event_name, :derived => [:foo, lambda { |en, i| i.event.name }]
-      belongs_to :event
+      references :event
     end
     
     event = Class.new(RelaxDB::Document) do
@@ -61,7 +61,7 @@ describe RelaxDB::Document, "derived properties" do
   it "should have the existing value passed to the first lambda param" do
     invite = Class.new(RelaxDB::Document) do
       property :event_name, :derived => [:event, lambda { |en, i| en.nil? ? i.event.name : "bar" }]
-      belongs_to :event
+      references :event
     end
     
     event = Class.new(RelaxDB::Document) do
@@ -93,7 +93,7 @@ describe RelaxDB::Document, "derived properties" do
       invite = Class.new(RelaxDB::Document) do
         property :name, :derived => [:event, lambda { |en, i| i.event.name }]
         property :location, :derived => [:event, lambda { |en, i| i.event.location }]
-        belongs_to :event
+        references :event
       end
 
       event = Class.new(RelaxDB::Document) do

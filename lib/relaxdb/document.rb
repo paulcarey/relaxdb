@@ -34,8 +34,8 @@ module RelaxDB
     class_inheritable_accessor :__view_by_list__
     self.__view_by_list__ = []    
     
-    class_inheritable_accessor :belongs_to_rels, :reader => true
-    self.belongs_to_rels = {}
+    class_inheritable_accessor :references_rels, :reader => true
+    self.references_rels = {}    
             
     def self.property(prop, opts={})
       properties << prop
@@ -161,6 +161,7 @@ module RelaxDB
       end
       
       unless @data["_id"]
+        # TODO - use uuids from CouchDB (sequential) and convert to base 36
         @data["_id"] = UuidGenerator.uuid
       end      
       
@@ -176,7 +177,7 @@ module RelaxDB
         
         # This may become redundant as all items are served only
         # from the underlying hash - if we ever set, we always want to derive
-        @set_derived_props = true
+        # @set_derived_props = true
         
         @data.each do |key, val|
           send("#{key}=".to_sym, val)
@@ -184,6 +185,7 @@ module RelaxDB
       end
     end
     
+    # TODO - delete
     def set_attributes(data)
       data.each do |key, val|
         # Only set instance variables on creation - object references are resolved on demand
@@ -207,7 +209,7 @@ module RelaxDB
         prop_val = instance_variable_get("@#{prop}".to_sym)
         s << ", #{prop}: #{prop_val.inspect}" if prop_val
       end
-      self.class.belongs_to_rels.each do |relationship, opts|
+      self.class.references_rels.each do |relationship, opts|
         id = instance_variable_get("@#{relationship}_id".to_sym)
         s << ", #{relationship}_id: #{id}" if id
       end
@@ -222,7 +224,7 @@ module RelaxDB
             
     def to_json
       # data = {}
-      # self.class.belongs_to_rels.each do |relationship, opts|
+      # self.class.references_rels.each do |relationship, opts|
       #   id = instance_variable_get("@#{relationship}_id".to_sym)
       #   data["#{relationship}_id"] = id if id
       # end
@@ -303,8 +305,8 @@ module RelaxDB
       props = properties - validation_skip_list
       prop_vals = props.map { |prop| @data[prop.to_s] }
       
-      rels = self.class.belongs_to_rels.keys - validation_skip_list
-      rel_vals = rels.map { |rel| @data[rel.to_s] }
+      rels = self.class.references_rels.keys - validation_skip_list
+      rel_vals = rels.map { |rel| @data["#{rel}_id"] }
       
       att_names = props + rels
       att_vals =  prop_vals + rel_vals
@@ -385,117 +387,28 @@ module RelaxDB
     def ==(other)
       other && _id == other._id
     end
-   
-    # If you're using this method, read the specs and make sure you understand
-    # how it can be used and how it shouldn't be used
-    def self.references_many(relationship, opts={})
-      # Treat the representation as a standard property 
-      properties << relationship
-      
-      # Keep track of the relationship so peers can be disassociated on destroy
-      @references_many_rels ||= []
-      @references_many_rels << relationship
-     
-      id_arr_sym = "@#{relationship}".to_sym
-      
-      if RelaxDB.create_views?
-        target_class = opts[:class]
-        relationship_as_viewed_by_target = opts[:known_as].to_s
-        ViewCreator.references_many(self.name, relationship, target_class, relationship_as_viewed_by_target).add_to_design_doc
-      end            
-     
-      define_method(relationship) do
-        instance_variable_set(id_arr_sym, []) unless instance_variable_defined? id_arr_sym
-        create_or_get_proxy(ReferencesManyProxy, relationship, opts)
-      end
-      
-      define_method("#{relationship}_ids") do
-        instance_variable_set(id_arr_sym, []) unless instance_variable_defined? id_arr_sym
-        instance_variable_get(id_arr_sym)
-      end
-    
-      define_method("#{relationship}=") do |val|
-        # Don't invoke this method unless you know what you're doing
-        instance_variable_set(id_arr_sym, val)
-      end           
-    end
-   
-    def self.references_many_rels
-      @references_many_rels ||= []
-    end
-   
-    def self.has_many(relationship, opts={})
-      @has_many_rels ||= []
-      @has_many_rels << relationship
-      
-      if RelaxDB.create_views?
-        target_class = opts[:class] || relationship.to_s.singularize.camel_case
-        relationship_as_viewed_by_target = (opts[:known_as] || self.name.snake_case).to_s
-        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).add_to_design_doc
-      end      
-      
-      define_method(relationship) do
-        create_or_get_proxy(HasManyProxy, relationship, opts)
-      end
-      
-      define_method("#{relationship}=") do |children|
-        create_or_get_proxy(HasManyProxy, relationship, opts).children = children
-        write_derived_props(relationship) if @set_derived_props
-        children
-      end      
-    end
+               
+    def self.references(relationship, opts={})
+      references_rels[relationship] = opts
 
-    def self.has_many_rels
-      # Don't force clients to check its instantiated
-      @has_many_rels ||= []
-    end
-            
-    def self.has_one(relationship)
-      @has_one_rels ||= []
-      @has_one_rels << relationship
-      
-      if RelaxDB.create_views?
-        target_class = relationship.to_s.camel_case      
-        relationship_as_viewed_by_target = self.name.snake_case      
-        ViewCreator.has_n(self.name, relationship, target_class, relationship_as_viewed_by_target).add_to_design_doc
-      end
-      
-      define_method(relationship) do      
-        create_or_get_proxy(HasOneProxy, relationship).target
+      define_method(relationship) do
+        create_or_get_proxy(ReferencesProxy, relationship).target
       end
       
       define_method("#{relationship}=") do |new_target|
-        create_or_get_proxy(HasOneProxy, relationship).target = new_target
-        write_derived_props(relationship) if @set_derived_props
-        new_target
-      end
-    end
-    
-    def self.has_one_rels
-      @has_one_rels ||= []      
-    end
-            
-    def self.belongs_to(relationship, opts={})
-      belongs_to_rels[relationship] = opts
-
-      define_method(relationship) do
-        create_or_get_proxy(BelongsToProxy, relationship).target
-      end
-      
-      define_method("#{relationship}=") do |new_target|
-        create_or_get_proxy(BelongsToProxy, relationship).target = new_target
-        write_derived_props(relationship) if @set_derived_props
+        create_or_get_proxy(ReferencesProxy, relationship).target = new_target
+        write_derived_props(relationship) # if @set_derived_props
       end
       
       # Allows all writers to be invoked from the hash passed to initialize 
       define_method("#{relationship}_id=") do |id|
-        instance_variable_set("@#{relationship}_id".to_sym, id)
-        write_derived_props(relationship) if @set_derived_props
+        @data["#{relationship}_id"] = id
+        write_derived_props(relationship) # if @set_derived_props
         id
       end
 
       define_method("#{relationship}_id") do
-        instance_variable_get("@#{relationship}_id")
+        @data["#{relationship}_id"]
       end
       
       create_validator(relationship, opts[:validator]) if opts[:validator]
@@ -504,39 +417,16 @@ module RelaxDB
       create_validation_msg(relationship, opts[:validation_msg]) if opts[:validation_msg]
     end
   
-    class << self
-      alias_method :references, :belongs_to
-    end
-    
-    self.belongs_to_rels = {}
-    
+    # TODO : check for other refs and delete
     def self.all_relationships
-      belongs_to_rels + has_one_rels + has_many_rels + references_many_rels
+      references_rels + has_one_rels + has_many_rels + references_many_rels
     end
         
     def self.all params = {}
       AllDelegator.new self.name, params
     end
                     
-    # destroy! nullifies all relationships with peers and children before deleting 
-    # itself in CouchDB
-    # The nullification and deletion are not performed in a transaction
-    #
-    # TODO: Current implemention may be inappropriate - causing CouchDB to try to JSON
-    # encode undefined. Ensure nil is serialized? See has_many_spec#should nullify its child relationships
     def destroy!
-      self.class.references_many_rels.each do |rel|
-        send(rel).clear
-      end
-      
-      self.class.has_many_rels.each do |rel|
-        send(rel).clear
-      end
-      
-      self.class.has_one_rels.each do |rel|
-        send("#{rel}=".to_sym, nil)
-      end
-      
       # Implicitly prevent the object from being resaved by failing to update its revision
       RelaxDB.db.delete("#{_id}?rev=#{_rev}")
       self

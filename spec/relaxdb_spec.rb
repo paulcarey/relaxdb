@@ -68,7 +68,7 @@ describe RelaxDB do
     
     it "should save non conflicting docs and mark conflicting docs" do
       p1, p2 = Atom.new.save!, Atom.new.save!
-      p1.dup.save!
+      Atom.new(:_id => p1._id, :_rev => p1._rev).save!
       RelaxDB.bulk_save p1, p2
       p1._rev.should =~ /1-/
       p1.should be_update_conflict
@@ -85,7 +85,7 @@ describe RelaxDB do
     describe "all-or-nothing" do
       it "should save non conflicting and conflicting docs" do
         p1, p2 = Primitives.new(:num => 1).save!, Primitives.new(:num => 2).save!
-        p1d = p1.dup
+        p1d = Primitives.new(:_id => p1._id, :_rev => p1._rev)
         p1d.num = 11
         p1d.save!
         p1.num = 6
@@ -143,7 +143,7 @@ describe RelaxDB do
     
     it "should raise an exception on document conflict after all docs have been processed" do
       p1, p2 = Atom.new.save!, Atom.new.save!
-      p1.dup.save!
+      Atom.new(:_id => p1._id, :_rev => p1._rev).save!
       lambda { RelaxDB.bulk_save!(p1, p2) }.should raise_error(RelaxDB::UpdateConflict)
       p2._rev.should =~ /2-/
     end
@@ -325,9 +325,6 @@ describe RelaxDB do
     
       class CvdBar < RelaxDB::Document
         view_docs_by :foo
-        has_one :foo1
-        has_many :foon
-        references_many :foor
       end
     end
 
@@ -347,9 +344,6 @@ describe RelaxDB do
       
       class ::CveBar < RelaxDB::Document
         view_docs_by :foo
-        has_one :foo1
-        has_many :foon
-        references_many :foor
       end
       
       RelaxDB::View.design_doc.save
@@ -359,9 +353,6 @@ describe RelaxDB do
       dd = RelaxDB::DesignDocument.get "spec_doc"
       dd.data["views"]["CveBar_all"].should be
       dd.data["views"]["CveBar_by_foo"].should be
-      dd.data["views"]["CveBar_foo1"].should be
-      dd.data["views"]["CveBar_foon"].should be
-      dd.data["views"]["CveBar_foor"].should be
     end    
 
   end

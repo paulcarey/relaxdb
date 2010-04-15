@@ -42,35 +42,7 @@ module RelaxDB
       view_name = "#{class_name}_by_" << atts.join("_and_")
       View.new view_name, map, reduce_func      
     end
-  
-    def self.has_n(client_class, relationship, target_class, relationship_to_client)
-      map = <<-QUERY
-        function(doc) {
-          if (doc.relaxdb_class == "#{target_class}" && doc.#{relationship_to_client}_id)
-            emit(doc.#{relationship_to_client}_id, doc);
-        }
-      QUERY
       
-      view_name = "#{client_class}_#{relationship}"
-      View.new view_name, map
-    end
-  
-    def self.references_many(client_class, relationship, target_class, peers)
-      map = <<-QUERY
-        function(doc) {
-          if (doc.relaxdb_class == "#{target_class}" && doc.#{peers}) {
-            var i;
-            for(i = 0; i < doc.#{peers}.length; i++) {
-              emit(doc.#{peers}[i], doc);
-            }
-          }
-        }
-      QUERY
-      
-      view_name = "#{client_class}_#{relationship}"
-      View.new view_name, map
-    end
-    
     def self.kls_check kls
       kls_names = kls.map{ |k| %Q("#{k}") }.join(",")
       "[#{kls_names}].indexOf(doc.relaxdb_class) >= 0;"

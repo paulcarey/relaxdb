@@ -1,6 +1,6 @@
 module RelaxDB
 
-  class BelongsToProxy
+  class ReferencesProxy
 
     attr_reader :target
   
@@ -13,13 +13,13 @@ module RelaxDB
     def target
       return @target if @target
             
-      id = @client.instance_variable_get("@#{@relationship}_id")
+      id = @client.data["#{@relationship}_id"]
       @target = RelaxDB.load(id) if id
     end
   
     def target=(new_target)
       id = new_target ? new_target._id : nil
-      @client.instance_variable_set("@#{@relationship}_id", id) 
+      @client.data["#{@relationship}_id"] = id
       
       @target = new_target
     end

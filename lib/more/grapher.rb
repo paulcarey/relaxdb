@@ -30,7 +30,7 @@ module RelaxDB
         
         dot << %Q%#{doc._id} [ label ="#{atts}"];\n%
         
-        doc.class.belongs_to_rels.each do |relationship, opts|
+        doc.class.references_rels.each do |relationship, opts|
           id = doc.instance_variable_get("@#{relationship}_id".to_sym)
           dot << %Q%#{id} -> #{doc._id} [ label = "#{relationship}"];\n% if id
         end

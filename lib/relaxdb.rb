@@ -24,17 +24,14 @@ rescue LoadError
 end
 
 require 'relaxdb/all_delegator'
-require 'relaxdb/belongs_to_proxy'
 require 'relaxdb/design_doc'
 require 'relaxdb/document'
 require 'relaxdb/extlib'
-require 'relaxdb/has_many_proxy'
-require 'relaxdb/has_one_proxy'
 require 'relaxdb/migration'
 require 'relaxdb/paginate_params'
 require 'relaxdb/paginator'
 require 'relaxdb/query'
-require 'relaxdb/references_many_proxy'
+require 'relaxdb/references_proxy'
 require 'relaxdb/relaxdb'
 require 'relaxdb/server'
 require 'relaxdb/uuid_generator'
