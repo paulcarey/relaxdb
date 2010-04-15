@@ -85,7 +85,7 @@ describe RelaxDB do
     describe "all-or-nothing" do
       it "should save non conflicting and conflicting docs" do
         p1, p2 = Primitives.new(:num => 1).save!, Primitives.new(:num => 2).save!
-        p1d = Primitives.new(:_id => p1._id, :_rev => p1._rev)
+        p1d = Primitives.new("_id" => p1._id, "_rev" => p1._rev, "relaxdb_class" => "Primitives")
         p1d.num = 11
         p1d.save!
         p1.num = 6

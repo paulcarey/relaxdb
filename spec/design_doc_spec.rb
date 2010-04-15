@@ -15,8 +15,8 @@ describe RelaxDB::DesignDocument do
   describe "#save" do
     
     it "should create a corresponding document in CouchDB" do
-      RelaxDB::DesignDocument.get("foo").save      
-      RelaxDB.load("_design/foo").should_not be_nil
+      RelaxDB::DesignDocument.get("foo").save
+      RelaxDB::DesignDocument.get("foo").should_not be_nil
     end
     
   end

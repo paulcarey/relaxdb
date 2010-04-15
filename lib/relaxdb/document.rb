@@ -8,14 +8,15 @@ module RelaxDB
     attr_accessor :errors
     
     # A call issued to save_all will save this object and the
-    # contents of the save_list. This allows secondary object to
+    # contents of the save_list. This allows secondary objects to
     # be saved at the same time as this object.
     attr_accessor :save_list
     
     # Attribute symbols added to this list won't be validated on save
     attr_accessor :validation_skip_list
     
-    # Not part of the public API - should only be used by clients with caution
+    # Not part of the public API - should only be used by clients with caution.
+    # The data keys are Strings as this is what JSON.parse gives us.
     attr_accessor :data
     
     class_inheritable_accessor :properties, :reader => true
@@ -33,7 +34,6 @@ module RelaxDB
     class_inheritable_accessor :references_rels, :reader => true
     self.references_rels = {}    
             
-    # TODO: consider freezing prop names - more upto json - nothing for me to do  
     def self.property(prop, opts={})
       properties << prop
       
@@ -134,17 +134,14 @@ module RelaxDB
       end
     end
     
-    # Lots of tests pass in hash with symbols - we want strings only. or maybe not.
     def initialize(hash={})      
       @errors = Errors.new
       @save_list = []
       @validation_skip_list = []
       
+      # If there's no rev, it's a new document
       if hash["_rev"].nil?
-        # If there's no rev, it's a new document. Clients may use symbols
-        # as keys so convert all to string first. 
-        # The data keys are String as this is what JSON.parse gives us.
-        # Using symbols as keys is mostly swimming uphill
+        # Clients may use symbols as keys so convert all to strings first. 
         @data = hash.map { |k,v| [k.to_s, v] }.to_hash
       else
         @data = hash
@@ -155,7 +152,8 @@ module RelaxDB
         @data["_id"] = UuidGenerator.uuid
       end      
       
-      # Set default properties if this object isn't being loaded from CouchDB
+      # It's a new doc, set default properties. We only do this after ensuring
+      # this obj first has an _id.
       unless @data["_rev"]
         default_methods = methods.select { |m| m =~ /__set_default/ }
         default_methods.map! { |m| m.to_sym } if RUBY_VERSION.to_f < 1.9
@@ -168,40 +166,30 @@ module RelaxDB
         @data.each do |key, val|
           send("#{key}=".to_sym, val)
         end
+        
+        @data["relaxdb_class"] = self.class.name        
       end
     end
     
     def inspect
       s = "#<#{self.class}:#{self.object_id}"
       properties.each do |prop|
-        prop_val = instance_variable_get("@#{prop}".to_sym)
+        prop_val = @data[prop.to_s]
         s << ", #{prop}: #{prop_val.inspect}" if prop_val
       end
       self.class.references_rels.each do |relationship, opts|
-        id = instance_variable_get("@#{relationship}_id".to_sym)
+        id = @data["#{relationship}_id"]
         s << ", #{relationship}_id: #{id}" if id
       end
       s << ", errors: #{errors.inspect}" unless errors.empty?
       s << ", save_list: #{save_list.map { |o| o.inspect }.join ", " }" unless save_list.empty?
       s << ">"
-      
-      to_json.gsub("\"", "")
     end
     
     alias_method :to_s, :inspect
             
     def to_json
-      # data = {}
-      # self.class.references_rels.each do |relationship, opts|
-      #   id = instance_variable_get("@#{relationship}_id".to_sym)
-      #   data["#{relationship}_id"] = id if id
-      # end
-      # properties.each do |prop|
-      #   prop_val = instance_variable_get("@#{prop}".to_sym)
-      #   data["#{prop}"] = prop_val if prop_val
-      # end
       @data["errors"] = errors unless errors.empty?
-      @data["relaxdb_class"] = self.class.name
       @data.to_json      
     end
             

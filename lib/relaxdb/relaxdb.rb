@@ -124,14 +124,14 @@ module RelaxDB
       if ids.is_a? Array
         resp = db.post("_all_docs?include_docs=true", {:keys => ids}.to_json)
         data = JSON.parse(resp.body)
-        data["rows"].map { |row| row["doc"] ? create_object(row["doc"]) : nil }
+        data["rows"].map { |row| row["doc"] ? create_obj_from_doc(row["doc"]) : nil }
       else
         begin
           qs = atts.map{ |k, v| "#{k}=#{v}" }.join("&")
           qs = atts.empty? ? ids : "#{ids}?#{qs}"
           resp = db.get qs
           data = JSON.parse resp.body
-          create_object data
+          create_obj_from_doc data
         rescue HTTP_404
           nil
         end
@@ -298,6 +298,12 @@ module RelaxDB
         # data is a scalar or not of a known class
         ViewObject.create data
       end
+    end
+    
+    def create_obj_from_doc(data)
+      klass = data["relaxdb_class"]
+      k = klass.split("::").inject(Object) { |x, y| x.const_get y }
+      k.new data
     end
         
     # Convenience methods - should be in a diffent module?
