@@ -149,6 +149,20 @@ describe RelaxDB::Document do
     end
     
   end
+  
+  describe "property" do
+    
+    it "may contain another object" do
+      a = Atom.new.save!
+      p = Primitives.new(:context => a).save!
+
+      p = RelaxDB.reload p
+      RelaxDB.db.reset_req_count
+      p.context.to_obj.should == a
+      RelaxDB.db.req_count.should == 0
+    end
+    
+  end
       
   describe "user defined property reader" do
     
@@ -188,10 +202,9 @@ describe RelaxDB::Document do
       p.str.should == "foo"
       p.num.should == 19.30
       p.true_bool.should be_true
-      # p.false_bool.should be_false
-      p.false_bool.should_not be
+      p.false_bool.should be_false
       p.created_at.should be_close(now, 1)
-      p.empty.should be_nil
+      p.context.should be_nil
     end
     
     it "should be saveable" do

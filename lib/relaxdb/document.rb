@@ -192,7 +192,10 @@ module RelaxDB
     
     alias_method :to_s, :inspect
             
-    def to_json
+    def to_json      
+      ref_rels = self.class.references_rels.map { |k, v| k.to_s }
+      @data.delete_if { |k,v| ref_rels.include? k }      
+      
       @data["errors"] = errors unless errors.empty?
       @data.to_json      
     end

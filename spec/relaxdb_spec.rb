@@ -10,7 +10,7 @@ describe RelaxDB do
   describe ".create_object" do
     
     it "should return an instance of a known object if passed a hash with a class key" do
-      data = { "relaxdb_class" => "Item" }
+      data = { "relaxdb_class" => "Item", "_rev" => "" }
       obj = RelaxDB.create_object(data)
       obj.should be_instance_of(Item)
     end
@@ -263,6 +263,15 @@ describe RelaxDB do
       RelaxDB.db.put("y", {}.to_json)      
       res = RelaxDB.view "simple", :key => "x"
       res.first._id.should == "x"
+    end
+    
+    it "should leave relaxdb_class param intact" do
+      RelaxDB::DesignDocument.get(RelaxDB.dd).add_view("simple", "map", map_func).save
+      a = Atom.new.save!
+      la = RelaxDB.view("simple").first
+      la.should == a
+      la.save!
+      RelaxDB.load! la._id
     end
     
     it "should be queryable with a multi key post" do

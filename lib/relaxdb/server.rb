@@ -6,7 +6,7 @@ module RelaxDB
       
   class CouchDB
 
-    attr_reader :logger
+    attr_reader :logger, :server
         
     # Used for test instrumentation only i.e. to assert that 
     # an expected number of requests have been issued

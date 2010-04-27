@@ -75,14 +75,8 @@ module RelaxDB
       dd = View.design_doc
       dd.add_map_view(@view_name, @map_func)
       dd.add_reduce_view(@view_name, @reduce_func) if @reduce_func
-      # dd.save
     end
-    
-    # def exists?
-    #   dd = design_doc
-    #   dd.data["views"] && dd.data["views"][@view_name]
-    # end
-    
+        
   end
 
 end

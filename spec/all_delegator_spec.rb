@@ -40,7 +40,7 @@ describe RelaxDB::AllDelegator do
   
   describe "destroy" do
     
-    it "should destroy all docs fot the given class" do
+    it "should destroy all docs for the given class" do
       docs = (1..3).map { |i| Primitives.new :num => i }
       RelaxDB.bulk_save! *docs
       Primitives.all.destroy!

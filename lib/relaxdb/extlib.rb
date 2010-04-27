@@ -22,3 +22,9 @@ class Time
   end
 
 end
+
+class Hash
+  def to_obj
+    RelaxDB.create_obj_from_doc(self)
+  end
+end
