@@ -40,7 +40,9 @@ module RelaxDB
     def destroy!
       load!
       @objs.each { |o| o.data["_deleted"] = true }
-      RelaxDB.bulk_save! *@objs
+      # Direct post rather than bulk save as we don't want validators to be run
+      resp = RelaxDB.db.post("_bulk_docs", {"docs" => @objs}.to_json)
+      JSON.parse resp.body
     end    
             
   end
