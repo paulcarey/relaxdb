@@ -540,4 +540,15 @@ describe RelaxDB::Document do
     
   end
   
+  describe "initialization process" do
+    
+    it "should not modify internal state unexpectedly" do
+      a = Atom.new
+      c = Contrived.new :context => a
+      c.context_count.should == 1
+      c.foo.should == 10
+    end
+    
+  end
+  
 end

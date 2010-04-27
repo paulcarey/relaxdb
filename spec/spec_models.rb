@@ -158,6 +158,24 @@ class RichDescendant < Descendant
     :derived => [:ukulele, lambda { |p, o| o.ukulele.name } ]
 end
 
+class Contrived < RelaxDB::Document
+  
+  attr_accessor :context_count
+  def initialize params = {}
+    @context_count = 0
+    super
+  end
+  
+  property :foo,
+    :default => 5,
+    :derived => [
+      :context,
+      lambda { |f, c| c.context_count += 1; 10 }
+    ]
+  
+  references :context
+end
+
 module Inh
   
   class X < RelaxDB::Document; end
