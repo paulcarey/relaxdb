@@ -22,9 +22,8 @@ spec = Gem::Specification.new do |s|
   s.email = EMAIL
   s.homepage = HOMEPAGE
   
-  s.add_dependency "extlib", ">=0.9.4"
-  s.add_dependency "json"
-  s.add_dependency "uuid"
+  s.add_dependency "extlib", "~> 0.9.4"
+  s.add_dependency "json", "~> 1.4"
   
   s.require_path = 'lib'
   s.autorequire = PLUGIN

@@ -61,8 +61,7 @@ Gem::Specification.new do |s|
    "spec/view_object_spec.rb"]
   s.bindir = "bin"
   s.autorequire = "relaxdb"
-  s.add_dependency "extlib", ">= 0.9.4" # removed ", runtime" as was failing locally
-  s.add_dependency "json", ">= 0" # removed ", runtime" as was failing locally
-  s.add_dependency "uuid", ">= 0" # removed ", runtime" as was failing locally
+  s.add_dependency "extlib", "~> 0.9.4"
+  s.add_dependency "json", "~> 1.4"
   s.require_paths = ["lib"]
 end

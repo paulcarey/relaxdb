@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'extlib'
 require 'json'
-require 'uuid'
 
 require 'cgi'
 require 'net/http'
