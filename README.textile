@@ -1,5 +1,8 @@
 h3. What's New?
 
+* 2010-05-04
+** RelaxDB 0.5 released. This is a leaner version of RelaxDB with significant performance improvements and breaking changes. See the "release notes":http://github.com/paulcarey/relaxdb/blob/master/RELEASE_NOTES.textile for upgrading notes.
+
 * 2010-04-10
 ** RelaxDB 0.4 released. Supports Ruby 1.9.1 and CouchDB 0.11.0.
 ** Auto-generated views no longer emit the document as a value by default 

@@ -1,3 +1,10 @@
+h3. RelaxDB 0.5
+
+RelaxDB documents are now directly backed by the hash created by @JSON.parse@. This offers a significant real-world performance improvement. This change means that instance variables that map to CouchDB properties should no longer be manipulated directly - doing this was always a little risky as the behaviour was never firmly defined. But, if you need to preserve such behaviour use @data['my_prop_name']@ instead of the @my_prop_name@ instance variable.
+
+The methods has_one, has_n and references_many have been removed. Although convenient, in practice, their use contributed to non-idiomatic usage of CouchDB. Storing an array of document ids may be a suitable replacement for references_many as the underlying docs can be retrieved in a single query. 
+
+
 h3. RelaxDB 0.4
 
 RelaxDB 0.4 contains a number of breaking changes. However, most clients should be able to upgrade smoothly.
