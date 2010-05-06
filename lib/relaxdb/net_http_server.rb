@@ -6,7 +6,18 @@ module RelaxDB
       @host = host
       @port = port
     end
-
+    
+    def cx
+      unless @cx && @cx.active?
+        @cx = Net::HTTP.start(@host, @port)
+      end
+      @cx
+    end
+    
+    def close_connection
+      @cx.finish if @cx
+    end    
+    
     def delete(uri)
       request(Net::HTTP::Delete.new(uri))
     end
@@ -30,14 +41,18 @@ module RelaxDB
     end
 
     def request(req)
-      res = Net::HTTP.start(@host, @port) {|http|
-        http.request(req)
-      }
+      begin
+        res = cx.request(req)
+      rescue
+        @cx = nil
+        res = cx.request(req)
+      end
+      
       if (not res.kind_of?(Net::HTTPSuccess))
         handle_error(req, res)
       end
       res
-    end
+    end      
   
     def to_s
       "http://#{@host}:#{@port}/"

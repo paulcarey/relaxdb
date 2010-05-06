@@ -29,6 +29,11 @@ module RelaxDB
     
     # URL encode slashes e.g. RelaxDB.delete_db "foo%2Fbar"
     def delete_db(name)
+      # Close the http connection as CouchDB will keep a file handle to the db open
+      # if the http connection remains open - this will result in CouchDB throwing
+      # emfile errors after a significant number of databases are deleted.
+      @server.close_connection
+      
       @logger.info("Deleting database #{name}")
       @server.delete("/#{name}")
     end

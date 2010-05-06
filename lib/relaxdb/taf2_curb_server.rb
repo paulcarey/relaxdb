@@ -13,6 +13,10 @@ module RelaxDB
     def initialize(host, port)
       @host, @port = host, port
     end
+    
+    def close_connection
+      # Impl only in net_http as connections are reused
+    end
 
     def delete(uri)
       request(uri, 'delete'){ |c| c.http_delete}
