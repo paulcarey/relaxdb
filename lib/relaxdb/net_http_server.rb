@@ -1,6 +1,8 @@
 module RelaxDB
 
   class Server
+    
+    attr_reader :host, :port
       
     def initialize(host, port)
       @host = host
