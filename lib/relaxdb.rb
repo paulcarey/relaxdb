@@ -1,6 +1,12 @@
 require 'rubygems'
 require 'extlib'
-require 'json'
+
+begin
+  require 'yajl'
+  require 'yajl/json_gem'
+rescue LoadError
+  require 'json'
+end
 
 require 'cgi'
 require 'net/http'
